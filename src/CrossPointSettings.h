@@ -18,11 +18,6 @@ class CrossPointSettings {
   // Should match with SettingsActivity text
   enum SLEEP_SCREEN_MODE { DARK = 0, LIGHT = 1, CUSTOM = 2, COVER = 3, BLANK = 4 };
 
-  // Front button layout options
-  // Default: Back, Confirm, Left, Right
-  // Swapped: Left, Right, Back, Confirm
-  enum FRONT_BUTTON_LAYOUT { BACK_CONFIRM_LEFT_RIGHT = 0, LEFT_RIGHT_BACK_CONFIRM = 1, LEFT_BACK_CONFIRM_RIGHT = 2 };
-
   // Auto-sleep timeout options (in minutes)
   enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
 
@@ -33,8 +28,6 @@ class CrossPointSettings {
   uint8_t sleepScreen = DARK;
   // Duration of the power button press
   uint8_t shortPwrBtn = 0;
-  // Button layouts
-  uint8_t frontButtonLayout = BACK_CONFIRM_LEFT_RIGHT;
 
   // Auto-sleep timeout setting (default 10 minutes)
   uint8_t sleepTimeout = SLEEP_10_MIN;

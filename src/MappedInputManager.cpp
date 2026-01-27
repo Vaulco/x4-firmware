@@ -3,47 +3,16 @@
 #include "CrossPointSettings.h"
 
 decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button button) const {
-  const auto frontLayout = static_cast<CrossPointSettings::FRONT_BUTTON_LAYOUT>(SETTINGS.frontButtonLayout);
-
+  // Always use default layout: Back, Confirm, Left, Right
   switch (button) {
     case Button::Back:
-      switch (frontLayout) {
-        case CrossPointSettings::LEFT_RIGHT_BACK_CONFIRM:
-          return InputManager::BTN_LEFT;
-        case CrossPointSettings::LEFT_BACK_CONFIRM_RIGHT:
-          return InputManager::BTN_CONFIRM;
-        case CrossPointSettings::BACK_CONFIRM_LEFT_RIGHT:
-        default:
-          return InputManager::BTN_BACK;
-      }
+      return InputManager::BTN_BACK;
     case Button::Confirm:
-      switch (frontLayout) {
-        case CrossPointSettings::LEFT_RIGHT_BACK_CONFIRM:
-          return InputManager::BTN_RIGHT;
-        case CrossPointSettings::LEFT_BACK_CONFIRM_RIGHT:
-          return InputManager::BTN_LEFT;
-        case CrossPointSettings::BACK_CONFIRM_LEFT_RIGHT:
-        default:
-          return InputManager::BTN_CONFIRM;
-      }
+      return InputManager::BTN_CONFIRM;
     case Button::Left:
-      switch (frontLayout) {
-        case CrossPointSettings::LEFT_RIGHT_BACK_CONFIRM:
-        case CrossPointSettings::LEFT_BACK_CONFIRM_RIGHT:
-          return InputManager::BTN_BACK;
-        case CrossPointSettings::BACK_CONFIRM_LEFT_RIGHT:
-        default:
-          return InputManager::BTN_LEFT;
-      }
+      return InputManager::BTN_LEFT;
     case Button::Right:
-      switch (frontLayout) {
-        case CrossPointSettings::LEFT_RIGHT_BACK_CONFIRM:
-          return InputManager::BTN_CONFIRM;
-        case CrossPointSettings::BACK_CONFIRM_LEFT_RIGHT:
-        case CrossPointSettings::LEFT_BACK_CONFIRM_RIGHT:
-        default:
-          return InputManager::BTN_RIGHT;
-      }
+      return InputManager::BTN_RIGHT;
     case Button::Up:
       return InputManager::BTN_UP;
     case Button::Down:
@@ -73,15 +42,6 @@ unsigned long MappedInputManager::getHeldTime() const { return inputManager.getH
 
 MappedInputManager::Labels MappedInputManager::mapLabels(const char* back, const char* confirm, const char* previous,
                                                          const char* next) const {
-  const auto layout = static_cast<CrossPointSettings::FRONT_BUTTON_LAYOUT>(SETTINGS.frontButtonLayout);
-
-  switch (layout) {
-    case CrossPointSettings::LEFT_RIGHT_BACK_CONFIRM:
-      return {previous, next, back, confirm};
-    case CrossPointSettings::LEFT_BACK_CONFIRM_RIGHT:
-      return {previous, back, confirm, next};
-    case CrossPointSettings::BACK_CONFIRM_LEFT_RIGHT:
-    default:
-      return {back, confirm, previous, next};
-  }
+  // Always use default layout: Back, Confirm, Left, Right
+  return {back, confirm, previous, next};
 }
