@@ -23,11 +23,6 @@ class CrossPointSettings {
   // Swapped: Left, Right, Back, Confirm
   enum FRONT_BUTTON_LAYOUT { BACK_CONFIRM_LEFT_RIGHT = 0, LEFT_RIGHT_BACK_CONFIRM = 1, LEFT_BACK_CONFIRM_RIGHT = 2 };
 
-  // Side button layout options
-  // Default: Previous, Next
-  // Swapped: Next, Previous
-  enum SIDE_BUTTON_LAYOUT { PREV_NEXT = 0, NEXT_PREV = 1 };
-
   // Auto-sleep timeout options (in minutes)
   enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
 
@@ -40,7 +35,6 @@ class CrossPointSettings {
   uint8_t shortPwrBtn = 0;
   // Button layouts
   uint8_t frontButtonLayout = BACK_CONFIRM_LEFT_RIGHT;
-  uint8_t sideButtonLayout = PREV_NEXT;
 
   // Auto-sleep timeout setting (default 10 minutes)
   uint8_t sleepTimeout = SLEEP_10_MIN;
@@ -53,15 +47,12 @@ class CrossPointSettings {
   static CrossPointSettings& getInstance() { return instance; }
 
   uint16_t getPowerButtonDuration() const { return shortPwrBtn ? 10 : 400; }
-  int getReaderFontId() const;
 
   bool saveToFile() const;
   bool loadFromFile();
 
-  float getReaderLineCompression() const;
   unsigned long getSleepTimeoutMs() const;
   int getRefreshFrequency() const;
-  int getReaderScreenMargin() const;
 };
 
 // Helper macro to access settings

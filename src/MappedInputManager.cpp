@@ -4,7 +4,6 @@
 
 decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button button) const {
   const auto frontLayout = static_cast<CrossPointSettings::FRONT_BUTTON_LAYOUT>(SETTINGS.frontButtonLayout);
-  const auto sideLayout = static_cast<CrossPointSettings::SIDE_BUTTON_LAYOUT>(SETTINGS.sideButtonLayout);
 
   switch (button) {
     case Button::Back:
@@ -52,21 +51,9 @@ decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button butt
     case Button::Power:
       return InputManager::BTN_POWER;
     case Button::PageBack:
-      switch (sideLayout) {
-        case CrossPointSettings::NEXT_PREV:
-          return InputManager::BTN_DOWN;
-        case CrossPointSettings::PREV_NEXT:
-        default:
-          return InputManager::BTN_UP;
-      }
+      return InputManager::BTN_UP;
     case Button::PageForward:
-      switch (sideLayout) {
-        case CrossPointSettings::NEXT_PREV:
-          return InputManager::BTN_UP;
-        case CrossPointSettings::PREV_NEXT:
-        default:
-          return InputManager::BTN_DOWN;
-      }
+      return InputManager::BTN_DOWN;
   }
 
   return InputManager::BTN_BACK;

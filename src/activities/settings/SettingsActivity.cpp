@@ -17,8 +17,6 @@ const SettingInfo settingsList[settingsCount] = {
     SettingInfo::Toggle("Short Power Button Click", &CrossPointSettings::shortPwrBtn),
     SettingInfo::Enum("Front Button Layout", &CrossPointSettings::frontButtonLayout,
                       {"Bck, Cnfrm, Lft, Rght", "Lft, Rght, Bck, Cnfrm", "Lft, Bck, Cnfrm, Rght"}),
-    SettingInfo::Enum("Side Button Layout (reader)", &CrossPointSettings::sideButtonLayout,
-                      {"Prev, Next", "Next, Prev"}),
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
     SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,
