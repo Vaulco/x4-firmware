@@ -5,12 +5,11 @@
 
 #include "CrossPointSettings.h"
 #include "MappedInputManager.h"
-#include "OtaUpdateActivity.h"
 #include "fontIds.h"
 
 // Define the static settings list
 namespace {
-constexpr int settingsCount = 6;
+constexpr int settingsCount = 5;
 const SettingInfo settingsList[settingsCount] = {
     // Should match with SLEEP_SCREEN_MODE
     SettingInfo::Enum("Sleep Screen", &CrossPointSettings::sleepScreen, {"Dark", "Light", "Custom", "Cover", "None"}),
@@ -20,8 +19,7 @@ const SettingInfo settingsList[settingsCount] = {
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
     SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,
-                      {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"}),
-    SettingInfo::Action("Check for updates")};
+                      {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"})};
 }  // namespace
 
 void SettingsActivity::taskTrampoline(void* param) {
@@ -116,16 +114,6 @@ void SettingsActivity::toggleCurrentSetting() {
       SETTINGS.*(setting.valuePtr) = setting.valueRange.min;
     } else {
       SETTINGS.*(setting.valuePtr) = currentValue + setting.valueRange.step;
-    }
-  } else if (setting.type == SettingType::ACTION) {
-    if (std::string(setting.name) == "Check for updates") {
-      xSemaphoreTake(renderingMutex, portMAX_DELAY);
-      exitActivity();
-      enterNewActivity(new OtaUpdateActivity(renderer, mappedInput, [this] {
-        exitActivity();
-        updateRequired = true;
-      }));
-      xSemaphoreGive(renderingMutex);
     }
   } else {
     // Only toggle if it's a toggle type and has a value pointer
