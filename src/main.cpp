@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <EInkDisplay.h>
-#include <Epub.h>
 #include <GfxRenderer.h>
 #include <InputManager.h>
 #include <SDCardManager.h>

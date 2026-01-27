@@ -166,26 +166,11 @@
     .file-table tr:hover {
       background-color: #f8f9fa;
     }
-    .epub-file {
-      background-color: #e8f6e9 !important;
-    }
-    .epub-file:hover {
-      background-color: #d4edda !important;
-    }
     .folder-row {
       background-color: #fff9e6 !important;
     }
     .folder-row:hover {
       background-color: #fff3cd !important;
-    }
-    .epub-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      background-color: #27ae60;
-      color: white;
-      border-radius: 10px;
-      font-size: 0.75em;
-      margin-left: 8px;
     }
     .folder-badge {
       display: inline-block;
@@ -534,7 +519,6 @@
       .file-icon {
         margin-right: 4px;
       }
-      .epub-badge,
       .folder-badge {
         padding: 2px 5px;
         font-size: 0.65em;
@@ -742,11 +726,9 @@
       fileTableContent += '<tr><th>Name</th><th>Type</th><th>Size</th><th class="actions-col">Actions</th></tr>';
 
       const sortedFiles = files.sort((a, b) => {
-        // Directories first, then epub files, then other files, alphabetically within each group
+        // Directories first, then other files, alphabetically within each group
         if (a.isDirectory && !b.isDirectory) return -1;
         if (!a.isDirectory && b.isDirectory) return 1;
-        if (a.isEpub && !b.isEpub) return -1;
-        if (!a.isEpub && b.isEpub) return 1;
         return a.name.localeCompare(b.name);
       });
 
@@ -767,9 +749,8 @@
           if (!filePath.endsWith("/")) filePath += "/";
           filePath += file.name;
 
-          fileTableContent += `<tr class="${file.isEpub ? 'epub-file' : ''}">`;
-          fileTableContent += `<td><span class="file-icon">${file.isEpub ? '📗' : '📄'}</span>${escapeHtml(file.name)}`;
-          if (file.isEpub) fileTableContent += '<span class="epub-badge">EPUB</span>';
+          fileTableContent += '<tr>';
+          fileTableContent += `<td><span class="file-icon">📄</span>${escapeHtml(file.name)}`;
           fileTableContent += '</td>';
           fileTableContent += `<td>${file.name.split('.').pop().toUpperCase()}</td>`;
           fileTableContent += `<td>${formatFileSize(file.size)}</td>`;

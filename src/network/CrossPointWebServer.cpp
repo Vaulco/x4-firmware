@@ -216,14 +216,7 @@ void CrossPointWebServer::scanFiles(const char* path, const std::function<void(F
       FileInfo info;
       info.name = fileName;
       info.isDirectory = file.isDirectory();
-
-      if (info.isDirectory) {
-        info.size = 0;
-        info.isEpub = false;
-      } else {
-        info.size = file.size();
-        info.isEpub = isEpubFile(info.name);
-      }
+      info.size = file.isDirectory() ? 0 : file.size();
 
       callback(info);
     }
@@ -233,12 +226,6 @@ void CrossPointWebServer::scanFiles(const char* path, const std::function<void(F
     file = root.openNextFile();
   }
   root.close();
-}
-
-bool CrossPointWebServer::isEpubFile(const String& filename) const {
-  String lower = filename;
-  lower.toLowerCase();
-  return lower.endsWith(".epub");
 }
 
 void CrossPointWebServer::handleFileList() const { server->send(200, "text/html", FilesPageHtml); }
@@ -271,7 +258,6 @@ void CrossPointWebServer::handleFileListData() const {
     doc["name"] = info.name;
     doc["size"] = info.size;
     doc["isDirectory"] = info.isDirectory;
-    doc["isEpub"] = info.isEpub;
 
     const size_t written = serializeJson(doc, output, outputSize);
     if (written >= outputSize) {

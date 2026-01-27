@@ -1,6 +1,5 @@
 #include "HomeActivity.h"
 
-#include <Epub.h>
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
 
@@ -34,17 +33,8 @@ void HomeActivity::onEnter() {
 
     const std::string ext4 = lastBookTitle.length() >= 4 ? lastBookTitle.substr(lastBookTitle.length() - 4) : "";
     const std::string ext5 = lastBookTitle.length() >= 5 ? lastBookTitle.substr(lastBookTitle.length() - 5) : "";
-    // If epub, try to load the metadata for title/author
-    if (ext5 == ".epub") {
-      Epub epub(APP_STATE.openEpubPath, "/.crosspoint");
-      epub.load(false);
-      if (!epub.getTitle().empty()) {
-        lastBookTitle = std::string(epub.getTitle());
-      }
-      if (!epub.getAuthor().empty()) {
-        lastBookAuthor = std::string(epub.getAuthor());
-      }
-    } else if (ext5 == ".xtch") {
+    // For XTC files, remove extension
+    if (ext5 == ".xtch") {
       lastBookTitle.resize(lastBookTitle.length() - 5);
     } else if (ext4 == ".xtc") {
       lastBookTitle.resize(lastBookTitle.length() - 4);

@@ -4,9 +4,7 @@ Firmware for the **Xteink X4** e-paper display reader (unaffiliated with Xteink)
 Built using **PlatformIO** and targeting the **ESP32-C3** microcontroller.
 
 CrossPoint Reader is a purpose-built firmware designed to be a drop-in, fully open-source replacement for the official 
-Xteink firmware. It aims to match or improve upon the standard EPUB reading experience.
-
-![](./docs/images/cover.jpg)
+Xteink firmware. It aims to match or improve upon the standard reading experience.
 
 ## Motivation
 
@@ -17,28 +15,24 @@ potential.
 
 CrossPoint Reader aims to:
 * Provide a **fully open-source alternative** to the official firmware.
-* Offer a **document reader** capable of handling EPUB content on constrained hardware.
-* Support **customisable font, layout, and display** options.
+* Offer a **document reader** capable of handling XTC content on constrained hardware.
+* Support **customisable display** options.
 * Run purely on the **Xteink X4 hardware**.
 
 This project is **not affiliated with Xteink**; it's built as a community project.
 
 ## Features & Usage
 
-- [x] EPUB parsing and rendering (EPUB 2 and EPUB 3)
-- [ ] Image support within EPUB
+- [x] XTC parsing and rendering (1-bit and 2-bit grayscale)
 - [x] Saved reading position
 - [x] File explorer with file picker
-  - [x] Basic EPUB picker from root directory
+  - [x] Basic XTC picker from root directory
   - [x] Support nested folders
-  - [ ] EPUB picker with cover art
 - [x] Custom sleep screen
   - [x] Cover sleep screen
 - [x] Wifi book upload
 - [x] Wifi OTA updates
-- [x] Configurable font, layout, and display options
-  - [ ] User provided fonts
-  - [ ] Full UTF support
+- [x] Configurable display options
 - [x] Screen rotation
 
 See [the user guide](./USER_GUIDE.md) for instructions on operating CrossPoint.
@@ -102,22 +96,15 @@ on this constraint.
 
 ### Data caching
 
-The first time chapters of a book are loaded, they are cached to the SD card. Subsequent loads are served from the 
-cache. This cache directory exists at `.crosspoint` on the SD card. The structure is as follows:
-
+XTC files are cached to the SD card for reading progress tracking. This cache directory exists at `.crosspoint` on the 
+SD card. The structure is as follows:
 
 ```
 .crosspoint/
-├── epub_12471232/       # Each EPUB is cached to a subdirectory named `epub_<hash>`
-│   ├── progress.bin     # Stores reading progress (chapter, page, etc.)
-│   ├── cover.bmp        # Book cover image (once generated)
-│   ├── book.bin         # Book metadata (title, author, spine, table of contents, etc.)
-│   └── sections/        # All chapter data is stored in the sections subdirectory
-│       ├── 0.bin        # Chapter data (screen count, all text layout info, etc.)
-│       ├── 1.bin        #     files are named by their index in the spine
-│       └── ...
+├── xtc_12471232/        # Each XTC is cached to a subdirectory named `xtc_<hash>`
+│   └── progress.bin     # Stores reading progress (page number)
 │
-└── epub_189013891/
+└── xtc_189013891/
 ```
 
 Deleting the `.crosspoint` directory will clear the entire cache. 
