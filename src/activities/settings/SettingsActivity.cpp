@@ -10,25 +10,15 @@
 
 // Define the static settings list
 namespace {
-constexpr int settingsCount = 16;
+constexpr int settingsCount = 15;
 const SettingInfo settingsList[settingsCount] = {
     // Should match with SLEEP_SCREEN_MODE
     SettingInfo::Enum("Sleep Screen", &CrossPointSettings::sleepScreen, {"Dark", "Light", "Custom", "Cover", "None"}),
-    SettingInfo::Enum("Sleep Screen Cover Mode", &CrossPointSettings::sleepScreenCoverMode, {"Fit", "Crop"}),
-    SettingInfo::Enum("Status Bar", &CrossPointSettings::statusBar, {"None", "No Progress", "Full"}),
-    SettingInfo::Toggle("Extra Paragraph Spacing", &CrossPointSettings::extraParagraphSpacing),
     SettingInfo::Toggle("Short Power Button Click", &CrossPointSettings::shortPwrBtn),
     SettingInfo::Enum("Front Button Layout", &CrossPointSettings::frontButtonLayout,
                       {"Bck, Cnfrm, Lft, Rght", "Lft, Rght, Bck, Cnfrm", "Lft, Bck, Cnfrm, Rght"}),
     SettingInfo::Enum("Side Button Layout (reader)", &CrossPointSettings::sideButtonLayout,
                       {"Prev, Next", "Next, Prev"}),
-    SettingInfo::Enum("Reader Font Family", &CrossPointSettings::fontFamily,
-                      {"Bookerly", "Noto Sans", "Open Dyslexic"}),
-    SettingInfo::Enum("Reader Font Size", &CrossPointSettings::fontSize, {"Small", "Medium", "Large", "X Large"}),
-    SettingInfo::Enum("Reader Line Spacing", &CrossPointSettings::lineSpacing, {"Tight", "Normal", "Wide"}),
-    SettingInfo::Value("Reader Screen Margin", &CrossPointSettings::screenMargin, {5, 40, 5}),
-    SettingInfo::Enum("Reader Paragraph Alignment", &CrossPointSettings::paragraphAlignment,
-                      {"Justify", "Left", "Center", "Right"}),
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
     SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,

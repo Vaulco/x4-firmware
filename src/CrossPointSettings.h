@@ -17,10 +17,6 @@ class CrossPointSettings {
 
   // Should match with SettingsActivity text
   enum SLEEP_SCREEN_MODE { DARK = 0, LIGHT = 1, CUSTOM = 2, COVER = 3, BLANK = 4 };
-  enum SLEEP_SCREEN_COVER_MODE { FIT = 0, CROP = 1 };
-
-  // Status bar display type enum
-  enum STATUS_BAR_MODE { NONE = 0, NO_PROGRESS = 1, FULL = 2 };
 
   // Front button layout options
   // Default: Back, Confirm, Left, Right
@@ -32,13 +28,6 @@ class CrossPointSettings {
   // Swapped: Next, Previous
   enum SIDE_BUTTON_LAYOUT { PREV_NEXT = 0, NEXT_PREV = 1 };
 
-  // Font family options
-  enum FONT_FAMILY { BOOKERLY = 0, NOTOSANS = 1, OPENDYSLEXIC = 2 };
-  // Font size options
-  enum FONT_SIZE { SMALL = 0, MEDIUM = 1, LARGE = 2, EXTRA_LARGE = 3 };
-  enum LINE_COMPRESSION { TIGHT = 0, NORMAL = 1, WIDE = 2 };
-  enum PARAGRAPH_ALIGNMENT { JUSTIFIED = 0, LEFT_ALIGN = 1, CENTER_ALIGN = 2, RIGHT_ALIGN = 3 };
-
   // Auto-sleep timeout options (in minutes)
   enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
 
@@ -47,29 +36,16 @@ class CrossPointSettings {
 
   // Sleep screen settings
   uint8_t sleepScreen = DARK;
-  // Sleep screen cover mode settings
-  uint8_t sleepScreenCoverMode = FIT;
-  // Status bar settings
-  uint8_t statusBar = FULL;
-  // Text rendering settings
-  uint8_t extraParagraphSpacing = 1;
   // Duration of the power button press
   uint8_t shortPwrBtn = 0;
   // Button layouts
   uint8_t frontButtonLayout = BACK_CONFIRM_LEFT_RIGHT;
   uint8_t sideButtonLayout = PREV_NEXT;
-  // Reader font settings
-  uint8_t fontFamily = BOOKERLY;
-  uint8_t fontSize = MEDIUM;
-  uint8_t lineSpacing = NORMAL;
 
   // Auto-sleep timeout setting (default 10 minutes)
   uint8_t sleepTimeout = SLEEP_10_MIN;
   // E-ink refresh frequency (default 15 pages)
   uint8_t refreshFrequency = REFRESH_15;
-
-  // Reader screen margin settings
-  uint8_t screenMargin = 5;
 
   ~CrossPointSettings() = default;
 

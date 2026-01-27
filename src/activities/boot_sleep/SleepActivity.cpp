@@ -143,21 +143,13 @@ void SleepActivity::renderBitmapSleepScreen(const Bitmap& bitmap) const {
     Serial.printf("[%lu] [SLP] bitmap ratio: %f, screen ratio: %f\n", millis(), ratio, screenRatio);
     if (ratio > screenRatio) {
       // image wider than viewport ratio, scaled down image needs to be centered vertically
-      if (SETTINGS.sleepScreenCoverMode == CrossPointSettings::SLEEP_SCREEN_COVER_MODE::CROP) {
-        cropX = 1.0f - (screenRatio / ratio);
-        Serial.printf("[%lu] [SLP] Cropping bitmap x: %f\n", millis(), cropX);
-        ratio = (1.0f - cropX) * static_cast<float>(bitmap.getWidth()) / static_cast<float>(bitmap.getHeight());
-      }
+      // Always use FIT mode (no cropping)
       x = 0;
       y = std::round((static_cast<float>(pageHeight) - static_cast<float>(pageWidth) / ratio) / 2);
       Serial.printf("[%lu] [SLP] Centering with ratio %f to y=%d\n", millis(), ratio, y);
     } else {
       // image taller than viewport ratio, scaled down image needs to be centered horizontally
-      if (SETTINGS.sleepScreenCoverMode == CrossPointSettings::SLEEP_SCREEN_COVER_MODE::CROP) {
-        cropY = 1.0f - (ratio / screenRatio);
-        Serial.printf("[%lu] [SLP] Cropping bitmap y: %f\n", millis(), cropY);
-        ratio = static_cast<float>(bitmap.getWidth()) / ((1.0f - cropY) * static_cast<float>(bitmap.getHeight()));
-      }
+      // Always use FIT mode (no cropping)
       x = std::round((pageWidth - pageHeight * ratio) / 2);
       y = 0;
       Serial.printf("[%lu] [SLP] Centering with ratio %f to x=%d\n", millis(), ratio, x);
