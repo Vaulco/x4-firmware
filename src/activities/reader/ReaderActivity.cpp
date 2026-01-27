@@ -25,11 +25,7 @@ bool ReaderActivity::isXtcFile(const std::string& path) {
 }
 
 std::unique_ptr<Xtc> ReaderActivity::loadXtc(const std::string& path) {
-  if (!SdMan.exists(path.c_str())) {
-    Serial.printf("[%lu] [   ] File does not exist: %s\n", millis(), path.c_str());
-    return nullptr;
-  }
-
+  
   auto xtc = std::unique_ptr<Xtc>(new Xtc(path, "/.crosspoint"));
   if (xtc->load()) {
     return xtc;

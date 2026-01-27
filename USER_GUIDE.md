@@ -74,11 +74,6 @@ The Settings screen allows you to configure the device's behavior. There are a f
 - **Extra Paragraph Spacing**: If enabled, vertical space will be added between paragraphs in the book, if disabled,
   paragraphs will not have vertical space between them, but will have first word indentation.
 - **Short Power Button Click**: Whether to trigger the power button on a short press or a long press.
-- **Reading Orientation**: Set the screen orientation for reading, options are:
-  - "Portrait" (default) - Standard portrait orientation
-  - "Landscape CW" - Landscape, rotated clockwise
-  - "Inverted" - Portrait, upside down
-  - "Landscape CCW" - Landscape, rotated counter-clockwise
 - **Front Button Layout**: Configure the order of the bottom edge buttons, options are:
   - "Bck, Cnfrm, Lft, Rght" (default) - Back, Confirm, Left, Right
   - "Lft, Rght, Bck, Cnfrm" - Left, Right, Back, Confirm

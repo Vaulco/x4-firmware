@@ -5,34 +5,10 @@
 void GfxRenderer::insertFont(const int fontId, EpdFontFamily font) { fontMap.insert({fontId, font}); }
 
 void GfxRenderer::rotateCoordinates(const int x, const int y, int* rotatedX, int* rotatedY) const {
-  switch (orientation) {
-    case Portrait: {
-      // Logical portrait (480x800) → panel (800x480)
-      // Rotation: 90 degrees clockwise
-      *rotatedX = y;
-      *rotatedY = EInkDisplay::DISPLAY_HEIGHT - 1 - x;
-      break;
-    }
-    case LandscapeClockwise: {
-      // Logical landscape (800x480) rotated 180 degrees (swap top/bottom and left/right)
-      *rotatedX = EInkDisplay::DISPLAY_WIDTH - 1 - x;
-      *rotatedY = EInkDisplay::DISPLAY_HEIGHT - 1 - y;
-      break;
-    }
-    case PortraitInverted: {
-      // Logical portrait (480x800) → panel (800x480)
-      // Rotation: 90 degrees counter-clockwise
-      *rotatedX = EInkDisplay::DISPLAY_WIDTH - 1 - y;
-      *rotatedY = x;
-      break;
-    }
-    case LandscapeCounterClockwise: {
-      // Logical landscape (800x480) aligned with panel orientation
-      *rotatedX = x;
-      *rotatedY = y;
-      break;
-    }
-  }
+  // Portrait mode (480x800 logical) → panel (800x480 physical)
+  // Rotation: 90 degrees clockwise
+  *rotatedX = y;
+  *rotatedY = EInkDisplay::DISPLAY_HEIGHT - 1 - x;
 }
 
 void GfxRenderer::drawPixel(const int x, const int y, const bool state) const {
@@ -262,33 +238,13 @@ std::string GfxRenderer::truncatedText(const int fontId, const char* text, const
   return item;
 }
 
-// Note: Internal driver treats screen in command orientation; this library exposes a logical orientation
+// Portrait mode: 480px wide, 800px tall in logical coordinates
 int GfxRenderer::getScreenWidth() const {
-  switch (orientation) {
-    case Portrait:
-    case PortraitInverted:
-      // 480px wide in portrait logical coordinates
-      return EInkDisplay::DISPLAY_HEIGHT;
-    case LandscapeClockwise:
-    case LandscapeCounterClockwise:
-      // 800px wide in landscape logical coordinates
-      return EInkDisplay::DISPLAY_WIDTH;
-  }
-  return EInkDisplay::DISPLAY_HEIGHT;
+  return EInkDisplay::DISPLAY_HEIGHT;  // 480px
 }
 
 int GfxRenderer::getScreenHeight() const {
-  switch (orientation) {
-    case Portrait:
-    case PortraitInverted:
-      // 800px tall in portrait logical coordinates
-      return EInkDisplay::DISPLAY_WIDTH;
-    case LandscapeClockwise:
-    case LandscapeCounterClockwise:
-      // 480px tall in landscape logical coordinates
-      return EInkDisplay::DISPLAY_HEIGHT;
-  }
-  return EInkDisplay::DISPLAY_WIDTH;
+  return EInkDisplay::DISPLAY_WIDTH;  // 800px
 }
 
 int GfxRenderer::getSpaceWidth(const int fontId) const {
@@ -666,30 +622,9 @@ void GfxRenderer::renderChar(const EpdFontFamily& fontFamily, const uint32_t cp,
 }
 
 void GfxRenderer::getOrientedViewableTRBL(int* outTop, int* outRight, int* outBottom, int* outLeft) const {
-  switch (orientation) {
-    case Portrait:
-      *outTop = VIEWABLE_MARGIN_TOP;
-      *outRight = VIEWABLE_MARGIN_RIGHT;
-      *outBottom = VIEWABLE_MARGIN_BOTTOM;
-      *outLeft = VIEWABLE_MARGIN_LEFT;
-      break;
-    case LandscapeClockwise:
-      *outTop = VIEWABLE_MARGIN_LEFT;
-      *outRight = VIEWABLE_MARGIN_TOP;
-      *outBottom = VIEWABLE_MARGIN_RIGHT;
-      *outLeft = VIEWABLE_MARGIN_BOTTOM;
-      break;
-    case PortraitInverted:
-      *outTop = VIEWABLE_MARGIN_BOTTOM;
-      *outRight = VIEWABLE_MARGIN_LEFT;
-      *outBottom = VIEWABLE_MARGIN_TOP;
-      *outLeft = VIEWABLE_MARGIN_RIGHT;
-      break;
-    case LandscapeCounterClockwise:
-      *outTop = VIEWABLE_MARGIN_RIGHT;
-      *outRight = VIEWABLE_MARGIN_BOTTOM;
-      *outBottom = VIEWABLE_MARGIN_LEFT;
-      *outLeft = VIEWABLE_MARGIN_TOP;
-      break;
-  }
+  // Portrait mode margins
+  *outTop = VIEWABLE_MARGIN_TOP;
+  *outRight = VIEWABLE_MARGIN_RIGHT;
+  *outBottom = VIEWABLE_MARGIN_BOTTOM;
+  *outLeft = VIEWABLE_MARGIN_LEFT;
 }
