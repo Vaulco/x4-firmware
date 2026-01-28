@@ -175,26 +175,6 @@ void SettingsActivity::render() const {
 
     // Draw value based on setting type
     std::string valueText = "";
-    if (settingsList[i].type == SettingType::ACTION) {
-      // Check if Continue Reading has a book available
-      if (strcmp(settingsList[i].name, "Continue Reading") == 0) {
-        if (!APP_STATE.openEpubPath.empty() && SdMan.exists(APP_STATE.openEpubPath.c_str())) {
-          valueText = "→";  // Arrow to indicate action is available
-        } else {
-          valueText = "—";  // Dash to indicate no book available
-        }
-      } else {
-        valueText = "→";  // Arrow for other actions
-      }
-    } else if (settingsList[i].type == SettingType::TOGGLE && settingsList[i].valuePtr != nullptr) {
-      const bool value = SETTINGS.*(settingsList[i].valuePtr);
-      valueText = value ? "ON" : "OFF";
-    } else if (settingsList[i].type == SettingType::ENUM && settingsList[i].valuePtr != nullptr) {
-      const uint8_t value = SETTINGS.*(settingsList[i].valuePtr);
-      valueText = settingsList[i].enumValues[value];
-    } else if (settingsList[i].type == SettingType::VALUE && settingsList[i].valuePtr != nullptr) {
-      valueText = std::to_string(SETTINGS.*(settingsList[i].valuePtr));
-    }
     
     const auto width = renderer.getTextWidth(UI_10_FONT_ID, valueText.c_str());
     renderer.drawText(UI_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
