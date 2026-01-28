@@ -50,16 +50,19 @@ class SettingsActivity final : public ActivityWithSubactivity {
   bool updateRequired = false;
   int selectedSettingIndex = 0;  // Currently selected setting
   const std::function<void()> onGoHome;
+  const std::function<void()> onFileTransferOpen;
 
   static void taskTrampoline(void* param);
   [[noreturn]] void displayTaskLoop();
   void render() const;
-  void toggleCurrentSetting();
+  void handleSettingAction();
 
  public:
   explicit SettingsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                            const std::function<void()>& onGoHome)
-      : ActivityWithSubactivity("Settings", renderer, mappedInput), onGoHome(onGoHome) {}
+                            const std::function<void()>& onGoHome, const std::function<void()>& onFileTransferOpen)
+      : ActivityWithSubactivity("Settings", renderer, mappedInput),
+        onGoHome(onGoHome),
+        onFileTransferOpen(onFileTransferOpen) {}
   void onEnter() override;
   void onExit() override;
   void loop() override;

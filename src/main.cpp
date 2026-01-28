@@ -207,11 +207,14 @@ void enterDeepSleep() {
 }
 
 void onGoHome();
+
 void onGoToReader(const std::string& initialEpubPath) {
   exitActivity();
   enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoHome));
 }
+
 void onGoToReaderHome() { onGoToReader(std::string()); }
+
 void onContinueReading() { onGoToReader(APP_STATE.openEpubPath); }
 
 void onGoToFileTransfer() {
@@ -221,13 +224,13 @@ void onGoToFileTransfer() {
 
 void onGoToSettings() {
   exitActivity();
-  enterNewActivity(new SettingsActivity(renderer, mappedInputManager, onGoHome));
+  enterNewActivity(
+      new SettingsActivity(renderer, mappedInputManager, onGoHome, onGoToFileTransfer));
 }
 
 void onGoHome() {
   exitActivity();
-  enterNewActivity(new HomeActivity(renderer, mappedInputManager, onContinueReading, onGoToReaderHome, onGoToSettings,
-                                    onGoToFileTransfer));
+  enterNewActivity(new HomeActivity(renderer, mappedInputManager, onContinueReading, onGoToReaderHome, onGoToSettings));
 }
 
 void setupDisplayAndFonts() {

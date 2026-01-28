@@ -13,7 +13,7 @@ void HomeActivity::taskTrampoline(void* param) {
   self->displayTaskLoop();
 }
 
-int HomeActivity::getMenuItemCount() const { return hasContinueReading ? 4 : 3; }
+int HomeActivity::getMenuItemCount() const { return hasContinueReading ? 3 : 2; }
 
 void HomeActivity::onEnter() {
   Activity::onEnter();
@@ -77,23 +77,19 @@ void HomeActivity::loop() {
 
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     if (hasContinueReading) {
-      // Menu: Continue Reading, Browse, File transfer, Settings
+      // Menu: Continue Reading, Browse, Settings
       if (selectorIndex == 0) {
         onContinueReading();
       } else if (selectorIndex == 1) {
         onReaderOpen();
       } else if (selectorIndex == 2) {
-        onFileTransferOpen();
-      } else if (selectorIndex == 3) {
         onSettingsOpen();
       }
     } else {
-      // Menu: Browse, File transfer, Settings
+      // Menu: Browse, Settings
       if (selectorIndex == 0) {
         onReaderOpen();
       } else if (selectorIndex == 1) {
-        onFileTransferOpen();
-      } else if (selectorIndex == 2) {
         onSettingsOpen();
       }
     }
@@ -267,11 +263,11 @@ void HomeActivity::render() const {
     renderer.drawCenteredText(UI_10_FONT_ID, y + renderer.getLineHeight(UI_12_FONT_ID), "Start reading below");
   }
 
-  // --- Bottom menu tiles (indices 1-3) ---
+  // --- Bottom menu tiles (indices 1-2) ---
   const int menuTileWidth = pageWidth - 2 * margin;
   constexpr int menuTileHeight = 50;
   constexpr int menuSpacing = 10;
-  constexpr int totalMenuHeight = 3 * menuTileHeight + 2 * menuSpacing;
+  constexpr int totalMenuHeight = 2 * menuTileHeight + menuSpacing;
 
   int menuStartY = bookY + bookHeight + 20;
   // Ensure we don't collide with the bottom button legend
@@ -280,9 +276,9 @@ void HomeActivity::render() const {
     menuStartY = maxMenuStartY;
   }
 
-  for (int i = 0; i < 3; ++i) {
-    constexpr const char* items[3] = {"Browse files", "File transfer", "Settings"};
-    const int overallIndex = i + (getMenuItemCount() - 3);
+  for (int i = 0; i < 2; ++i) {
+    constexpr const char* items[2] = {"Browse files", "Settings"};
+    const int overallIndex = i + (getMenuItemCount() - 2);
     constexpr int tileX = margin;
     const int tileY = menuStartY + i * (menuTileHeight + menuSpacing);
     const bool selected = selectorIndex == overallIndex;

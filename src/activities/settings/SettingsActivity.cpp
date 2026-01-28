@@ -6,10 +6,11 @@
 #include "MappedInputManager.h"
 #include "fontIds.h"
 
-// Define the static settings list - removed sleep screen and short power button settings
+// Define the static settings list - now includes file transfer as an action
 namespace {
-constexpr int settingsCount = 2;
+constexpr int settingsCount = 3;
 const SettingInfo settingsList[settingsCount] = {
+    SettingInfo::Action("File Transfer"),
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
     SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,
@@ -60,7 +61,7 @@ void SettingsActivity::loop() {
 
   // Handle actions with early return
   if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
-    toggleCurrentSetting();
+    handleSettingAction();
     updateRequired = true;
     return;
   }
@@ -85,13 +86,23 @@ void SettingsActivity::loop() {
   }
 }
 
-void SettingsActivity::toggleCurrentSetting() {
+void SettingsActivity::handleSettingAction() {
   // Validate index
   if (selectedSettingIndex < 0 || selectedSettingIndex >= settingsCount) {
     return;
   }
 
   const auto& setting = settingsList[selectedSettingIndex];
+
+  if (setting.type == SettingType::ACTION) {
+    // Handle action settings - currently only File Transfer
+    if (strcmp(setting.name, "File Transfer") == 0) {
+      if (onFileTransferOpen) {
+        onFileTransferOpen();
+      }
+    }
+    return;
+  }
 
   if (setting.type == SettingType::TOGGLE && setting.valuePtr != nullptr) {
     // Toggle the boolean value using the member pointer
@@ -160,6 +171,7 @@ void SettingsActivity::render() const {
     } else if (settingsList[i].type == SettingType::VALUE && settingsList[i].valuePtr != nullptr) {
       valueText = std::to_string(SETTINGS.*(settingsList[i].valuePtr));
     }
+    
     const auto width = renderer.getTextWidth(UI_10_FONT_ID, valueText.c_str());
     renderer.drawText(UI_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
