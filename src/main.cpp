@@ -32,6 +32,9 @@
 
 #define SD_SPI_MISO 7
 
+// Power button press duration in milliseconds (long press)
+constexpr uint16_t POWER_BUTTON_DURATION_MS = 400;
+
 EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 MappedInputManager mappedInputManager(inputManager);
@@ -144,7 +147,7 @@ void enterNewActivity(Activity* activity) {
 
 // Verify long press on wake-up from deep sleep
 void verifyWakeupLongPress() {
-  // Give the user up to 1000ms to start holding the power button, and must hold for SETTINGS.getPowerButtonDuration()
+  // Give the user up to 1000ms to start holding the power button, and must hold for POWER_BUTTON_DURATION_MS
   const auto start = millis();
   bool abort = false;
   // Subtract the current time, because inputManager only starts counting the HeldTime from the first update()
@@ -152,7 +155,7 @@ void verifyWakeupLongPress() {
   // assuming the button was held until now from millis()==0 (i.e. device start time).
   const uint16_t calibration = start;
   const uint16_t calibratedPressDuration =
-      (calibration < SETTINGS.getPowerButtonDuration()) ? SETTINGS.getPowerButtonDuration() - calibration : 1;
+      (calibration < POWER_BUTTON_DURATION_MS) ? POWER_BUTTON_DURATION_MS - calibration : 1;
 
   inputManager.update();
   // Verify the user has actually pressed
@@ -331,7 +334,7 @@ void loop() {
   }
 
   if (inputManager.isPressed(InputManager::BTN_POWER) &&
-      inputManager.getHeldTime() > SETTINGS.getPowerButtonDuration()) {
+      inputManager.getHeldTime() > POWER_BUTTON_DURATION_MS) {
     enterDeepSleep();
     // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
     return;

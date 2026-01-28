@@ -1,19 +1,15 @@
 #include "SettingsActivity.h"
 
 #include <GfxRenderer.h>
-#include <HardwareSerial.h>
 
 #include "CrossPointSettings.h"
 #include "MappedInputManager.h"
 #include "fontIds.h"
 
-// Define the static settings list
+// Define the static settings list - removed sleep screen and short power button settings
 namespace {
-constexpr int settingsCount = 4;
+constexpr int settingsCount = 2;
 const SettingInfo settingsList[settingsCount] = {
-    // Should match with SLEEP_SCREEN_MODE
-    SettingInfo::Enum("Sleep Screen", &CrossPointSettings::sleepScreen, {"Dark", "Light", "Custom", "Cover", "None"}),
-    SettingInfo::Toggle("Short Power Button Click", &CrossPointSettings::shortPwrBtn),
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
     SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,
@@ -141,7 +137,7 @@ void SettingsActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header
-  renderer.drawCenteredText(UI_12_FONT_ID, 15, "Settings", true, EpdFontFamily::BOLD);
+  renderer.drawCenteredText(UI_12_FONT_ID, 15, "Options", true, EpdFontFamily::BOLD);
 
   // Draw selection
   renderer.fillRect(0, 60 + selectedSettingIndex * 30 - 2, pageWidth - 1, 30);
@@ -167,14 +163,6 @@ void SettingsActivity::render() const {
     const auto width = renderer.getTextWidth(UI_10_FONT_ID, valueText.c_str());
     renderer.drawText(UI_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
-
-  // Draw version text above button hints
-  renderer.drawText(SMALL_FONT_ID, pageWidth - 20 - renderer.getTextWidth(SMALL_FONT_ID, CROSSPOINT_VERSION),
-                    pageHeight - 60, CROSSPOINT_VERSION);
-
-  // Draw help text
-  const auto labels = mappedInput.mapLabels("« Save", "Toggle", "", "");
-  renderer.drawButtonHints(UI_10_FONT_ID, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
 
   // Always use standard refresh for settings screen
   renderer.displayBuffer();

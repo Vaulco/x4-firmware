@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <iosfwd>
 
 class CrossPointSettings {
  private:
@@ -15,19 +14,11 @@ class CrossPointSettings {
   CrossPointSettings(const CrossPointSettings&) = delete;
   CrossPointSettings& operator=(const CrossPointSettings&) = delete;
 
-  // Should match with SettingsActivity text
-  enum SLEEP_SCREEN_MODE { DARK = 0, LIGHT = 1, CUSTOM = 2, COVER = 3, BLANK = 4 };
-
   // Auto-sleep timeout options (in minutes)
   enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
 
   // E-ink refresh frequency (pages between full refreshes)
   enum REFRESH_FREQUENCY { REFRESH_1 = 0, REFRESH_5 = 1, REFRESH_10 = 2, REFRESH_15 = 3, REFRESH_30 = 4 };
-
-  // Sleep screen settings
-  uint8_t sleepScreen = DARK;
-  // Duration of the power button press
-  uint8_t shortPwrBtn = 0;
 
   // Auto-sleep timeout setting (default 10 minutes)
   uint8_t sleepTimeout = SLEEP_10_MIN;
@@ -38,8 +29,6 @@ class CrossPointSettings {
 
   // Get singleton instance
   static CrossPointSettings& getInstance() { return instance; }
-
-  uint16_t getPowerButtonDuration() const { return shortPwrBtn ? 10 : 400; }
 
   bool saveToFile() const;
   bool loadFromFile();

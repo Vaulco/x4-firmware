@@ -4,7 +4,6 @@
 #include <SDCardManager.h>
 #include <Xtc.h>
 
-#include "CrossPointSettings.h"
 #include "CrossPointState.h"
 #include "fontIds.h"
 
@@ -24,24 +23,48 @@ bool isXtcFile(const std::string& path) {
 
 void SleepActivity::onEnter() {
   Activity::onEnter();
-   const auto pageHeight = renderer.getScreenHeight();
+  const auto pageHeight = renderer.getScreenHeight();
   renderer.clearScreen();
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2, "SLEEPING");
   renderer.displayBuffer(EInkDisplay::FAST_REFRESH);
 
-  if (SETTINGS.sleepScreen == CrossPointSettings::SLEEP_SCREEN_MODE::BLANK) {
-    return renderBlankSleepScreen();
+  // Check for custom images first (sleep.bmp or /sleep directory)
+  if (hasCustomSleepImages()) {
+    renderCustomSleepScreen();
+  } else {
+    // Default to light sleep screen
+    renderDefaultSleepScreen();
+  }
+}
+
+bool SleepActivity::hasCustomSleepImages() const {
+  // Check for /sleep directory
+  auto dir = SdMan.open("/sleep");
+  if (dir && dir.isDirectory()) {
+    // Check if there are any valid BMP files in the directory
+    char name[128];
+    for (auto file = dir.openNextFile(); file; file = dir.openNextFile()) {
+      if (!file.isDirectory()) {
+        file.getName(name, sizeof(name));
+        auto filename = std::string(name);
+        if (filename[0] != '.' && filename.length() > 4 && 
+            filename.substr(filename.length() - 4) == ".bmp") {
+          file.close();
+          dir.close();
+          return true;
+        }
+      }
+      file.close();
+    }
+    dir.close();
   }
 
-  if (SETTINGS.sleepScreen == CrossPointSettings::SLEEP_SCREEN_MODE::CUSTOM) {
-    return renderCustomSleepScreen();
+  // Check for sleep.bmp in root
+  if (SdMan.exists("/sleep.bmp")) {
+    return true;
   }
 
-  if (SETTINGS.sleepScreen == CrossPointSettings::SLEEP_SCREEN_MODE::COVER) {
-    return renderCoverSleepScreen();
-  }
-
-  renderDefaultSleepScreen();
+  return false;
 }
 
 void SleepActivity::renderCustomSleepScreen() const {
@@ -97,8 +120,7 @@ void SleepActivity::renderCustomSleepScreen() const {
   }
   if (dir) dir.close();
 
-  // Look for sleep.bmp on the root of the sd card to determine if we should
-  // render a custom sleep screen instead of the default.
+  // Look for sleep.bmp on the root of the sd card
   FsFile file;
   if (SdMan.openFileForRead("SLP", "/sleep.bmp", file)) {
     Bitmap bitmap(file);
@@ -109,6 +131,7 @@ void SleepActivity::renderCustomSleepScreen() const {
     }
   }
 
+  // Fallback to default if custom images failed to load
   renderDefaultSleepScreen();
 }
 
@@ -119,11 +142,7 @@ void SleepActivity::renderDefaultSleepScreen() const {
   renderer.clearScreen();
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2, "SLEEPING");
 
-  // Make sleep screen dark unless light is selected in settings
-  if (SETTINGS.sleepScreen != CrossPointSettings::SLEEP_SCREEN_MODE::LIGHT) {
-    renderer.invertScreen();
-  }
-
+  // Always use light background (no inversion)
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
 }
 
@@ -181,48 +200,4 @@ void SleepActivity::renderBitmapSleepScreen(const Bitmap& bitmap) const {
     renderer.displayGrayBuffer();
     renderer.setRenderMode(GfxRenderer::BW);
   }
-}
-
-void SleepActivity::renderCoverSleepScreen() const {
-  if (APP_STATE.openEpubPath.empty()) {
-    return renderDefaultSleepScreen();
-  }
-
-  std::string coverBmpPath;
-
-  // Check if the current book is XTC
-  if (!isXtcFile(APP_STATE.openEpubPath)) {
-    Serial.println("[SLP] File is not XTC format");
-    return renderDefaultSleepScreen();
-  }
-
-  // Handle XTC file
-  Xtc lastXtc(APP_STATE.openEpubPath, "/.crosspoint");
-  if (!lastXtc.load()) {
-    Serial.println("[SLP] Failed to load last XTC");
-    return renderDefaultSleepScreen();
-  }
-
-  if (!lastXtc.generateCoverBmp()) {
-    Serial.println("[SLP] Failed to generate XTC cover bmp");
-    return renderDefaultSleepScreen();
-  }
-
-  coverBmpPath = lastXtc.getCoverBmpPath();
-
-  FsFile file;
-  if (SdMan.openFileForRead("SLP", coverBmpPath, file)) {
-    Bitmap bitmap(file);
-    if (bitmap.parseHeaders() == BmpReaderError::Ok) {
-      renderBitmapSleepScreen(bitmap);
-      return;
-    }
-  }
-
-  renderDefaultSleepScreen();
-}
-
-void SleepActivity::renderBlankSleepScreen() const {
-  renderer.clearScreen();
-  renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
 }

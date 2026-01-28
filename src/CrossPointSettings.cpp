@@ -1,6 +1,5 @@
 #include "CrossPointSettings.h"
 
-#include <HardwareSerial.h>
 #include <SDCardManager.h>
 #include <Serialization.h>
 
@@ -9,8 +8,8 @@ CrossPointSettings CrossPointSettings::instance;
 
 namespace {
 constexpr uint8_t SETTINGS_FILE_VERSION = 1;
-// Decrement this from 5 to 4 since we removed frontButtonLayout
-constexpr uint8_t SETTINGS_COUNT = 4;
+// Updated from 4 to 3 since we removed sleepScreen
+constexpr uint8_t SETTINGS_COUNT = 2;
 constexpr char SETTINGS_FILE[] = "/.crosspoint/settings.bin";
 }  // namespace
 
@@ -25,8 +24,6 @@ bool CrossPointSettings::saveToFile() const {
 
   serialization::writePod(outputFile, SETTINGS_FILE_VERSION);
   serialization::writePod(outputFile, SETTINGS_COUNT);
-  serialization::writePod(outputFile, sleepScreen);
-  serialization::writePod(outputFile, shortPwrBtn);
   serialization::writePod(outputFile, sleepTimeout);
   serialization::writePod(outputFile, refreshFrequency);
   outputFile.close();
@@ -56,10 +53,6 @@ bool CrossPointSettings::loadFromFile() {
   // load settings that exist (support older files with more or fewer fields)
   uint8_t settingsRead = 0;
   do {
-    serialization::readPod(inputFile, sleepScreen);
-    if (++settingsRead >= fileSettingsCount) break;
-    serialization::readPod(inputFile, shortPwrBtn);
-    if (++settingsRead >= fileSettingsCount) break;
     serialization::readPod(inputFile, sleepTimeout);
     if (++settingsRead >= fileSettingsCount) break;
     serialization::readPod(inputFile, refreshFrequency);
