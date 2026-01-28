@@ -12,6 +12,5 @@ void BootActivity::onEnter() {
 
   renderer.clearScreen();
   renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2, "BOOTING");
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, CROSSPOINT_VERSION);
   renderer.displayBuffer();
 }

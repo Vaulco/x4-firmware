@@ -1,41 +1,10 @@
-# CrossPoint Reader
+# E-Reader
 
 Firmware for the **Xteink X4** e-paper display reader (unaffiliated with Xteink).
 Built using **PlatformIO** and targeting the **ESP32-C3** microcontroller.
 
-CrossPoint Reader is a purpose-built firmware designed to be a drop-in, fully open-source replacement for the official 
+The E-Reader is a purpose-built firmware designed to be a drop-in, fully open-source replacement for the official 
 Xteink firmware. It aims to match or improve upon the standard reading experience.
-
-## Motivation
-
-E-paper devices are fantastic for reading, but most commercially available readers are closed systems with limited 
-customisation. The **Xteink X4** is an affordable, e-paper device, however the official firmware remains closed.
-CrossPoint exists partly as a fun side-project and partly to open up the ecosystem and truely unlock the device's
-potential.
-
-CrossPoint Reader aims to:
-* Provide a **fully open-source alternative** to the official firmware.
-* Offer a **document reader** capable of handling XTC content on constrained hardware.
-* Support **customisable display** options.
-* Run purely on the **Xteink X4 hardware**.
-
-This project is **not affiliated with Xteink**; it's built as a community project.
-
-## Features & Usage
-
-- [x] XTC parsing and rendering (1-bit and 2-bit grayscale)
-- [x] Saved reading position
-- [x] File explorer with file picker
-  - [x] Basic XTC picker from root directory
-  - [x] Support nested folders
-- [x] Custom sleep screen
-  - [x] Cover sleep screen
-- [x] Wifi book upload
-- [x] Wifi OTA updates
-- [x] Configurable display options
-- [x] Screen rotation
-
-See [the user guide](./USER_GUIDE.md) for instructions on operating CrossPoint.
 
 ## Installing
 
@@ -71,10 +40,10 @@ See [Development](#development) below.
 
 ### Checking out the code
 
-CrossPoint uses PlatformIO for building and flashing the firmware. To get started, clone the repository:
+The E-Reader uses PlatformIO for building and flashing the firmware. To get started, clone the repository:
 
 ```
-git clone --recursive https://github.com/daveallie/crosspoint-reader
+git clone --recursive https://github.com/vaulco/...
 
 # Or, if you've already cloned without --recursive:
 git submodule update --init --recursive
@@ -90,7 +59,7 @@ pio run --target upload
 
 ## Internals
 
-CrossPoint Reader is pretty aggressive about caching data down to the SD card to minimise RAM usage. The ESP32-C3 only
+The E-Reader is pretty aggressive about caching data down to the SD card to minimise RAM usage. The ESP32-C3 only
 has ~380KB of usable RAM, so we have to be careful. A lot of the decisions made in the design of the firmware were based
 on this constraint.
 

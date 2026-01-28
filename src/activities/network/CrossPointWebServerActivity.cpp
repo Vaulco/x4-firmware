@@ -365,13 +365,11 @@ void CrossPointWebServerActivity::renderServerRunning() const {
   // Use consistent line spacing
   constexpr int LINE_SPACING = 28;  // Space between lines
 
-  renderer.drawCenteredText(UI_12_FONT_ID, 15, "File Transfer", true, EpdFontFamily::BOLD);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Hotspot File Transfer", true, EpdFontFamily::REGULAR);
 
   if (isApMode) {
     // AP mode display - center the content block
     int startY = 55;
-
-    renderer.drawCenteredText(UI_10_FONT_ID, startY, "Hotspot Mode", true, EpdFontFamily::BOLD);
 
     std::string ssidInfo = "Network: " + connectedSSID;
     renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING, ssidInfo.c_str());

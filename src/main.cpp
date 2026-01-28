@@ -229,7 +229,7 @@ void setup() {
   verifyWakeupLongPress();
 
   // First serial output only here to avoid timing inconsistencies for power button press duration verification
-  Serial.printf("[%lu] [   ] Starting CrossPoint version " CROSSPOINT_VERSION "\n", millis());
+  Serial.printf("[%lu] [   ] Starting CrossPoint\n", millis());
 
   setupDisplayAndFonts();
 
