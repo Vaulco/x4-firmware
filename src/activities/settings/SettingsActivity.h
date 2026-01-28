@@ -50,6 +50,7 @@ class SettingsActivity final : public ActivityWithSubactivity {
   bool updateRequired = false;
   int selectedSettingIndex = 0;  // Currently selected setting
   const std::function<void()> onGoHome;
+  const std::function<void()> onContinueReading;
   const std::function<void()> onFileTransferOpen;
 
   static void taskTrampoline(void* param);
@@ -59,9 +60,12 @@ class SettingsActivity final : public ActivityWithSubactivity {
 
  public:
   explicit SettingsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                            const std::function<void()>& onGoHome, const std::function<void()>& onFileTransferOpen)
+                            const std::function<void()>& onGoHome, 
+                            const std::function<void()>& onContinueReading,
+                            const std::function<void()>& onFileTransferOpen)
       : ActivityWithSubactivity("Settings", renderer, mappedInput),
         onGoHome(onGoHome),
+        onContinueReading(onContinueReading),
         onFileTransferOpen(onFileTransferOpen) {}
   void onEnter() override;
   void onExit() override;

@@ -20,6 +20,7 @@
 namespace {
 constexpr unsigned long skipPageMs = 700;
 constexpr unsigned long goHomeMs = 1000;
+constexpr unsigned long INPUT_DEBOUNCE_MS = 300;  // Ignore button releases for first 300ms
 }  // namespace
 
 void XtcReaderActivity::taskTrampoline(void* param) {
@@ -44,6 +45,9 @@ void XtcReaderActivity::onEnter() {
   // Save current XTC as last opened book
   APP_STATE.openEpubPath = xtc->getPath();
   APP_STATE.saveToFile();
+
+  // Record entry time to debounce button releases
+  activityStartTime = millis();
 
   // Trigger first update
   updateRequired = true;
@@ -77,8 +81,11 @@ void XtcReaderActivity::loop() {
     return;
   }
 
-  // Enter chapter selection activity
-  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+  // Calculate time since activity started
+  const unsigned long timeSinceStart = millis() - activityStartTime;
+
+  // Enter chapter selection activity (only after debounce period)
+  if (timeSinceStart > INPUT_DEBOUNCE_MS && mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     if (xtc && xtc->hasChapters() && !xtc->getChapters().empty()) {
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
       exitActivity();

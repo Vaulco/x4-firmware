@@ -21,6 +21,7 @@ class XtcReaderActivity final : public ActivityWithSubactivity {
   uint32_t currentPage = 0;
   int pagesUntilFullRefresh = 0;
   bool updateRequired = false;
+  unsigned long activityStartTime = 0;  // Track when activity started for button debouncing
   const std::function<void()> onGoBack;
   const std::function<void()> onGoHome;
 

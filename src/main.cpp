@@ -225,12 +225,12 @@ void onGoToFileTransfer() {
 void onGoToSettings() {
   exitActivity();
   enterNewActivity(
-      new SettingsActivity(renderer, mappedInputManager, onGoHome, onGoToFileTransfer));
+      new SettingsActivity(renderer, mappedInputManager, onGoHome, onContinueReading, onGoToFileTransfer));
 }
 
 void onGoHome() {
   exitActivity();
-  enterNewActivity(new HomeActivity(renderer, mappedInputManager, onContinueReading, onGoToReaderHome, onGoToSettings));
+  enterNewActivity(new HomeActivity(renderer, mappedInputManager, onGoToReaderHome, onGoToSettings));
 }
 
 void setupDisplayAndFonts() {

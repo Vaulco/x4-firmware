@@ -1,15 +1,18 @@
 #include "SettingsActivity.h"
 
 #include <GfxRenderer.h>
+#include <SDCardManager.h>
 
 #include "CrossPointSettings.h"
+#include "CrossPointState.h"
 #include "MappedInputManager.h"
 #include "fontIds.h"
 
-// Define the static settings list - now includes file transfer as an action
+// Define the static settings list - Continue Reading is now the first item
 namespace {
-constexpr int settingsCount = 3;
+constexpr int settingsCount = 4;
 const SettingInfo settingsList[settingsCount] = {
+    SettingInfo::Action("Continue Reading"),
     SettingInfo::Action("File Transfer"),
     SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
@@ -95,8 +98,18 @@ void SettingsActivity::handleSettingAction() {
   const auto& setting = settingsList[selectedSettingIndex];
 
   if (setting.type == SettingType::ACTION) {
-    // Handle action settings - currently only File Transfer
-    if (strcmp(setting.name, "File Transfer") == 0) {
+    // Handle action settings
+    if (strcmp(setting.name, "Continue Reading") == 0) {
+      // Check if we have a book to continue reading
+      if (!APP_STATE.openEpubPath.empty() && SdMan.exists(APP_STATE.openEpubPath.c_str())) {
+        if (onContinueReading) {
+          onContinueReading();
+        }
+      } else {
+        // No book available - could show a message or do nothing
+        Serial.printf("[%lu] [SETTINGS] No book available to continue reading\n", millis());
+      }
+    } else if (strcmp(setting.name, "File Transfer") == 0) {
       if (onFileTransferOpen) {
         onFileTransferOpen();
       }
@@ -162,7 +175,18 @@ void SettingsActivity::render() const {
 
     // Draw value based on setting type
     std::string valueText = "";
-    if (settingsList[i].type == SettingType::TOGGLE && settingsList[i].valuePtr != nullptr) {
+    if (settingsList[i].type == SettingType::ACTION) {
+      // Check if Continue Reading has a book available
+      if (strcmp(settingsList[i].name, "Continue Reading") == 0) {
+        if (!APP_STATE.openEpubPath.empty() && SdMan.exists(APP_STATE.openEpubPath.c_str())) {
+          valueText = "→";  // Arrow to indicate action is available
+        } else {
+          valueText = "—";  // Dash to indicate no book available
+        }
+      } else {
+        valueText = "→";  // Arrow for other actions
+      }
+    } else if (settingsList[i].type == SettingType::TOGGLE && settingsList[i].valuePtr != nullptr) {
       const bool value = SETTINGS.*(settingsList[i].valuePtr);
       valueText = value ? "ON" : "OFF";
     } else if (settingsList[i].type == SettingType::ENUM && settingsList[i].valuePtr != nullptr) {
