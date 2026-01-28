@@ -697,7 +697,7 @@ static const uint8_t notosans_8_regularBitmaps[10949] = {
 
 static const EpdGlyph notosans_8_regularGlyphs[] = {
     { 0, 0, 0, 0, 0, 0, 0 }, //  
-    { 0, 0, 4, 0, 0, 0, 0 }, // 
+    { 0, 0, 4, 0, 0, 0, 0 }, // 
     { 0, 0, 4, 0, 0, 0, 0 }, //  
     { 3, 13, 4, 1, 12, 5, 0 }, // !
     { 5, 5, 7, 1, 12, 4, 5 }, // "

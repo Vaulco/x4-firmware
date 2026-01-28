@@ -329,13 +329,6 @@ void KeyboardEntryActivity::render() const {
     }
   }
 
-  // Draw help text
-  const auto labels = mappedInput.mapLabels("« Back", "Select", "Left", "Right");
-  renderer.drawButtonHints(UI_10_FONT_ID, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
-
-  // Draw side button hints for Up/Down navigation
-  renderer.drawSideButtonHints(UI_10_FONT_ID, "Up", "Down");
-
   renderer.displayBuffer();
 }
 

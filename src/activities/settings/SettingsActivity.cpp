@@ -125,25 +125,9 @@ void SettingsActivity::handleSettingAction() {
     return;
   }
 
-  if (setting.type == SettingType::TOGGLE && setting.valuePtr != nullptr) {
-    // Toggle the boolean value using the member pointer
-    const bool currentValue = SETTINGS.*(setting.valuePtr);
-    SETTINGS.*(setting.valuePtr) = !currentValue;
-  } else if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
+  if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
     const uint8_t currentValue = SETTINGS.*(setting.valuePtr);
     SETTINGS.*(setting.valuePtr) = (currentValue + 1) % static_cast<uint8_t>(setting.enumValues.size());
-  } else if (setting.type == SettingType::VALUE && setting.valuePtr != nullptr) {
-    // Decreasing would also be nice for large ranges I think but oh well can't have everything
-    const int8_t currentValue = SETTINGS.*(setting.valuePtr);
-    // Wrap to minValue if exceeding setting value boundary
-    if (currentValue + setting.valueRange.step > setting.valueRange.max) {
-      SETTINGS.*(setting.valuePtr) = setting.valueRange.min;
-    } else {
-      SETTINGS.*(setting.valuePtr) = currentValue + setting.valueRange.step;
-    }
-  } else {
-    // Only toggle if it's a toggle type and has a value pointer
-    return;
   }
 
   // Save settings when they change
@@ -169,7 +153,7 @@ void SettingsActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header
-  renderer.drawCenteredText(UI_12_FONT_ID, 15, "Options", true, EpdFontFamily::BOLD);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Options", true, EpdFontFamily::REGULAR);
 
   // Draw selection
   renderer.fillRect(0, 60 + selectedSettingIndex * 30 - 2, pageWidth - 1, 30);
@@ -179,17 +163,17 @@ void SettingsActivity::render() const {
     const int settingY = 60 + i * 30;  // 30 pixels between settings
 
     // Draw setting name
-    renderer.drawText(UI_10_FONT_ID, 20, settingY, settingsList[i].name, i != selectedSettingIndex);
+    renderer.drawText(CMU_10_FONT_ID, 20, settingY, settingsList[i].name, i != selectedSettingIndex);
 
     // Draw value based on setting type
     std::string valueText = "";
-        if (settingsList[i].type == SettingType::ENUM && settingsList[i].valuePtr != nullptr) {
+    if (settingsList[i].type == SettingType::ENUM && settingsList[i].valuePtr != nullptr) {
       const uint8_t value = SETTINGS.*(settingsList[i].valuePtr);
       valueText = settingsList[i].enumValues[value];
     }
     
-    const auto width = renderer.getTextWidth(UI_10_FONT_ID, valueText.c_str());
-    renderer.drawText(UI_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
+    const auto width = renderer.getTextWidth(CMU_10_FONT_ID, valueText.c_str());
+    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
 
   // Draw battery indicator centered at bottom

@@ -7,6 +7,9 @@ import math
 import argparse
 from collections import namedtuple
 
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 # Originally from https://github.com/vroland/epdiy
 
 parser = argparse.ArgumentParser(description="Generate a header file from a font to be used with epdiy.")
