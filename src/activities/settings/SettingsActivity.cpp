@@ -6,6 +6,7 @@
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
 #include "MappedInputManager.h"
+#include "ScreenComponents.h"
 #include "fontIds.h"
 
 // Define the static settings list - Continue Reading is now the first item
@@ -175,10 +176,19 @@ void SettingsActivity::render() const {
 
     // Draw value based on setting type
     std::string valueText = "";
+        if (settingsList[i].type == SettingType::ENUM && settingsList[i].valuePtr != nullptr) {
+      const uint8_t value = SETTINGS.*(settingsList[i].valuePtr);
+      valueText = settingsList[i].enumValues[value];
+    }
     
     const auto width = renderer.getTextWidth(UI_10_FONT_ID, valueText.c_str());
     renderer.drawText(UI_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
+
+  // Draw battery indicator centered at bottom
+  const int batteryWidth = 70;  // Approximate width for battery icon + percentage text
+  const int batteryX = (pageWidth - batteryWidth) / 2;
+  ScreenComponents::drawBattery(renderer, batteryX, pageHeight - 30);
 
   // Always use standard refresh for settings screen
   renderer.displayBuffer();

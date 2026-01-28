@@ -4,7 +4,6 @@
 #include <SDCardManager.h>
 
 #include "MappedInputManager.h"
-#include "ScreenComponents.h"
 #include "fontIds.h"
 
 void HomeActivity::taskTrampoline(void* param) {
@@ -120,8 +119,6 @@ void HomeActivity::render() const {
 
   const auto labels = mappedInput.mapLabels("", "Confirm", "Up", "Down");
   renderer.drawButtonHints(UI_10_FONT_ID, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
-
-  ScreenComponents::drawBattery(renderer, 20, pageHeight - 70);
 
   renderer.displayBuffer();
 }

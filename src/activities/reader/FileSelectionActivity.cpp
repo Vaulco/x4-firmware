@@ -4,6 +4,7 @@
 #include <SDCardManager.h>
 
 #include "MappedInputManager.h"
+#include "ScreenComponents.h"
 #include "fontIds.h"
 
 namespace {
@@ -173,24 +174,25 @@ void FileSelectionActivity::render() const {
   renderer.clearScreen();
 
   const auto pageWidth = renderer.getScreenWidth();
-  renderer.drawCenteredText(UI_12_FONT_ID, 15, "Books", true, EpdFontFamily::BOLD);
+  const auto pageHeight = renderer.getScreenHeight();
 
-  // Help text
-  const auto labels = mappedInput.mapLabels("« Home", "Open", "", "");
-  renderer.drawButtonHints(UI_10_FONT_ID, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
+  renderer.drawCenteredText(UI_12_FONT_ID, 15, "Books", true, EpdFontFamily::BOLD);
 
   if (files.empty()) {
     renderer.drawText(UI_10_FONT_ID, 20, 60, "No books found");
-    renderer.displayBuffer();
-    return;
+  } else {
+    const auto pageStartIndex = selectorIndex / PAGE_ITEMS * PAGE_ITEMS;
+    renderer.fillRect(0, 60 + (selectorIndex % PAGE_ITEMS) * 30 - 2, pageWidth - 1, 30);
+    for (int i = pageStartIndex; i < files.size() && i < pageStartIndex + PAGE_ITEMS; i++) {
+      auto item = renderer.truncatedText(UI_10_FONT_ID, files[i].c_str(), renderer.getScreenWidth() - 40);
+      renderer.drawText(UI_10_FONT_ID, 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
+    }
   }
 
-  const auto pageStartIndex = selectorIndex / PAGE_ITEMS * PAGE_ITEMS;
-  renderer.fillRect(0, 60 + (selectorIndex % PAGE_ITEMS) * 30 - 2, pageWidth - 1, 30);
-  for (int i = pageStartIndex; i < files.size() && i < pageStartIndex + PAGE_ITEMS; i++) {
-    auto item = renderer.truncatedText(UI_10_FONT_ID, files[i].c_str(), renderer.getScreenWidth() - 40);
-    renderer.drawText(UI_10_FONT_ID, 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
-  }
+  // Draw battery indicator centered at bottom
+  const int batteryWidth = 70;  // Approximate width for battery icon + percentage text
+  const int batteryX = (pageWidth - batteryWidth) / 2;
+  ScreenComponents::drawBattery(renderer, batteryX, pageHeight - 30);
 
   renderer.displayBuffer();
 }
