@@ -16,8 +16,9 @@ class FileSelectionActivity final : public Activity {
   std::vector<std::string> files;
   int selectorIndex = 0;
   bool updateRequired = false;
+  unsigned long activityStartTime = 0;  // For button debouncing
   const std::function<void(const std::string&)> onSelect;
-  const std::function<void()> onGoHome;
+  const std::function<void()> onGoToSettings;
 
   static void taskTrampoline(void* param);
   [[noreturn]] void displayTaskLoop();
@@ -27,11 +28,11 @@ class FileSelectionActivity final : public Activity {
  public:
   explicit FileSelectionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
                                  const std::function<void(const std::string&)>& onSelect,
-                                 const std::function<void()>& onGoHome, std::string initialPath = "/")
+                                 const std::function<void()>& onGoToSettings, std::string initialPath = "/")
       : Activity("FileSelection", renderer, mappedInput),
         basepath(initialPath.empty() ? "/" : std::move(initialPath)),
         onSelect(onSelect),
-        onGoHome(onGoHome) {}
+        onGoToSettings(onGoToSettings) {}
   void onEnter() override;
   void onExit() override;
   void loop() override;

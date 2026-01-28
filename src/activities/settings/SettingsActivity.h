@@ -49,7 +49,8 @@ class SettingsActivity final : public ActivityWithSubactivity {
   SemaphoreHandle_t renderingMutex = nullptr;
   bool updateRequired = false;
   int selectedSettingIndex = 0;  // Currently selected setting
-  const std::function<void()> onGoHome;
+  unsigned long activityStartTime = 0;  // For button debouncing
+  const std::function<void()> onGoBack;
   const std::function<void()> onContinueReading;
   const std::function<void()> onFileTransferOpen;
 
@@ -60,11 +61,11 @@ class SettingsActivity final : public ActivityWithSubactivity {
 
  public:
   explicit SettingsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                            const std::function<void()>& onGoHome, 
+                            const std::function<void()>& onGoBack, 
                             const std::function<void()>& onContinueReading,
                             const std::function<void()>& onFileTransferOpen)
       : ActivityWithSubactivity("Settings", renderer, mappedInput),
-        onGoHome(onGoHome),
+        onGoBack(onGoBack),
         onContinueReading(onContinueReading),
         onFileTransferOpen(onFileTransferOpen) {}
   void onEnter() override;

@@ -33,6 +33,9 @@ void SettingsActivity::onEnter() {
   // Reset selection to first item
   selectedSettingIndex = 0;
 
+  // Record entry time for button debouncing
+  activityStartTime = millis();
+
   // Trigger first update
   updateRequired = true;
 
@@ -63,6 +66,10 @@ void SettingsActivity::loop() {
     return;
   }
 
+  // Debounce button presses for first 300ms after entering activity
+  const unsigned long timeSinceStart = millis() - activityStartTime;
+  constexpr unsigned long INPUT_DEBOUNCE_MS = 300;
+
   // Handle actions with early return
   if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
     handleSettingAction();
@@ -70,9 +77,9 @@ void SettingsActivity::loop() {
     return;
   }
 
-  if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+  if (timeSinceStart > INPUT_DEBOUNCE_MS && mappedInput.wasPressed(MappedInputManager::Button::Back)) {
     SETTINGS.saveToFile();
-    onGoHome();
+    onGoBack();
     return;
   }
 

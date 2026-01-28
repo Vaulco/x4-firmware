@@ -12,8 +12,8 @@
 #include "MappedInputManager.h"
 #include "activities/boot_sleep/BootActivity.h"
 #include "activities/boot_sleep/SleepActivity.h"
-#include "activities/home/HomeActivity.h"
 #include "activities/network/CrossPointWebServerActivity.h"
+#include "activities/reader/FileSelectionActivity.h"
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
@@ -206,31 +206,34 @@ void enterDeepSleep() {
   esp_deep_sleep_start();
 }
 
-void onGoHome();
+// Forward declarations
+void onGoToFileSelection();
+void onGoToSettings();
 
 void onGoToReader(const std::string& initialEpubPath) {
   exitActivity();
-  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoHome));
+  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoToFileSelection));
 }
-
-void onGoToReaderHome() { onGoToReader(std::string()); }
 
 void onContinueReading() { onGoToReader(APP_STATE.openEpubPath); }
 
 void onGoToFileTransfer() {
   exitActivity();
-  enterNewActivity(new CrossPointWebServerActivity(renderer, mappedInputManager, onGoHome));
+  enterNewActivity(new CrossPointWebServerActivity(renderer, mappedInputManager, onGoToFileSelection));
 }
 
 void onGoToSettings() {
   exitActivity();
   enterNewActivity(
-      new SettingsActivity(renderer, mappedInputManager, onGoHome, onContinueReading, onGoToFileTransfer));
+      new SettingsActivity(renderer, mappedInputManager, onGoToFileSelection, onContinueReading, onGoToFileTransfer));
 }
 
-void onGoHome() {
+void onGoToFileSelection() {
   exitActivity();
-  enterNewActivity(new HomeActivity(renderer, mappedInputManager, onGoToReaderHome, onGoToSettings));
+  enterNewActivity(new FileSelectionActivity(
+      renderer, mappedInputManager,
+      [](const std::string& path) { onGoToReader(path); },
+      onGoToSettings));
 }
 
 void setupDisplayAndFonts() {
@@ -295,7 +298,7 @@ void setup() {
 
   APP_STATE.loadFromFile();
   if (APP_STATE.openEpubPath.empty()) {
-    onGoHome();
+    onGoToFileSelection();
   } else {
     // Clear app state to avoid getting into a boot loop if the epub doesn't load
     const auto path = APP_STATE.openEpubPath;
