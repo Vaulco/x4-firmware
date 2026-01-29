@@ -512,7 +512,7 @@ void WifiSelectionActivity::renderNetworkList() const {
     const auto height = renderer.getLineHeight(UI_10_FONT_ID);
     const auto top = (pageHeight - height) / 2;
     renderer.drawCenteredText(UI_10_FONT_ID, top, "No networks found");
-    renderer.drawCenteredText(SMALL_FONT_ID, top + height + 10, "Press OK to scan again");
+    renderer.drawCenteredText(CMU_8_FONT_ID, top + height + 10, "Press OK to scan again");
   } else {
     // Calculate how many networks we can display
     constexpr int startY = 60;
@@ -569,20 +569,20 @@ void WifiSelectionActivity::renderNetworkList() const {
 
     // Draw scroll indicators if needed
     if (scrollOffset > 0) {
-      renderer.drawText(SMALL_FONT_ID, pageWidth - 15, startY - 10, "^");
+      renderer.drawText(CMU_8_FONT_ID, pageWidth - 15, startY - 10, "^");
     }
     if (scrollOffset + maxVisibleNetworks < static_cast<int>(networks.size())) {
-      renderer.drawText(SMALL_FONT_ID, pageWidth - 15, startY + maxVisibleNetworks * lineHeight, "v");
+      renderer.drawText(CMU_8_FONT_ID, pageWidth - 15, startY + maxVisibleNetworks * lineHeight, "v");
     }
 
     // Show network count
     char countStr[32];
     snprintf(countStr, sizeof(countStr), "%zu networks found", networks.size());
-    renderer.drawText(SMALL_FONT_ID, 20, pageHeight - 90, countStr);
+    renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 90, countStr);
   }
 
   // Draw help text
-  renderer.drawText(SMALL_FONT_ID, 20, pageHeight - 75, "* = Encrypted | + = Saved");
+  renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 75, "* = Encrypted | + = Saved");
 }
 
 void WifiSelectionActivity::renderConnecting() const {
@@ -619,7 +619,7 @@ void WifiSelectionActivity::renderConnected() const {
   const std::string ipInfo = "IP Address: " + connectedIP;
   renderer.drawCenteredText(UI_10_FONT_ID, top + 40, ipInfo.c_str());
 
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, "Press any button to continue");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "Press any button to continue");
 }
 
 void WifiSelectionActivity::renderSavePrompt() const {
@@ -659,7 +659,7 @@ void WifiSelectionActivity::renderSavePrompt() const {
     renderer.drawText(UI_10_FONT_ID, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
   }
 
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
 }
 
 void WifiSelectionActivity::renderConnectionFailed() const {
@@ -669,7 +669,7 @@ void WifiSelectionActivity::renderConnectionFailed() const {
 
   renderer.drawCenteredText(UI_12_FONT_ID, top - 20, "Connection Failed", true, EpdFontFamily::BOLD);
   renderer.drawCenteredText(UI_10_FONT_ID, top + 20, connectionError.c_str());
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, "Press any button to continue");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "Press any button to continue");
 }
 
 void WifiSelectionActivity::renderForgetPrompt() const {
@@ -709,5 +709,5 @@ void WifiSelectionActivity::renderForgetPrompt() const {
     renderer.drawText(UI_10_FONT_ID, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
   }
 
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
 }

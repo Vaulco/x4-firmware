@@ -374,9 +374,9 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     std::string ssidInfo = "Network: " + connectedSSID;
     renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING, ssidInfo.c_str());
 
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 2, "Connect your device to this WiFi network");
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 2, "Connect your device to this WiFi network");
 
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 3,
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 3,
                               "or scan QR code with your phone to connect to Wifi.");
     // Show QR code for URL
     const std::string wifiConfig = std::string("WIFI:S:") + connectedSSID + ";;";
@@ -389,11 +389,11 @@ void CrossPointWebServerActivity::renderServerRunning() const {
 
     // Show IP address as fallback
     std::string ipUrl = "or http://" + connectedIP + "/";
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 4, ipUrl.c_str());
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 5, "Open this URL in your browser");
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 4, ipUrl.c_str());
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 5, "Open this URL in your browser");
 
     // Show QR code for URL
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 6, "or scan QR code with your phone:");
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 6, "or scan QR code with your phone:");
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 7, hostnameUrl);
   } else {
     // STA mode display (original behavior)
@@ -414,13 +414,13 @@ void CrossPointWebServerActivity::renderServerRunning() const {
 
     // Also show hostname URL
     std::string hostnameUrl = std::string("or http://") + AP_HOSTNAME + ".local/";
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str());
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str());
 
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 4, "Open this URL in your browser");
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 4, "Open this URL in your browser");
 
     // Show QR code for URL
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 6, webInfo);
-    renderer.drawCenteredText(SMALL_FONT_ID, startY + LINE_SPACING * 5, "or scan QR code with your phone:");
+    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 5, "or scan QR code with your phone:");
   }
 
 }

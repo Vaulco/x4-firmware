@@ -1,6 +1,5 @@
 #pragma once
 
-#include <builtinFonts/notosans_8_regular.h>
 #include "cmu_10_regular.h"
 #include "cmu_10_bold.h"
 #include "cmu_10_italic.h"
@@ -16,10 +15,10 @@
 #include "cmu_14_italic.h"
 #include "cmu_14_bolditalic.h"
 
-#include "cmu_16_regular.h"
-#include "cmu_16_bold.h"
-#include "cmu_16_italic.h"
-#include "cmu_16_bolditalic.h"
+#include "cmu_8_regular.h"
+#include "cmu_8_bold.h"
+#include "cmu_8_italic.h"
+#include "cmu_8_bolditalic.h"
 
 #include <builtinFonts/ubuntu_10_bold.h>
 #include <builtinFonts/ubuntu_10_regular.h>

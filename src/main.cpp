@@ -58,14 +58,11 @@ EpdFont cmu14ItalicFont(&cmu_14_italic);
 EpdFont cmu14BoldItalicFont(&cmu_14_bolditalic);
 EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont, &cmu14BoldItalicFont);
 
-EpdFont cmu16RegularFont(&cmu_16_regular);
-EpdFont cmu16BoldFont(&cmu_16_bold);
-EpdFont cmu16ItalicFont(&cmu_16_italic);
-EpdFont cmu16BoldItalicFont(&cmu_16_bolditalic);
-EpdFontFamily cmu16FontFamily(&cmu16RegularFont, &cmu16BoldFont, &cmu16ItalicFont, &cmu16BoldItalicFont);
-
-EpdFont smallFont(&notosans_8_regular);
-EpdFontFamily smallFontFamily(&smallFont);
+EpdFont cmu8RegularFont(&cmu_8_regular);
+EpdFont cmu8BoldFont(&cmu_8_bold);
+EpdFont cmu8ItalicFont(&cmu_8_italic);
+EpdFont cmu8BoldItalicFont(&cmu_8_bolditalic);
+EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont, &cmu8BoldItalicFont);
 
 EpdFont ui10RegularFont(&ubuntu_10_regular);
 EpdFont ui10BoldFont(&ubuntu_10_bold);
@@ -186,13 +183,12 @@ void onGoToFileSelection() {
 void setupDisplayAndFonts() {
   einkDisplay.begin();
   Serial.printf("[%lu] [   ] Display initialized\n", millis());
-renderer.insertFont(CMU_10_FONT_ID, cmu10FontFamily);
-renderer.insertFont(CMU_12_FONT_ID, cmu12FontFamily);
-renderer.insertFont(CMU_14_FONT_ID, cmu14FontFamily);
-renderer.insertFont(CMU_16_FONT_ID, cmu16FontFamily);
+  renderer.insertFont(CMU_10_FONT_ID, cmu10FontFamily);
+  renderer.insertFont(CMU_12_FONT_ID, cmu12FontFamily);
+  renderer.insertFont(CMU_14_FONT_ID, cmu14FontFamily);
+  renderer.insertFont(CMU_8_FONT_ID, cmu8FontFamily);
   renderer.insertFont(UI_10_FONT_ID, ui10FontFamily);
   renderer.insertFont(UI_12_FONT_ID, ui12FontFamily);
-  renderer.insertFont(SMALL_FONT_ID, smallFontFamily);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 

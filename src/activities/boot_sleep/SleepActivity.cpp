@@ -25,7 +25,7 @@ void SleepActivity::onEnter() {
   Activity::onEnter();
   const auto pageHeight = renderer.getScreenHeight();
   renderer.clearScreen();
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2, "SLEEPING");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight / 2, "SLEEPING");
   renderer.displayBuffer(EInkDisplay::FAST_REFRESH);
 
   // Check for custom images first (sleep.bmp or /sleep directory)
@@ -140,7 +140,7 @@ void SleepActivity::renderDefaultSleepScreen() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   renderer.clearScreen();
-  renderer.drawCenteredText(SMALL_FONT_ID, pageHeight / 2, "SLEEPING");
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight / 2, "SLEEPING");
 
   // Always use light background (no inversion)
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);

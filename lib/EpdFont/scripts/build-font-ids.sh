@@ -35,12 +35,12 @@ ruby -rdigest -e 'puts [
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"
 
-echo "#define CMU_16_FONT_ID ($(
+echo "#define CMU_8_FONT_ID ($(
 ruby -rdigest -e 'puts [
-  "./cmu_16_regular.h",
-  "./cmu_16_bold.h",
-  "./cmu_16_bolditalic.h",
-  "./cmu_16_italic.h",
+  "./cmu_8_regular.h",
+  "./cmu_8_bold.h",
+  "./cmu_8_bolditalic.h",
+  "./cmu_8_italic.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"
 
@@ -55,11 +55,5 @@ echo "#define UI_12_FONT_ID ($(
 ruby -rdigest -e 'puts [
   "./ubuntu_12_regular.h",
   "./ubuntu_12_bold.h",
-].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
-))"
-
-echo "#define SMALL_FONT_ID ($(
-ruby -rdigest -e 'puts [
-  "./notosans_8_regular.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"

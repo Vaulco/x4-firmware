@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 READER_FONT_STYLES=("Regular" "Italic" "Bold" "BoldItalic")
-CMU_FONT_SIZES=(10 12 14 16)
+CMU_FONT_SIZES=(8 10 12 14)
 
 for size in ${CMU_FONT_SIZES[@]}; do
   for style in ${READER_FONT_STYLES[@]}; do
@@ -29,5 +29,3 @@ for size in ${UI_FONT_SIZES[@]}; do
     echo "Generated $output_path"
   done
 done
-
-python fontconvert.py notosans_8_regular 8 ../builtinFonts/source/NotoSans/NotoSans-Regular.ttf > ../builtinFonts/notosans_8_regular.h

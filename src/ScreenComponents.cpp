@@ -11,7 +11,7 @@ void ScreenComponents::drawBattery(const GfxRenderer& renderer, const int left, 
   // Left aligned battery icon and percentage
   const uint16_t percentage = battery.readPercentage();
   const auto percentageText = std::to_string(percentage) + "%";
-  renderer.drawText(SMALL_FONT_ID, left + 20, top, percentageText.c_str());
+  renderer.drawText(CMU_8_FONT_ID, left + 20, top, percentageText.c_str());
 
   // 1 column on left, 2 columns on right, 5 columns of battery body
   constexpr int batteryWidth = 15;
