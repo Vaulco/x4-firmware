@@ -26,7 +26,7 @@ bool ReaderActivity::isXtcFile(const std::string& path) {
 
 std::unique_ptr<Xtc> ReaderActivity::loadXtc(const std::string& path) {
   
-  auto xtc = std::unique_ptr<Xtc>(new Xtc(path, "/.crosspoint"));
+  auto xtc = std::unique_ptr<Xtc>(new Xtc(path, "/.ereader"));
   if (xtc->load()) {
     return xtc;
   }

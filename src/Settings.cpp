@@ -1,21 +1,21 @@
-#include "CrossPointSettings.h"
+#include "Settings.h"
 
 #include <SDCardManager.h>
 #include <Serialization.h>
 
 // Initialize the static instance
-CrossPointSettings CrossPointSettings::instance;
+Settings Settings::instance;
 
 namespace {
 constexpr uint8_t SETTINGS_FILE_VERSION = 1;
 // Updated from 4 to 3 since we removed sleepScreen
 constexpr uint8_t SETTINGS_COUNT = 2;
-constexpr char SETTINGS_FILE[] = "/.crosspoint/settings.bin";
+constexpr char SETTINGS_FILE[] = "/.ereader/settings.bin";
 }  // namespace
 
-bool CrossPointSettings::saveToFile() const {
+bool Settings::saveToFile() const {
   // Make sure the directory exists
-  SdMan.mkdir("/.crosspoint");
+  SdMan.mkdir("/.ereader");
 
   FsFile outputFile;
   if (!SdMan.openFileForWrite("CPS", SETTINGS_FILE, outputFile)) {
@@ -32,7 +32,7 @@ bool CrossPointSettings::saveToFile() const {
   return true;
 }
 
-bool CrossPointSettings::loadFromFile() {
+bool Settings::loadFromFile() {
   FsFile inputFile;
   if (!SdMan.openFileForRead("CPS", SETTINGS_FILE, inputFile)) {
     return false;
@@ -64,7 +64,7 @@ bool CrossPointSettings::loadFromFile() {
   return true;
 }
 
-unsigned long CrossPointSettings::getSleepTimeoutMs() const {
+unsigned long Settings::getSleepTimeoutMs() const {
   switch (sleepTimeout) {
     case SLEEP_1_MIN:
       return 1UL * 60 * 1000;
@@ -80,7 +80,7 @@ unsigned long CrossPointSettings::getSleepTimeoutMs() const {
   }
 }
 
-int CrossPointSettings::getRefreshFrequency() const {
+int Settings::getRefreshFrequency() const {
   switch (refreshFrequency) {
     case REFRESH_1:
       return 1;

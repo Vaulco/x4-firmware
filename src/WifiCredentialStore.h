@@ -9,7 +9,7 @@ struct WifiCredential {
 
 /**
  * Singleton class for storing WiFi credentials on the SD card.
- * Credentials are stored in /sd/.crosspoint/wifi.bin with basic
+ * Credentials are stored in /sd/.ereader/wifi.bin with basic
  * XOR obfuscation to prevent casual reading (not cryptographically secure).
  */
 class WifiCredentialStore {

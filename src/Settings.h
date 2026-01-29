@@ -1,18 +1,18 @@
 #pragma once
 #include <cstdint>
 
-class CrossPointSettings {
+class Settings {
  private:
   // Private constructor for singleton
-  CrossPointSettings() = default;
+  Settings() = default;
 
   // Static instance
-  static CrossPointSettings instance;
+  static Settings instance;
 
  public:
   // Delete copy constructor and assignment
-  CrossPointSettings(const CrossPointSettings&) = delete;
-  CrossPointSettings& operator=(const CrossPointSettings&) = delete;
+  Settings(const Settings&) = delete;
+  Settings& operator=(const Settings&) = delete;
 
   // Auto-sleep timeout options (in minutes)
   enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
@@ -25,10 +25,10 @@ class CrossPointSettings {
   // E-ink refresh frequency (default 15 pages)
   uint8_t refreshFrequency = REFRESH_15;
 
-  ~CrossPointSettings() = default;
+  ~Settings() = default;
 
   // Get singleton instance
-  static CrossPointSettings& getInstance() { return instance; }
+  static Settings& getInstance() { return instance; }
 
   bool saveToFile() const;
   bool loadFromFile();
@@ -38,4 +38,4 @@ class CrossPointSettings {
 };
 
 // Helper macro to access settings
-#define SETTINGS CrossPointSettings::getInstance()
+#define SETTINGS Settings::getInstance()

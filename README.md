@@ -35,18 +35,18 @@ on this constraint.
 
 ### Data caching
 
-XTC files are cached to the SD card for reading progress tracking. This cache directory exists at `.crosspoint` on the 
+XTC files are cached to the SD card for reading progress tracking. This cache directory exists at `.ereader` on the 
 SD card. The structure is as follows:
 
 ```
-.crosspoint/
+.ereader/
 ├── xtc_12471232/        # Each XTC is cached to a subdirectory named `xtc_<hash>`
 │   └── progress.bin     # Stores reading progress (page number)
 │
 └── xtc_189013891/
 ```
 
-Deleting the `.crosspoint` directory will clear the entire cache. 
+Deleting the `.ereader` directory will clear the entire cache. 
 
 Due the way it's currently implemented, the cache is not automatically cleared when a book is deleted and moving a book
 file will use a new cache directory, resetting the reading progress.

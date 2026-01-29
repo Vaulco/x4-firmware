@@ -12,7 +12,7 @@ namespace {
 constexpr uint8_t WIFI_FILE_VERSION = 1;
 
 // WiFi credentials file path
-constexpr char WIFI_FILE[] = "/.crosspoint/wifi.bin";
+constexpr char WIFI_FILE[] = "/.ereader/wifi.bin";
 
 // Obfuscation key - "CrossPoint" in ASCII
 // This is NOT cryptographic security, just prevents casual file reading
@@ -29,7 +29,7 @@ void WifiCredentialStore::obfuscate(std::string& data) const {
 
 bool WifiCredentialStore::saveToFile() const {
   // Make sure the directory exists
-  SdMan.mkdir("/.crosspoint");
+  SdMan.mkdir("/.ereader");
 
   FsFile file;
   if (!SdMan.openFileForWrite("WCS", WIFI_FILE, file)) {

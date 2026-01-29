@@ -9,7 +9,7 @@
 
 #include "activities/ActivityWithSubactivity.h"
 
-class CrossPointSettings;
+class Settings;
 
 enum class SettingType { ENUM, ACTION };
 
@@ -17,11 +17,11 @@ enum class SettingType { ENUM, ACTION };
 struct SettingInfo {
   const char* name;                        // Display name of the setting
   SettingType type;                        // Type of setting
-  uint8_t CrossPointSettings::* valuePtr;  // Pointer to member in CrossPointSettings (for ENUM)
+  uint8_t Settings::* valuePtr;  // Pointer to member in Settings (for ENUM)
   std::vector<std::string> enumValues;
 
   // Static constructors
-  static SettingInfo Enum(const char* name, uint8_t CrossPointSettings::* ptr, std::vector<std::string> values) {
+  static SettingInfo Enum(const char* name, uint8_t Settings::* ptr, std::vector<std::string> values) {
     return {name, SettingType::ENUM, ptr, std::move(values)};
   }
 

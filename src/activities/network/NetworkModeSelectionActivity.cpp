@@ -3,7 +3,7 @@
 #include <GfxRenderer.h>
 
 #include "MappedInputManager.h"
-#include "ScreenComponents.h"
+#include "Battery.h"
 #include "fontIds.h"
 
 namespace {
@@ -110,7 +110,7 @@ void NetworkModeSelectionActivity::render() const {
   // Draw battery indicator centered at bottom (same as Settings)
   const int batteryWidth = 70;  // Approximate width for battery icon + percentage text
   const int batteryX = (pageWidth - batteryWidth) / 2;
-  ScreenComponents::drawBattery(renderer, batteryX, pageHeight - 30);
+  battery.draw(renderer, batteryX, pageHeight - 30);
 
   renderer.displayBuffer();
 }

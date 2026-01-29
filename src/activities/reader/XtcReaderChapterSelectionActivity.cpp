@@ -130,7 +130,7 @@ void XtcReaderChapterSelectionActivity::renderScreen() {
 
   const auto pageWidth = renderer.getScreenWidth();
   const int pageItems = getPageItems();
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Select Chapter", true, EpdFontFamily::BOLD);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Select Chapter", true, EpdFontFamily::REGULAR);
 
   const auto& chapters = xtc->getChapters();
   if (chapters.empty()) {

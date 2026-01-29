@@ -7,8 +7,8 @@
 #include <builtinFonts/all.h>
 
 #include "Battery.h"
-#include "CrossPointSettings.h"
-#include "CrossPointState.h"
+#include "Settings.h"
+#include "State.h"
 #include "MappedInputManager.h"
 #include "activities/boot_sleep/SleepActivity.h"
 #include "activities/network/CrossPointWebServerActivity.h"

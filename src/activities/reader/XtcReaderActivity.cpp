@@ -11,8 +11,8 @@
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
 
-#include "CrossPointSettings.h"
-#include "CrossPointState.h"
+#include "Settings.h"
+#include "State.h"
 #include "MappedInputManager.h"
 #include "XtcReaderChapterSelectionActivity.h"
 #include "fontIds.h"

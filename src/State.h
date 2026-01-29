@@ -2,16 +2,16 @@
 #include <iosfwd>
 #include <string>
 
-class CrossPointState {
+class State {
   // Static instance
-  static CrossPointState instance;
+  static State instance;
 
  public:
   std::string openEpubPath;
-  ~CrossPointState() = default;
+  ~State() = default;
 
   // Get singleton instance
-  static CrossPointState& getInstance() { return instance; }
+  static State& getInstance() { return instance; }
 
   bool saveToFile() const;
 
@@ -19,4 +19,4 @@ class CrossPointState {
 };
 
 // Helper macro to access settings
-#define APP_STATE CrossPointState::getInstance()
+#define APP_STATE State::getInstance()

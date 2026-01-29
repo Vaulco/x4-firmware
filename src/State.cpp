@@ -1,4 +1,4 @@
-#include "CrossPointState.h"
+#include "State.h"
 
 #include <HardwareSerial.h>
 #include <SDCardManager.h>
@@ -6,12 +6,12 @@
 
 namespace {
 constexpr uint8_t STATE_FILE_VERSION = 1;
-constexpr char STATE_FILE[] = "/.crosspoint/state.bin";
+constexpr char STATE_FILE[] = "/.ereader/state.bin";
 }  // namespace
 
-CrossPointState CrossPointState::instance;
+State State::instance;
 
-bool CrossPointState::saveToFile() const {
+bool State::saveToFile() const {
   FsFile outputFile;
   if (!SdMan.openFileForWrite("CPS", STATE_FILE, outputFile)) {
     return false;
@@ -23,7 +23,7 @@ bool CrossPointState::saveToFile() const {
   return true;
 }
 
-bool CrossPointState::loadFromFile() {
+bool State::loadFromFile() {
   FsFile inputFile;
   if (!SdMan.openFileForRead("CPS", STATE_FILE, inputFile)) {
     return false;

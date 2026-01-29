@@ -1,15 +1,14 @@
-#include "ScreenComponents.h"
+#include "Battery.h"
 
 #include <GfxRenderer.h>
 
 #include <string>
 
-#include "Battery.h"
 #include "fontIds.h"
 
-void ScreenComponents::drawBattery(const GfxRenderer& renderer, const int left, const int top) {
+void Battery::draw(const GfxRenderer& renderer, const int left, const int top) const {
   // Left aligned battery icon and percentage
-  const uint16_t percentage = battery.readPercentage();
+  const uint16_t percentage = monitor.readPercentage();
   const auto percentageText = std::to_string(percentage) + "%";
   renderer.drawText(CMU_8_FONT_ID, left + 20, top, percentageText.c_str());
 
@@ -39,3 +38,6 @@ void ScreenComponents::drawBattery(const GfxRenderer& renderer, const int left, 
 
   renderer.fillRect(x + 2, y + 2, filledWidth, batteryHeight - 4);
 }
+
+// Define global instance
+Battery battery(BAT_GPIO0);

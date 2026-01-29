@@ -4,7 +4,7 @@
 #include <SDCardManager.h>
 #include <Xtc.h>
 
-#include "CrossPointState.h"
+#include "State.h"
 #include "fontIds.h"
 
 namespace {

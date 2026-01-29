@@ -1,6 +1,6 @@
 #include "MappedInputManager.h"
 
-#include "CrossPointSettings.h"
+#include "Settings.h"
 
 decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button button) const {
   // Always use default layout: Back, Confirm, Left, Right

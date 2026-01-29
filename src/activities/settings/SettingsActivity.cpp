@@ -3,10 +3,10 @@
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
 
-#include "CrossPointSettings.h"
-#include "CrossPointState.h"
+#include "Settings.h"
+#include "State.h"
 #include "MappedInputManager.h"
-#include "ScreenComponents.h"
+#include "Battery.h"
 #include "fontIds.h"
 
 // Define the static settings list - Continue Reading is now the first item
@@ -15,9 +15,9 @@ constexpr int settingsCount = 4;
 const SettingInfo settingsList[settingsCount] = {
     SettingInfo::Action("Continue Reading"),
     SettingInfo::Action("File Transfer"),
-    SettingInfo::Enum("Time to Sleep", &CrossPointSettings::sleepTimeout,
+    SettingInfo::Enum("Time to Sleep", &Settings::sleepTimeout,
                       {"1 min", "5 min", "10 min", "15 min", "30 min"}),
-    SettingInfo::Enum("Refresh Frequency", &CrossPointSettings::refreshFrequency,
+    SettingInfo::Enum("Refresh Frequency", &Settings::refreshFrequency,
                       {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"})};
 }  // namespace
 
@@ -179,7 +179,7 @@ void SettingsActivity::render() const {
   // Draw battery indicator centered at bottom
   const int batteryWidth = 70;  // Approximate width for battery icon + percentage text
   const int batteryX = (pageWidth - batteryWidth) / 2;
-  ScreenComponents::drawBattery(renderer, batteryX, pageHeight - 30);
+  battery.draw(renderer, batteryX, pageHeight - 30);
 
   // Always use standard refresh for settings screen
   renderer.displayBuffer();
