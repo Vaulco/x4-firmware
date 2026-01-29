@@ -50,13 +50,15 @@ struct XtcHeader {
 };
 #pragma pack(pop)
 
-// Page table entry (16 bytes per page)
+// Page table entry (18 bytes per page) - UPDATED from 16 bytes
 #pragma pack(push, 1)
 struct PageTableEntry {
   uint64_t dataOffset;  // 0x00: Absolute offset to page data
   uint32_t dataSize;    // 0x08: Page data size in bytes
   uint16_t width;       // 0x0C: Page width (480)
   uint16_t height;      // 0x0E: Page height (800)
+  uint8_t headerLevel;  // 0x10: Header level (0 = no header, 1-6 = H1-H6)
+  uint8_t reserved;     // 0x11: Reserved for future use
 };
 #pragma pack(pop)
 
@@ -91,7 +93,7 @@ struct PageInfo {
   uint16_t width;    // Page width
   uint16_t height;   // Page height
   uint8_t bitDepth;  // 1 = XTG (1-bit), 2 = XTH (2-bit grayscale)
-  uint8_t padding;   // Alignment padding
+  uint8_t headerLevel;  // 0 = no header, 1-6 = H1-H6
 };  // 16 bytes total
 
 struct ChapterInfo {

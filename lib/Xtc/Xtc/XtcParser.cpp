@@ -170,6 +170,7 @@ XtcError XtcParser::readPageTable() {
     m_pageTable[i].width = entry.width;
     m_pageTable[i].height = entry.height;
     m_pageTable[i].bitDepth = m_bitDepth;
+    m_pageTable[i].headerLevel = entry.headerLevel;  // NEW: Read header level
 
     // Update default dimensions from first page
     if (i == 0) {

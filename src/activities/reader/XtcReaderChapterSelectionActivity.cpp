@@ -143,17 +143,25 @@ void XtcReaderChapterSelectionActivity::renderScreen() {
   renderer.fillRect(0, 60 + (selectorIndex % pageItems) * 30 - 2, pageWidth - 1, 30);
   for (int i = pageStartIndex; i < static_cast<int>(chapters.size()) && i < pageStartIndex + pageItems; i++) {
     const auto& chapter = chapters[i];
-    const char* title = chapter.name.empty() ? "Unnamed" : chapter.name.c_str();
     const int itemY = 60 + (i % pageItems) * 30;
     const bool isSelected = i == selectorIndex;
     
-    // Draw chapter title on the left
-    renderer.drawText(CMU_10_FONT_ID, 20, itemY, title, !isSelected);
-    
-    // Draw page number on the right
+    // Prepare page number (to calculate available space for title)
     char pageNum[16];
     snprintf(pageNum, sizeof(pageNum), "%u", chapter.startPage + 1);
     const int pageNumWidth = renderer.getTextWidth(CMU_10_FONT_ID, pageNum);
+    
+    // Calculate available width for chapter title (10px gap from page number)
+    const int availableWidth = pageWidth - 20 - pageNumWidth - 10 - 20;  // left margin + page number width + 10px gap + right margin
+    
+    // Truncate chapter title if necessary using renderer's truncate function
+    std::string displayTitle = chapter.name.empty() ? "Unnamed" : chapter.name;
+    displayTitle = renderer.truncatedText(CMU_10_FONT_ID, displayTitle.c_str(), availableWidth);
+    
+    // Draw chapter title on the left
+    renderer.drawText(CMU_10_FONT_ID, 20, itemY, displayTitle.c_str(), !isSelected);
+    
+    // Draw page number on the right
     renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
   }
 
