@@ -144,7 +144,17 @@ void XtcReaderChapterSelectionActivity::renderScreen() {
   for (int i = pageStartIndex; i < static_cast<int>(chapters.size()) && i < pageStartIndex + pageItems; i++) {
     const auto& chapter = chapters[i];
     const char* title = chapter.name.empty() ? "Unnamed" : chapter.name.c_str();
-    renderer.drawText(CMU_10_FONT_ID, 20, 60 + (i % pageItems) * 30, title, i != selectorIndex);
+    const int itemY = 60 + (i % pageItems) * 30;
+    const bool isSelected = i == selectorIndex;
+    
+    // Draw chapter title on the left
+    renderer.drawText(CMU_10_FONT_ID, 20, itemY, title, !isSelected);
+    
+    // Draw page number on the right
+    char pageNum[16];
+    snprintf(pageNum, sizeof(pageNum), "%u", chapter.startPage + 1);
+    const int pageNumWidth = renderer.getTextWidth(CMU_10_FONT_ID, pageNum);
+    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
   }
 
   renderer.displayBuffer();
