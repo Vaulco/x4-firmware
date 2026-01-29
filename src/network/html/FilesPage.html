@@ -196,27 +196,6 @@
     .upload-form {
       margin-top: 10px;
     }
-    .upload-form input[type="file"] {
-      margin: 10px 0;
-      width: 100%;
-    }
-    .upload-btn {
-      background-color: #27ae60;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1em;
-      width: 100%;
-    }
-    .upload-btn:hover {
-      background-color: #219a52;
-    }
-    .upload-btn:disabled {
-      background-color: #95a5a6;
-      cursor: not-allowed;
-    }
     .file-info {
       color: #7f8c8d;
       font-size: 0.85em;
@@ -260,7 +239,6 @@
       font-size: 0.9em;
     }
     #progress-container {
-      display: none;
       margin-top: 10px;
     }
     #progress-bar {
@@ -410,44 +388,6 @@
     .retry-all-btn:hover {
       background-color: #e0a800;
     }
-    /* Delete modal */
-    .delete-warning {
-      color: #e74c3c;
-      font-weight: 600;
-      margin: 10px 0;
-    }
-    .delete-item-name {
-      font-weight: 600;
-      color: #2c3e50;
-      word-break: break-all;
-    }
-    .delete-btn-confirm {
-      background-color: #e74c3c;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1em;
-      width: 100%;
-    }
-    .delete-btn-confirm:hover {
-      background-color: #c0392b;
-    }
-    .delete-btn-cancel {
-      background-color: #95a5a6;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1em;
-      width: 100%;
-      margin-top: 10px;
-    }
-    .delete-btn-cancel:hover {
-      background-color: #7f8c8d;
-    }
     .loader-container {
       display: flex;
       justify-content: center;
@@ -596,15 +536,16 @@
   </div>
 </div>
 
-<!-- Upload Modal -->
+<!-- Hidden file input -->
+<input type="file" id="fileInput" style="display: none;" multiple>
+
+<!-- Upload Progress Modal -->
 <div class="modal-overlay" id="uploadModal">
   <div class="modal">
     <button class="modal-close" onclick="closeUploadModal()">&times;</button>
-    <h3>📤 Upload file</h3>
+    <h3>📤 Uploading files</h3>
     <div class="upload-form">
-      <p class="file-info">Select a file to upload to <strong id="uploadPathDisplay"></strong></p>
-      <input type="file" id="fileInput" onchange="validateFile()" multiple>
-      <button id="uploadBtn" class="upload-btn" onclick="uploadFile()" disabled>Upload</button>
+      <p class="file-info">Uploading to <strong id="uploadPathDisplay"></strong></p>
       <div id="progress-container">
         <div id="progress-bar"><div id="progress-fill"></div></div>
         <div id="progress-text"></div>
@@ -622,23 +563,6 @@
       <p class="file-info">Create a new folder in <strong id="folderPathDisplay"></strong></p>
       <input type="text" id="folderName" class="folder-input" placeholder="Folder name...">
       <button class="folder-btn" onclick="createFolder()">Create Folder</button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
-    <h3>🗑️ Delete Item</h3>
-    <div class="folder-form">
-      <p class="delete-warning">⚠️ This action cannot be undone!</p>
-      <p class="file-info">Are you sure you want to delete:</p>
-      <p class="delete-item-name" id="deleteItemName"></p>
-      <input type="hidden" id="deleteItemPath">
-      <input type="hidden" id="deleteItemType">
-      <button class="delete-btn-confirm" onclick="confirmDelete()">Delete</button>
-      <button class="delete-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -717,7 +641,7 @@
       fileTable.innerHTML = '<div class="no-files">This folder is empty</div>';
     } else {
       let fileTableContent = '<table class="file-table">';
-      fileTableContent += '<tr><th>Name</th><th>Type</th><th>Size</th><th class="actions-col">Actions</th></tr>';
+      fileTableContent += '<tr><th>Name</th><th class="actions-col">Actions</th></tr>';
 
       const sortedFiles = files.sort((a, b) => {
         // Directories first, then other files, alphabetically within each group
@@ -734,9 +658,7 @@
 
           fileTableContent += '<tr class="folder-row">';
           fileTableContent += `<td><span class="file-icon">📁</span><a href="/files?path=${encodeURIComponent(folderPath)}" class="folder-link">${escapeHtml(file.name)}</a><span class="folder-badge">FOLDER</span></td>`;
-          fileTableContent += '<td>Folder</td>';
-          fileTableContent += '<td>-</td>';
-          fileTableContent += `<td class="actions-col"><button class="delete-btn" onclick="openDeleteModal('${file.name.replaceAll("'", "\\'")}', '${folderPath.replaceAll("'", "\\'")}', true)" title="Delete folder">🗑️</button></td>`;
+          fileTableContent += `<td class="actions-col"><button class="delete-btn" onclick="deleteItem('${folderPath.replaceAll("'", "\\'")}', true)" title="Delete folder">🗑️</button></td>`;
           fileTableContent += '</tr>';
         } else {
           let filePath = currentPath;
@@ -746,9 +668,7 @@
           fileTableContent += '<tr>';
           fileTableContent += `<td><span class="file-icon">📄</span>${escapeHtml(file.name)}`;
           fileTableContent += '</td>';
-          fileTableContent += `<td>${file.name.split('.').pop().toUpperCase()}</td>`;
-          fileTableContent += `<td>${formatFileSize(file.size)}</td>`;
-          fileTableContent += `<td class="actions-col"><button class="delete-btn" onclick="openDeleteModal('${file.name.replaceAll("'", "\\'")}', '${filePath.replaceAll("'", "\\'")}', false)" title="Delete file">🗑️</button></td>`;
+          fileTableContent += `<td class="actions-col"><button class="delete-btn" onclick="deleteItem('${filePath.replaceAll("'", "\\'")}', false)" title="Delete file">🗑️</button></td>`;
           fileTableContent += '</tr>';
         }
       });
@@ -761,14 +681,22 @@
   // Modal functions
   function openUploadModal() {
     document.getElementById('uploadPathDisplay').textContent = currentPath === '/' ? '/ 🏠' : currentPath;
-    document.getElementById('uploadModal').classList.add('open');
+    
+    // Trigger file picker immediately
+    const fileInput = document.getElementById('fileInput');
+    fileInput.value = ''; // Reset file input
+    fileInput.click();
   }
+
+  // Auto-upload when files are selected
+  document.getElementById('fileInput').addEventListener('change', function() {
+    if (this.files.length > 0) {
+      uploadFile();
+    }
+  });
 
   function closeUploadModal() {
     document.getElementById('uploadModal').classList.remove('open');
-    document.getElementById('fileInput').value = '';
-    document.getElementById('uploadBtn').disabled = true;
-    document.getElementById('progress-container').style.display = 'none';
     document.getElementById('progress-fill').style.width = '0%';
     document.getElementById('progress-fill').style.backgroundColor = '#27ae60';
   }
@@ -783,13 +711,6 @@
     document.getElementById('folderModal').classList.remove('open');
   }
 
-  function validateFile() {
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const files = fileInput.files;
-    uploadBtn.disabled = !(files.length > 0);
-  }
-
 let failedUploadsGlobal = [];
 
 function uploadFile() {
@@ -797,17 +718,15 @@ function uploadFile() {
   const files = Array.from(fileInput.files);
 
   if (files.length === 0) {
-    alert('Please select at least one file!');
-    return;
+    return; // Don't show alert, just silently return
   }
+
+  // Show the upload modal
+  document.getElementById('uploadModal').classList.add('open');
 
   const progressContainer = document.getElementById('progress-container');
   const progressFill = document.getElementById('progress-fill');
   const progressText = document.getElementById('progress-text');
-  const uploadBtn = document.getElementById('uploadBtn');
-
-  progressContainer.style.display = 'block';
-  uploadBtn.disabled = true;
 
   let currentIndex = 0;
   const failedFiles = [];
@@ -937,9 +856,8 @@ function retrySingleUpload(index) {
     dismissFailedUploads();
   }
   
-  // Open modal and trigger upload
-  openUploadModal();
-  validateFile();
+  // Trigger upload directly
+  uploadFile();
 }
 
 function retryAllFailedUploads() {
@@ -958,9 +876,8 @@ function retryAllFailedUploads() {
   failedUploadsGlobal = [];
   dismissFailedUploads();
   
-  // Open modal and trigger upload
-  openUploadModal();
-  validateFile();
+  // Trigger upload directly
+  uploadFile();
 }
 
   function createFolder() {
@@ -1000,25 +917,11 @@ function retryAllFailedUploads() {
     xhr.send(formData);
   }
 
-  // Delete functions
-  function openDeleteModal(name, path, isFolder) {
-    document.getElementById('deleteItemName').textContent = (isFolder ? '📁 ' : '📄 ') + name;
-    document.getElementById('deleteItemPath').value = path;
-    document.getElementById('deleteItemType').value = isFolder ? 'folder' : 'file';
-    document.getElementById('deleteModal').classList.add('open');
-  }
-
-  function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('open');
-  }
-
-  function confirmDelete() {
-    const path = document.getElementById('deleteItemPath').value;
-    const itemType = document.getElementById('deleteItemType').value;
-
+  // Delete function - now directly deletes without confirmation
+  function deleteItem(path, isFolder) {
     const formData = new FormData();
     formData.append('path', path);
-    formData.append('type', itemType);
+    formData.append('type', isFolder ? 'folder' : 'file');
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/delete', true);
@@ -1028,13 +931,11 @@ function retryAllFailedUploads() {
         window.location.reload();
       } else {
         alert('Failed to delete: ' + xhr.responseText);
-        closeDeleteModal();
       }
     };
 
     xhr.onerror = function() {
       alert('Failed to delete - network error');
-      closeDeleteModal();
     };
 
     xhr.send(formData);
