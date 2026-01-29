@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "html/FilesPageHtml.generated.h"
-#include "html/HomePageHtml.generated.h"
 
 namespace {
 // Folders/files to hide from the web interface file browser
@@ -18,7 +17,6 @@ constexpr size_t HIDDEN_ITEMS_COUNT = sizeof(HIDDEN_ITEMS) / sizeof(HIDDEN_ITEMS
 }  // namespace
 
 // File listing page template - now using generated headers:
-// - HomePageHtml (from html/HomePage.html)
 // - FilesPageHeaderHtml (from html/FilesPageHeader.html)
 // - FilesPageFooterHtml (from html/FilesPageFooter.html)
 CrossPointWebServer::CrossPointWebServer() {}
@@ -67,8 +65,7 @@ void CrossPointWebServer::begin() {
 
   // Setup routes
   Serial.printf("[%lu] [WEB] Setting up routes...\n", millis());
-  server->on("/", HTTP_GET, [this] { handleRoot(); });
-  server->on("/files", HTTP_GET, [this] { handleFileList(); });
+  server->on("/", HTTP_GET, [this] { handleFileList(); });
 
   server->on("/api/status", HTTP_GET, [this] { handleStatus(); });
   server->on("/api/files", HTTP_GET, [this] { handleFileListData(); });
@@ -148,11 +145,6 @@ void CrossPointWebServer::handleClient() const {
   }
 
   server->handleClient();
-}
-
-void CrossPointWebServer::handleRoot() const {
-  server->send(200, "text/html", HomePageHtml);
-  Serial.printf("[%lu] [WEB] Served root page\n", millis());
 }
 
 void CrossPointWebServer::handleNotFound() const {

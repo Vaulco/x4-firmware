@@ -42,7 +42,6 @@ class CrossPointWebServer {
   String formatFileSize(size_t bytes) const;
 
   // Request handlers
-  void handleRoot() const;
   void handleNotFound() const;
   void handleStatus() const;
   void handleFileList() const;

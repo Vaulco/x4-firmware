@@ -64,21 +64,6 @@
       color: #2c3e50;
       font-weight: 500;
     }
-    .nav-links {
-      margin: 20px 0;
-    }
-    .nav-links a {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #3498db;
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-    .nav-links a:hover {
-      background-color: #2980b9;
-    }
     /* Action buttons */
     .action-buttons {
       display: flex;
@@ -436,11 +421,6 @@
       .breadcrumb-inline {
         font-size: 0.95em;
       }
-      .nav-links a {
-        padding: 8px 12px;
-        margin-right: 6px;
-        font-size: 0.9em;
-      }
       .action-buttons {
         gap: 6px;
       }
@@ -496,10 +476,6 @@
   </style>
 </head>
 <body>
-<div class="nav-links">
-  <a href="/">Home</a>
-  <a href="/files">File Manager</a>
-</div>
 
 <div class="page-header">
   <div class="page-header-left">
@@ -605,10 +581,10 @@
     if (currentPath === '/') {
       breadcrumbContent += '<span class="current">🏠</span>';
     } else {
-      breadcrumbContent += '<a href="/files">🏠</a>';
+      breadcrumbContent += '<a href="/">🏠</a>';
       const pathSegments = currentPath.split('/');
       pathSegments.slice(1, pathSegments.length - 1).forEach(function(segment, index) {
-        breadcrumbContent += '<span class="sep">/</span><a href="/files?path=' + encodeURIComponent(pathSegments.slice(0, index + 2).join('/')) + '">' + escapeHtml(segment) + '</a>';
+        breadcrumbContent += '<span class="sep">/</span><a href="/?path=' + encodeURIComponent(pathSegments.slice(0, index + 2).join('/')) + '">' + escapeHtml(segment) + '</a>';
       });
       breadcrumbContent += '<span class="sep">/</span>';
       breadcrumbContent += '<span class="current">' + escapeHtml(pathSegments[pathSegments.length - 1]) + '</span>';
@@ -657,7 +633,7 @@
           folderPath += file.name;
 
           fileTableContent += '<tr class="folder-row">';
-          fileTableContent += `<td><span class="file-icon">📁</span><a href="/files?path=${encodeURIComponent(folderPath)}" class="folder-link">${escapeHtml(file.name)}</a><span class="folder-badge">FOLDER</span></td>`;
+          fileTableContent += `<td><span class="file-icon">📁</span><a href="/?path=${encodeURIComponent(folderPath)}" class="folder-link">${escapeHtml(file.name)}</a><span class="folder-badge">FOLDER</span></td>`;
           fileTableContent += `<td class="actions-col"><button class="delete-btn" onclick="deleteItem('${folderPath.replaceAll("'", "\\'")}', true)" title="Delete folder">🗑️</button></td>`;
           fileTableContent += '</tr>';
         } else {
