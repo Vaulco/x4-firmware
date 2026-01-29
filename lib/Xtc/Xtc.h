@@ -70,6 +70,14 @@ class Xtc {
   uint8_t getBitDepth() const;  // 1 = XTC (1-bit), 2 = XTCH (2-bit)
 
   /**
+   * Get page information including header level
+   * @param pageIndex Page index (0-based)
+   * @param info Output parameter for page info
+   * @return true if page info was retrieved successfully
+   */
+  bool getPageInfo(uint32_t pageIndex, xtc::PageInfo& info) const;
+
+  /**
    * Load page bitmap data
    * @param pageIndex Page index (0-based)
    * @param buffer Output buffer
