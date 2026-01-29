@@ -9,8 +9,6 @@ class Battery {
  public:
   explicit Battery(int pin) : monitor(pin) {}
 
-  uint16_t readPercentage() { return monitor.readPercentage(); }
-
   void draw(const GfxRenderer& renderer, int left, int top) const;
 
  private:
