@@ -31,9 +31,6 @@
 
 #define SD_SPI_MISO 7
 
-// Power button press duration in milliseconds (long press)
-constexpr uint16_t POWER_BUTTON_DURATION_MS = 400;
-
 EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 MappedInputManager mappedInputManager(inputManager);
@@ -43,26 +40,22 @@ Activity* currentActivity;
 EpdFont cmu8RegularFont(&cmu_8_regular);
 EpdFont cmu8BoldFont(&cmu_8_bold);
 EpdFont cmu8ItalicFont(&cmu_8_italic);
-EpdFont cmu8BoldItalicFont(&cmu_8_bolditalic);
-EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont, &cmu8BoldItalicFont);
+EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont);
 
 EpdFont cmu10RegularFont(&cmu_10_regular);
 EpdFont cmu10BoldFont(&cmu_10_bold);
 EpdFont cmu10ItalicFont(&cmu_10_italic);
-EpdFont cmu10BoldItalicFont(&cmu_10_bolditalic);
-EpdFontFamily cmu10FontFamily(&cmu10RegularFont, &cmu10BoldFont, &cmu10ItalicFont, &cmu10BoldItalicFont);
+EpdFontFamily cmu10FontFamily(&cmu10RegularFont, &cmu10BoldFont, &cmu10ItalicFont);
 
 EpdFont cmu12RegularFont(&cmu_12_regular);
 EpdFont cmu12BoldFont(&cmu_12_bold);
 EpdFont cmu12ItalicFont(&cmu_12_italic);
-EpdFont cmu12BoldItalicFont(&cmu_12_bolditalic);
-EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont, &cmu12ItalicFont, &cmu12BoldItalicFont);
+EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont, &cmu12ItalicFont);
 
 EpdFont cmu14RegularFont(&cmu_14_regular);
 EpdFont cmu14BoldFont(&cmu_14_bold);
 EpdFont cmu14ItalicFont(&cmu_14_italic);
-EpdFont cmu14BoldItalicFont(&cmu_14_bolditalic);
-EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont, &cmu14BoldItalicFont);
+EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont);
 
 // measurement of power button press duration calibration value
 unsigned long t1 = 0;
@@ -79,44 +72,6 @@ void exitActivity() {
 void enterNewActivity(Activity* activity) {
   currentActivity = activity;
   currentActivity->onEnter();
-}
-
-// Verify long press on wake-up from deep sleep
-void verifyWakeupLongPress() {
-  // Give the user up to 1000ms to start holding the power button, and must hold for POWER_BUTTON_DURATION_MS
-  const auto start = millis();
-  bool abort = false;
-  // Subtract the current time, because inputManager only starts counting the HeldTime from the first update()
-  // This way, we remove the time we already took to reach here from the duration,
-  // assuming the button was held until now from millis()==0 (i.e. device start time).
-  const uint16_t calibration = start;
-  const uint16_t calibratedPressDuration =
-      (calibration < POWER_BUTTON_DURATION_MS) ? POWER_BUTTON_DURATION_MS - calibration : 1;
-
-  inputManager.update();
-  // Verify the user has actually pressed
-  while (!inputManager.isPressed(InputManager::BTN_POWER) && millis() - start < 1000) {
-    delay(10);  // only wait 10ms each iteration to not delay too much in case of short configured duration.
-    inputManager.update();
-  }
-
-  t2 = millis();
-  if (inputManager.isPressed(InputManager::BTN_POWER)) {
-    do {
-      delay(10);
-      inputManager.update();
-    } while (inputManager.isPressed(InputManager::BTN_POWER) && inputManager.getHeldTime() < calibratedPressDuration);
-    abort = inputManager.getHeldTime() < calibratedPressDuration;
-  } else {
-    abort = true;
-  }
-
-  if (abort) {
-    // Button released too early. Returning to sleep.
-    // IMPORTANT: Re-arm the wakeup trigger before sleeping again
-    esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
-    esp_deep_sleep_start();
-  }
 }
 
 void waitForPowerRelease() {
@@ -210,16 +165,10 @@ void setup() {
 
   SETTINGS.loadFromFile();
 
-  // verify power button press duration after we've read settings.
-  verifyWakeupLongPress();
-
   // First serial output only here to avoid timing inconsistencies for power button press duration verification
   Serial.printf("[%lu] [   ] Starting CrossPoint\n", millis());
 
   setupDisplayAndFonts();
-
-  exitActivity();
-  enterNewActivity(new FullScreenMessageActivity(renderer, mappedInputManager, "BOOTING"));
 
   APP_STATE.loadFromFile();
   if (APP_STATE.openEpubPath.empty()) {
@@ -264,8 +213,8 @@ void loop() {
     return;
   }
 
-  if (inputManager.isPressed(InputManager::BTN_POWER) &&
-      inputManager.getHeldTime() > POWER_BUTTON_DURATION_MS) {
+  // Changed from long press to instant press for sleep
+  if (inputManager.wasPressed(InputManager::BTN_POWER)) {
     enterDeepSleep();
     // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
     return;

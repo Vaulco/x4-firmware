@@ -14,7 +14,7 @@ constexpr uint8_t WIFI_FILE_VERSION = 1;
 // WiFi credentials file path
 constexpr char WIFI_FILE[] = "/.ereader/wifi.bin";
 
-// Obfuscation key - "CrossPoint" in ASCII
+// Obfuscation key - "" in ASCII
 // This is NOT cryptographic security, just prevents casual file reading
 constexpr uint8_t OBFUSCATION_KEY[] = {0x43, 0x72, 0x6F, 0x73, 0x73, 0x50, 0x6F, 0x69, 0x6E, 0x74};
 constexpr size_t KEY_LENGTH = sizeof(OBFUSCATION_KEY);

@@ -15,9 +15,9 @@
 
 namespace {
 // AP Mode configuration
-constexpr const char* AP_SSID = "CrossPoint-Reader";
+constexpr const char* AP_SSID = "E-Reader";
 constexpr const char* AP_PASSWORD = nullptr;  // Open network for ease of use
-constexpr const char* AP_HOSTNAME = "crosspoint";
+constexpr const char* AP_HOSTNAME = "ereader";
 constexpr uint8_t AP_CHANNEL = 1;
 constexpr uint8_t AP_MAX_CONNECTIONS = 4;
 
@@ -365,10 +365,10 @@ void CrossPointWebServerActivity::renderServerRunning() const {
   // Use consistent line spacing
   constexpr int LINE_SPACING = 28;  // Space between lines
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Hotspot File Transfer", true, EpdFontFamily::REGULAR);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true, EpdFontFamily::REGULAR);
 
   if (isApMode) {
-    // AP mode display - center the content block
+    // AP mode display - center the content blockd
     int startY = 55;
 
     std::string ssidInfo = "Network: " + connectedSSID;

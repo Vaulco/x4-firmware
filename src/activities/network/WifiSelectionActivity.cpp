@@ -578,11 +578,11 @@ void WifiSelectionActivity::renderNetworkList() const {
     // Show network count
     char countStr[32];
     snprintf(countStr, sizeof(countStr), "%zu networks found", networks.size());
-    renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 90, countStr);
+    renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 50, countStr);
   }
 
   // Draw help text
-  renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 75, "* = Encrypted | + = Saved");
+  renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 30, "* = Encrypted | + = Saved");
 }
 
 void WifiSelectionActivity::renderConnecting() const {
@@ -708,6 +708,4 @@ void WifiSelectionActivity::renderForgetPrompt() const {
   } else {
     renderer.drawText(CMU_10_FONT_ID, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
   }
-
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
 }
