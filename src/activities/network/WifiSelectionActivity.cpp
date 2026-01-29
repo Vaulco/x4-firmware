@@ -411,17 +411,17 @@ void WifiSelectionActivity::loop() {
       return;
     }
 
-    // Handle UP/DOWN navigation
+    // Handle UP/DOWN navigation with loop scrolling
     if (mappedInput.wasPressed(MappedInputManager::Button::Up) ||
         mappedInput.wasPressed(MappedInputManager::Button::Left)) {
-      if (selectedNetworkIndex > 0) {
-        selectedNetworkIndex--;
+      if (!networks.empty()) {
+        selectedNetworkIndex = (selectedNetworkIndex - 1 + networks.size()) % networks.size();
         updateRequired = true;
       }
     } else if (mappedInput.wasPressed(MappedInputManager::Button::Down) ||
                mappedInput.wasPressed(MappedInputManager::Button::Right)) {
-      if (!networks.empty() && selectedNetworkIndex < static_cast<int>(networks.size()) - 1) {
-        selectedNetworkIndex++;
+      if (!networks.empty()) {
+        selectedNetworkIndex = (selectedNetworkIndex + 1) % networks.size();
         updateRequired = true;
       }
     }
@@ -434,15 +434,15 @@ std::string WifiSelectionActivity::getSignalStrengthIndicator(const int32_t rssi
     return "||||";  // Excellent
   }
   if (rssi >= -60) {
-    return "||| ";  // Good
+    return "|||";  // Good
   }
   if (rssi >= -70) {
-    return "||  ";  // Fair
+    return "||";  // Fair
   }
   if (rssi >= -80) {
-    return "|   ";  // Weak
+    return "|";  // Weak
   }
-  return "    ";  // Very weak
+  return "";  // Very weak (no bars)
 }
 
 void WifiSelectionActivity::displayTaskLoop() {
@@ -504,8 +504,8 @@ void WifiSelectionActivity::renderNetworkList() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 
-  // Draw header
-  renderer.drawCenteredText(UI_12_FONT_ID, 15, "WiFi Networks", true, EpdFontFamily::BOLD);
+  // Draw header (same style as Settings)
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "WiFi Networks", true, EpdFontFamily::REGULAR);
 
   if (networks.empty()) {
     // No networks found or scan failed
@@ -516,7 +516,7 @@ void WifiSelectionActivity::renderNetworkList() const {
   } else {
     // Calculate how many networks we can display
     constexpr int startY = 60;
-    constexpr int lineHeight = 25;
+    constexpr int lineHeight = 30;  // Match Settings page spacing
     const int maxVisibleNetworks = (pageHeight - startY - 40) / lineHeight;
 
     // Calculate scroll offset to keep selected item visible
@@ -531,9 +531,9 @@ void WifiSelectionActivity::renderNetworkList() const {
       const int networkY = startY + displayIndex * lineHeight;
       const auto& network = networks[i];
 
-      // Draw selection indicator
+      // Draw selection rectangle (same as Settings page)
       if (static_cast<int>(i) == selectedNetworkIndex) {
-        renderer.drawText(UI_10_FONT_ID, 5, networkY, ">");
+        renderer.fillRect(0, networkY - 2, pageWidth - 1, 30);
       }
 
       // Draw network name (truncate if too long)
@@ -541,20 +541,29 @@ void WifiSelectionActivity::renderNetworkList() const {
       if (displayName.length() > 16) {
         displayName.replace(13, displayName.length() - 13, "...");
       }
-      renderer.drawText(UI_10_FONT_ID, 20, networkY, displayName.c_str());
+      // Use CMU font to match Settings page
+      const bool isSelected = static_cast<int>(i) == selectedNetworkIndex;
+      renderer.drawText(CMU_10_FONT_ID, 20, networkY, displayName.c_str(), !isSelected);
 
-      // Draw signal strength indicator
-      std::string signalStr = getSignalStrengthIndicator(network.rssi);
-      renderer.drawText(UI_10_FONT_ID, pageWidth - 90, networkY, signalStr.c_str());
-
-      // Draw saved indicator (checkmark) for networks with saved passwords
-      if (network.hasSavedPassword) {
-        renderer.drawText(UI_10_FONT_ID, pageWidth - 50, networkY, "+");
+      // Draw lock icon for encrypted networks (3 pixels after name)
+      const int nameWidth = renderer.getTextWidth(CMU_10_FONT_ID, displayName.c_str());
+      int xOffset = 20 + nameWidth;
+      if (network.isEncrypted) {
+        renderer.drawText(CMU_10_FONT_ID, xOffset + 3, networkY, "*", !isSelected);
+        const int starWidth = renderer.getTextWidth(CMU_10_FONT_ID, "*");
+        xOffset += 3 + starWidth;
       }
 
-      // Draw lock icon for encrypted networks
-      if (network.isEncrypted) {
-        renderer.drawText(UI_10_FONT_ID, pageWidth - 30, networkY, "*");
+      // Draw saved indicator (+) for networks with saved passwords (10 pixels after encrypted indicator or name)
+      if (network.hasSavedPassword) {
+        renderer.drawText(CMU_10_FONT_ID, xOffset + 10, networkY, "+", !isSelected);
+      }
+
+      // Draw signal strength indicator (right-aligned, bars extend to the left)
+      std::string signalStr = getSignalStrengthIndicator(network.rssi);
+      if (!signalStr.empty()) {
+        const int signalWidth = renderer.getTextWidth(CMU_10_FONT_ID, signalStr.c_str());
+        renderer.drawText(CMU_10_FONT_ID, pageWidth - signalWidth - 20, networkY, signalStr.c_str(), !isSelected);
       }
     }
 
