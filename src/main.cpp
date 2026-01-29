@@ -10,7 +10,6 @@
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
 #include "MappedInputManager.h"
-#include "activities/boot_sleep/BootActivity.h"
 #include "activities/boot_sleep/SleepActivity.h"
 #include "activities/network/CrossPointWebServerActivity.h"
 #include "activities/reader/FileSelectionActivity.h"
@@ -234,7 +233,7 @@ void setup() {
   setupDisplayAndFonts();
 
   exitActivity();
-  enterNewActivity(new BootActivity(renderer, mappedInputManager));
+  enterNewActivity(new FullScreenMessageActivity(renderer, mappedInputManager, "BOOTING"));
 
   APP_STATE.loadFromFile();
   if (APP_STATE.openEpubPath.empty()) {
