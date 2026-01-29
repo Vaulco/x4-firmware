@@ -16,16 +16,3 @@ for size in ${CMU_FONT_SIZES[@]}; do
     echo "Generated $output_path"
   done
 done
-
-UI_FONT_SIZES=(10 12)
-UI_FONT_STYLES=("Regular" "Bold")
-
-for size in ${UI_FONT_SIZES[@]}; do
-  for style in ${UI_FONT_STYLES[@]}; do
-    font_name="ubuntu_${size}_$(echo $style | tr '[:upper:]' '[:lower:]')"
-    font_path="../builtinFonts/source/Ubuntu/Ubuntu-${style}.ttf"
-    output_path="../builtinFonts/${font_name}.h"
-    python fontconvert.py $font_name $size $font_path > $output_path
-    echo "Generated $output_path"
-  done
-done

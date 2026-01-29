@@ -40,6 +40,12 @@ MappedInputManager mappedInputManager(inputManager);
 GfxRenderer renderer(einkDisplay);
 Activity* currentActivity;
 
+EpdFont cmu8RegularFont(&cmu_8_regular);
+EpdFont cmu8BoldFont(&cmu_8_bold);
+EpdFont cmu8ItalicFont(&cmu_8_italic);
+EpdFont cmu8BoldItalicFont(&cmu_8_bolditalic);
+EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont, &cmu8BoldItalicFont);
+
 EpdFont cmu10RegularFont(&cmu_10_regular);
 EpdFont cmu10BoldFont(&cmu_10_bold);
 EpdFont cmu10ItalicFont(&cmu_10_italic);
@@ -57,20 +63,6 @@ EpdFont cmu14BoldFont(&cmu_14_bold);
 EpdFont cmu14ItalicFont(&cmu_14_italic);
 EpdFont cmu14BoldItalicFont(&cmu_14_bolditalic);
 EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont, &cmu14BoldItalicFont);
-
-EpdFont cmu8RegularFont(&cmu_8_regular);
-EpdFont cmu8BoldFont(&cmu_8_bold);
-EpdFont cmu8ItalicFont(&cmu_8_italic);
-EpdFont cmu8BoldItalicFont(&cmu_8_bolditalic);
-EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont, &cmu8BoldItalicFont);
-
-EpdFont ui10RegularFont(&ubuntu_10_regular);
-EpdFont ui10BoldFont(&ubuntu_10_bold);
-EpdFontFamily ui10FontFamily(&ui10RegularFont, &ui10BoldFont);
-
-EpdFont ui12RegularFont(&ubuntu_12_regular);
-EpdFont ui12BoldFont(&ubuntu_12_bold);
-EpdFontFamily ui12FontFamily(&ui12RegularFont, &ui12BoldFont);
 
 // measurement of power button press duration calibration value
 unsigned long t1 = 0;
@@ -156,7 +148,7 @@ void onGoToSettings();
 
 void onGoToReader(const std::string& initialEpubPath) {
   exitActivity();
-  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoToFileSelection));
+  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoToSettings));
 }
 
 void onContinueReading() { onGoToReader(APP_STATE.openEpubPath); }
@@ -183,12 +175,10 @@ void onGoToFileSelection() {
 void setupDisplayAndFonts() {
   einkDisplay.begin();
   Serial.printf("[%lu] [   ] Display initialized\n", millis());
+  renderer.insertFont(CMU_8_FONT_ID, cmu8FontFamily);
   renderer.insertFont(CMU_10_FONT_ID, cmu10FontFamily);
   renderer.insertFont(CMU_12_FONT_ID, cmu12FontFamily);
   renderer.insertFont(CMU_14_FONT_ID, cmu14FontFamily);
-  renderer.insertFont(CMU_8_FONT_ID, cmu8FontFamily);
-  renderer.insertFont(UI_10_FONT_ID, ui10FontFamily);
-  renderer.insertFont(UI_12_FONT_ID, ui12FontFamily);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 

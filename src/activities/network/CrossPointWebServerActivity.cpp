@@ -334,7 +334,7 @@ void CrossPointWebServerActivity::render() const {
   } else if (state == WebServerActivityState::AP_STARTING) {
     renderer.clearScreen();
     const auto pageHeight = renderer.getScreenHeight();
-    renderer.drawCenteredText(UI_12_FONT_ID, pageHeight / 2 - 20, "Starting Hotspot...", true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_12_FONT_ID, pageHeight / 2 - 20, "Starting Hotspot...", true, EpdFontFamily::BOLD);
     renderer.displayBuffer();
   }
 }
@@ -372,7 +372,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     int startY = 55;
 
     std::string ssidInfo = "Network: " + connectedSSID;
-    renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING, ssidInfo.c_str());
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING, ssidInfo.c_str());
 
     renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 2, "Connect your device to this WiFi network");
 
@@ -385,7 +385,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     startY += 6 * 29 + 3 * LINE_SPACING;
     // Show primary URL (hostname)
     std::string hostnameUrl = std::string("http://") + AP_HOSTNAME + ".local/";
-    renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true, EpdFontFamily::BOLD);
 
     // Show IP address as fallback
     std::string ipUrl = "or http://" + connectedIP + "/";
@@ -403,14 +403,14 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     if (ssidInfo.length() > 28) {
       ssidInfo.replace(25, ssidInfo.length() - 25, "...");
     }
-    renderer.drawCenteredText(UI_10_FONT_ID, startY, ssidInfo.c_str());
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY, ssidInfo.c_str());
 
     std::string ipInfo = "IP Address: " + connectedIP;
-    renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING, ipInfo.c_str());
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING, ipInfo.c_str());
 
     // Show web server URL prominently
     std::string webInfo = "http://" + connectedIP + "/";
-    renderer.drawCenteredText(UI_10_FONT_ID, startY + LINE_SPACING * 2, webInfo.c_str(), true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 2, webInfo.c_str(), true, EpdFontFamily::BOLD);
 
     // Also show hostname URL
     std::string hostnameUrl = std::string("or http://") + AP_HOSTNAME + ".local/";
