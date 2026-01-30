@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-#include "html/FilesPageHtml.generated.h"
+#include "indexHtml.generated.h"
 
 namespace {
 // Folders/files to hide from the web interface file browser
@@ -16,9 +16,6 @@ const char* HIDDEN_ITEMS[] = {"System Volume Information", "XTCache"};
 constexpr size_t HIDDEN_ITEMS_COUNT = sizeof(HIDDEN_ITEMS) / sizeof(HIDDEN_ITEMS[0]);
 }  // namespace
 
-// File listing page template - now using generated headers:
-// - FilesPageHeaderHtml (from html/FilesPageHeader.html)
-// - FilesPageFooterHtml (from html/FilesPageFooter.html)
 CrossPointWebServer::CrossPointWebServer() {}
 
 CrossPointWebServer::~CrossPointWebServer() { stop(); }
@@ -219,7 +216,7 @@ void CrossPointWebServer::scanFiles(const char* path, const std::function<void(F
   root.close();
 }
 
-void CrossPointWebServer::handleFileList() const { server->send(200, "text/html", FilesPageHtml); }
+void CrossPointWebServer::handleFileList() const { server->send(200, "text/html", indexHtml); }
 
 void CrossPointWebServer::handleFileListData() const {
   // Get current path from query string (default to root)
