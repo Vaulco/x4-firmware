@@ -10,7 +10,6 @@
 #include "Settings.h"
 #include "State.h"
 #include "MappedInputManager.h"
-#include "activities/boot_sleep/SleepActivity.h"
 #include "activities/network/CrossPointWebServerActivity.h"
 #include "activities/reader/FileSelectionActivity.h"
 #include "activities/reader/ReaderActivity.h"
@@ -82,11 +81,16 @@ void waitForPowerRelease() {
   }
 }
 
-// Enter deep sleep mode
+// Display sleep screen and enter deep sleep mode
 void enterDeepSleep() {
   exitActivity();
-  enterNewActivity(new SleepActivity(renderer, mappedInputManager));
-
+  
+  // Display "SLEEPING" message
+  const auto pageHeight = renderer.getScreenHeight();
+  renderer.clearScreen();
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight / 2, "SLEEPING");
+  renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
+  
   einkDisplay.deepSleep();
   Serial.printf("[%lu] [   ] Power button press calibration value: %lu ms\n", millis(), t2 - t1);
   Serial.printf("[%lu] [   ] Entering deep sleep.\n", millis());
