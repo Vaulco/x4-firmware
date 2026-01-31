@@ -10,7 +10,6 @@
 namespace {
 constexpr int PAGE_ITEMS = 23;
 constexpr int SKIP_PAGE_MS = 700;
-constexpr unsigned long GO_TO_SETTINGS_MS = 1000;
 }  // namespace
 
 void sortFileList(std::vector<std::string>& strs) {
@@ -73,9 +72,6 @@ void FileSelectionActivity::onEnter() {
   loadFiles();
   selectorIndex = 0;
 
-  // Record entry time for button debouncing
-  activityStartTime = millis();
-
   // Trigger first update
   updateRequired = true;
 
@@ -102,15 +98,18 @@ void FileSelectionActivity::onExit() {
 }
 
 void FileSelectionActivity::loop() {
-  // Debounce button presses for first 300ms after entering activity
-  // This prevents the back button from being processed immediately after coming from Settings
-  const unsigned long timeSinceStart = millis() - activityStartTime;
-  constexpr unsigned long INPUT_DEBOUNCE_MS = 300;
-  
-  // Long press BACK (1s+) or short press at root goes to Settings
-  if (timeSinceStart > INPUT_DEBOUNCE_MS && mappedInput.isPressed(MappedInputManager::Button::Back) && 
-      mappedInput.getHeldTime() >= GO_TO_SETTINGS_MS) {
-    onGoToSettings();
+  // Back button: go up one directory, or to Settings if at root
+  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+    if (basepath != "/") {
+      // Go up one directory
+      basepath.replace(basepath.find_last_of('/'), std::string::npos, "");
+      if (basepath.empty()) basepath = "/";
+      loadFiles();
+      updateRequired = true;
+    } else {
+      // At root - go to Settings
+      onGoToSettings();
+    }
     return;
   }
 
@@ -133,18 +132,6 @@ void FileSelectionActivity::loop() {
       updateRequired = true;
     } else {
       onSelect(basepath + files[selectorIndex]);
-    }
-  } else if (timeSinceStart > INPUT_DEBOUNCE_MS && mappedInput.wasReleased(MappedInputManager::Button::Back)) {
-    // Short press: go up one directory, or go to settings if at root
-    if (mappedInput.getHeldTime() < GO_TO_SETTINGS_MS) {
-      if (basepath != "/") {
-        basepath.replace(basepath.find_last_of('/'), std::string::npos, "");
-        if (basepath.empty()) basepath = "/";
-        loadFiles();
-        updateRequired = true;
-      } else {
-        onGoToSettings();
-      }
     }
   } else if (prevReleased) {
     if (skipPage) {

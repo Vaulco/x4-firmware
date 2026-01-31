@@ -16,7 +16,6 @@ class FileSelectionActivity final : public Activity {
   std::vector<std::string> files;
   int selectorIndex = 0;
   bool updateRequired = false;
-  unsigned long activityStartTime = 0;  // For button debouncing
   const std::function<void(const std::string&)> onSelect;
   const std::function<void()> onGoToSettings;
 
