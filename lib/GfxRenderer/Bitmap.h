@@ -51,9 +51,4 @@ class Bitmap {
   uint16_t bpp = 0;
   int rowBytes = 0;
   uint8_t paletteLum[256] = {};
-
-  // Floyd-Steinberg dithering state (mutable for const methods)
-  mutable int16_t* errorCurRow = nullptr;
-  mutable int16_t* errorNextRow = nullptr;
-  mutable int prevRowY = -1;  // Track row progression for error propagation
 };

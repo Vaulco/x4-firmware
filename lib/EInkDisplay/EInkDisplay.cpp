@@ -413,7 +413,6 @@ void EInkDisplay::displayBuffer(RefreshMode mode) {
 }
 
 void EInkDisplay::displayGrayBuffer(const bool turnOffScreen) {
-  drawGrayscale = false;
   inGrayscaleMode = true;
 
   // activate the custom LUT for grayscale rendering and refresh

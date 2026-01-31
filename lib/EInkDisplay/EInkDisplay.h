@@ -81,7 +81,6 @@ class EInkDisplay {
   bool isScreenOn;
   bool customLutActive;
   bool inGrayscaleMode;
-  bool drawGrayscale;
 
   // Low-level display control
   void resetDisplay();
