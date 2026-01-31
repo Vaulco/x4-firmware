@@ -34,7 +34,6 @@ class EInkDisplay {
 #endif
   void setFramebuffer(const uint8_t* bwBuffer) const;
 
-  void copyGrayscaleBuffers(const uint8_t* lsbBuffer, const uint8_t* msbBuffer);
   void copyGrayscaleLsbBuffers(const uint8_t* lsbBuffer);
   void copyGrayscaleMsbBuffers(const uint8_t* msbBuffer);
 #ifdef EINK_DISPLAY_SINGLE_BUFFER_MODE

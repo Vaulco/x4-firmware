@@ -356,12 +356,6 @@ void EInkDisplay::copyGrayscaleMsbBuffers(const uint8_t* msbBuffer) {
   writeRamBuffer(CMD_WRITE_RAM_RED, msbBuffer, BUFFER_SIZE);
 }
 
-void EInkDisplay::copyGrayscaleBuffers(const uint8_t* lsbBuffer, const uint8_t* msbBuffer) {
-  setRamArea(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
-  writeRamBuffer(CMD_WRITE_RAM_BW, lsbBuffer, BUFFER_SIZE);
-  writeRamBuffer(CMD_WRITE_RAM_RED, msbBuffer, BUFFER_SIZE);
-}
-
 #ifdef EINK_DISPLAY_SINGLE_BUFFER_MODE
 /**
  * In single buffer mode, this should be called with the previously written BW buffer
