@@ -7,7 +7,6 @@
 
 #include "Xtc.h"
 
-#include <FsHelpers.h>
 #include <HardwareSerial.h>
 #include <SDCardManager.h>
 

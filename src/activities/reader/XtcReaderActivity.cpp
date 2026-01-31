@@ -7,7 +7,6 @@
 
 #include "XtcReaderActivity.h"
 
-#include <FsHelpers.h>
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
 
