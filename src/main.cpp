@@ -57,7 +57,7 @@ EpdFont cmu14ItalicFont(&cmu_14_italic);
 EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont);
 
 // Global BACK button long press tracking
-constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1.4 seconds to go to settings
+constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
 bool backLongPressConsumed = false;  // Flag to ignore BACK release after long press
 
 void exitActivity() {
@@ -141,12 +141,7 @@ void setupDisplayAndFonts() {
 }
 
 void setup() {
-
-  // Only start serial if USB connected
-  pinMode(UART0_RXD, INPUT);
-  if (digitalRead(UART0_RXD) == HIGH) {
-    Serial.begin(115200);
-  }
+  Serial.begin(115200);
 
   inputManager.begin();
   // Initialize pins
@@ -182,9 +177,6 @@ void setup() {
     APP_STATE.saveToFile();
     onGoToReader(path);
   }
-
-  // Ensure we're not still holding the power button before leaving setup
-  waitForPowerRelease();
 }
 
 void loop() {
@@ -195,81 +187,75 @@ void loop() {
   inputManager.update();
 
   if (Serial && millis() - lastMemPrint >= 10000) {
-    Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", millis(), ESP.getFreeHeap(),
-                  ESP.getHeapSize(), ESP.getMinFreeHeap());
+    Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", 
+                  millis(), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getMinFreeHeap());
     lastMemPrint = millis();
   }
 
-  // Check for any user activity (button press or release) or active background work
+  // Check for any user activity
   static unsigned long lastActivityTime = millis();
   if (inputManager.wasAnyPressed() || inputManager.wasAnyReleased() ||
       (currentActivity && currentActivity->preventAutoSleep())) {
-    lastActivityTime = millis();  // Reset inactivity timer
+    lastActivityTime = millis();
   }
 
+  // Auto-sleep check
   const unsigned long sleepTimeoutMs = SETTINGS.getSleepTimeoutMs();
   if (millis() - lastActivityTime >= sleepTimeoutMs) {
-    Serial.printf("[%lu] [SLP] Auto-sleep triggered after %lu ms of inactivity\n", millis(), sleepTimeoutMs);
+    Serial.printf("[%lu] [SLP] Auto-sleep triggered after %lu ms of inactivity\n", 
+                  millis(), sleepTimeoutMs);
     enterDeepSleep();
-    // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
     return;
   }
 
-  // Changed from long press to instant press for sleep
+  // Power button instant sleep
   if (inputManager.wasPressed(InputManager::BTN_POWER)) {
     enterDeepSleep();
-    // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
     return;
   }
 
-  // GLOBAL: Check for 1.4-second BACK button hold to go to Settings
+  // GLOBAL: Back button long press to Settings
   if (inputManager.isPressed(InputManager::BTN_BACK) && 
       inputManager.getHeldTime() >= BACK_LONG_PRESS_MS && 
       !backLongPressConsumed) {
     
     Serial.printf("[%lu] [MAIN] BACK button held for %lu ms - navigating to Settings\n", 
                   millis(), inputManager.getHeldTime());
-    
-    // Set flag to ignore the subsequent release
     backLongPressConsumed = true;
-    
-    // Navigate to Settings immediately
     onGoToSettings();
-    
-    // Don't process activity loop this iteration since we just switched activities
     return;
   }
 
-  // Clear the consumed flag when BACK button is released
+  // Clear consumed flag when released
   if (backLongPressConsumed && inputManager.wasReleased(InputManager::BTN_BACK)) {
-    Serial.printf("[%lu] [MAIN] BACK button released after long press - ignoring release event\n", millis());
+    Serial.printf("[%lu] [MAIN] BACK button released after long press - ignoring release event\n", 
+                  millis());
     backLongPressConsumed = false;
-    // Don't process this release event - it's been consumed
-    // Skip activity loop this iteration to prevent the release from being processed
     return;
   }
 
-  const unsigned long activityStartTime = millis();
+  // Run activity loop and measure duration
+  unsigned long activityDuration = 0;
   if (currentActivity) {
+    const unsigned long activityStartTime = millis();
     currentActivity->loop();
+    activityDuration = millis() - activityStartTime;
   }
-  const unsigned long activityDuration = millis() - activityStartTime;
 
+  // Performance tracking
   const unsigned long loopDuration = millis() - loopStartTime;
   if (loopDuration > maxLoopDuration) {
     maxLoopDuration = loopDuration;
-    if (maxLoopDuration > 50) {
-      Serial.printf("[%lu] [LOOP] New max loop duration: %lu ms (activity: %lu ms)\n", millis(), maxLoopDuration,
-                    activityDuration);
+    if (maxLoopDuration > 50 && currentActivity) {
+      Serial.printf("[%lu] [LOOP] New max loop duration: %lu ms (activity: %lu ms)\n", 
+                    millis(), maxLoopDuration, activityDuration);
     }
   }
 
-  // Add delay at the end of the loop to prevent tight spinning
-  // When an activity requests skip loop delay (e.g., webserver running), use yield() for faster response
-  // Otherwise, use longer delay to save power
+  // Loop delay
   if (currentActivity && currentActivity->skipLoopDelay()) {
-    yield();  // Give FreeRTOS a chance to run tasks, but return immediately
+    yield();
   } else {
-    delay(10);  // Normal delay when no activity requires fast response
+    delay(10);
   }
 }
