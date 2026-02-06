@@ -8,7 +8,6 @@
 
 #include "Battery.h"
 #include "Settings.h"
-#include "State.h"
 #include "MappedInputManager.h"
 #include "activities/network/CrossPointWebServerActivity.h"
 #include "activities/reader/FileSelectionActivity.h"
@@ -97,12 +96,12 @@ void enterDeepSleep() {
 void onGoToFileSelection();
 void onGoToSettings();
 
-void onGoToReader(const std::string& initialEpubPath) {
+void onGoToReader(const std::string& initialBookPath) {
   exitActivity();
-  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialEpubPath, onGoToSettings));
+  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialBookPath, onGoToSettings));
 }
 
-void onContinueReading() { onGoToReader(APP_STATE.openEpubPath); }
+void onContinueReading() { onGoToReader(SETTINGS.openBookPath); }
 
 void onGoToFileTransfer() {
   exitActivity();
@@ -143,7 +142,6 @@ void setup() {
   SPI.begin(EPD_SCLK, SD_SPI_MISO, EPD_MOSI, EPD_CS);
 
   // SD Card Initialization
-  // We need 6 open files concurrently when parsing a new chapter
   if (!SdMan.begin()) {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
     setupDisplayAndFonts();
@@ -159,15 +157,11 @@ void setup() {
 
   setupDisplayAndFonts();
 
-  APP_STATE.loadFromFile();
-  if (APP_STATE.openEpubPath.empty()) {
+  // Simplified boot logic - no defensive clearing
+  if (SETTINGS.openBookPath.empty()) {
     onGoToFileSelection();
   } else {
-    // Clear app state to avoid getting into a boot loop if the epub doesn't load
-    const auto path = APP_STATE.openEpubPath;
-    APP_STATE.openEpubPath = "";
-    APP_STATE.saveToFile();
-    onGoToReader(path);
+    onGoToReader(SETTINGS.openBookPath);
   }
 }
 

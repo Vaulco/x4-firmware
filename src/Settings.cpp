@@ -7,9 +7,8 @@
 Settings Settings::instance;
 
 namespace {
-constexpr uint8_t SETTINGS_FILE_VERSION = 1;
-// Updated from 4 to 3 since we removed sleepScreen
-constexpr uint8_t SETTINGS_COUNT = 2;
+constexpr uint8_t SETTINGS_FILE_VERSION = 2;  // Increment version for new field
+constexpr uint8_t SETTINGS_COUNT = 3;  // Now we have 3 settings (sleepTimeout, refreshFrequency, openBookPath)
 constexpr char SETTINGS_FILE[] = "/.ereader/settings.bin";
 }  // namespace
 
@@ -26,6 +25,7 @@ bool Settings::saveToFile() const {
   serialization::writePod(outputFile, SETTINGS_COUNT);
   serialization::writePod(outputFile, sleepTimeout);
   serialization::writePod(outputFile, refreshFrequency);
+  serialization::writeString(outputFile, openBookPath);
   outputFile.close();
 
   Serial.printf("[%lu] [CPS] Settings saved to file\n", millis());
@@ -40,6 +40,34 @@ bool Settings::loadFromFile() {
 
   uint8_t version;
   serialization::readPod(inputFile, version);
+  
+  // Handle version 1 (old format without openBookPath)
+  if (version == 1) {
+    Serial.printf("[%lu] [CPS] Loading v1 settings file, migrating to v2\n", millis());
+    
+    uint8_t fileSettingsCount = 0;
+    serialization::readPod(inputFile, fileSettingsCount);
+
+    // Load old settings
+    uint8_t settingsRead = 0;
+    do {
+      serialization::readPod(inputFile, sleepTimeout);
+      if (++settingsRead >= fileSettingsCount) break;
+      serialization::readPod(inputFile, refreshFrequency);
+      if (++settingsRead >= fileSettingsCount) break;
+    } while (false);
+    
+    inputFile.close();
+    
+    // openBookPath remains empty (default value)
+    // Save immediately to upgrade to v2
+    saveToFile();
+    
+    Serial.printf("[%lu] [CPS] Settings migrated from v1 to v2\n", millis());
+    return true;
+  }
+  
+  // Handle version 2 (current format)
   if (version != SETTINGS_FILE_VERSION) {
     Serial.printf("[%lu] [CPS] Deserialization failed: Unknown version %u\n",
                   millis(), version);
@@ -50,12 +78,14 @@ bool Settings::loadFromFile() {
   uint8_t fileSettingsCount = 0;
   serialization::readPod(inputFile, fileSettingsCount);
 
-  // load settings that exist (support older files with more or fewer fields)
+  // Load settings that exist (support older files with more or fewer fields)
   uint8_t settingsRead = 0;
   do {
     serialization::readPod(inputFile, sleepTimeout);
     if (++settingsRead >= fileSettingsCount) break;
     serialization::readPod(inputFile, refreshFrequency);
+    if (++settingsRead >= fileSettingsCount) break;
+    serialization::readString(inputFile, openBookPath);
     if (++settingsRead >= fileSettingsCount) break;
   } while (false);
 

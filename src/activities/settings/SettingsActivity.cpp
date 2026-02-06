@@ -4,7 +4,6 @@
 #include <SDCardManager.h>
 
 #include "Settings.h"
-#include "State.h"
 #include "MappedInputManager.h"
 #include "Battery.h"
 #include "fontIds.h"
@@ -103,7 +102,7 @@ void SettingsActivity::handleSettingAction() {
     // Handle action settings
     if (strcmp(setting.name, "Continue Reading") == 0) {
       // Check if we have a book to continue reading
-      if (!APP_STATE.openEpubPath.empty() && SdMan.exists(APP_STATE.openEpubPath.c_str())) {
+      if (!SETTINGS.openBookPath.empty() && SdMan.exists(SETTINGS.openBookPath.c_str())) {
         onContinueReading();
       } else {
         // No book available - could show a message or do nothing

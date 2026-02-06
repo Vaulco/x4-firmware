@@ -11,7 +11,6 @@
 #include <SDCardManager.h>
 
 #include "Settings.h"
-#include "State.h"
 #include "MappedInputManager.h"
 #include "XtcReaderChapterSelectionActivity.h"
 #include "fontIds.h"
@@ -36,14 +35,14 @@ void XtcReaderActivity::onEnter() {
   loadProgress();
 
   // Save current XTC as last opened book
-  APP_STATE.openEpubPath = xtc->getPath();
-  APP_STATE.saveToFile();
+  SETTINGS.openBookPath = xtc->getPath();
+  SETTINGS.saveToFile();
 
   // Trigger first update
   updateRequired = true;
 
   xTaskCreate(&XtcReaderActivity::taskTrampoline, "XtcReaderActivityTask",
-              4096,               // Stack size (smaller than EPUB since no parsing needed)
+              4096,               // Stack size
               this,               // Parameters
               1,                  // Priority
               &displayTaskHandle  // Task handle

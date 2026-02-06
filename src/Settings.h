@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <string>
 
 class Settings {
  private:
@@ -24,6 +25,9 @@ class Settings {
   uint8_t sleepTimeout = SLEEP_10_MIN;
   // E-ink refresh frequency (default 15 pages)
   uint8_t refreshFrequency = REFRESH_15;
+  
+  // Last opened book path (merged from State)
+  std::string openBookPath;
 
   ~Settings() = default;
 
