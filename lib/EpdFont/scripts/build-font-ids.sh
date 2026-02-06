@@ -12,7 +12,6 @@ echo "#define CMU_8_FONT_ID ($(
 ruby -rdigest -e 'puts [
   "./cmu_8_regular.h",
   "./cmu_8_bold.h",
-  "./cmu_8_italic.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"
 
@@ -20,7 +19,6 @@ echo "#define CMU_10_FONT_ID ($(
 ruby -rdigest -e 'puts [
   "./cmu_10_regular.h",
   "./cmu_10_bold.h",
-  "./cmu_10_italic.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"
 
@@ -28,6 +26,5 @@ echo "#define CMU_12_FONT_ID ($(
 ruby -rdigest -e 'puts [
   "./cmu_12_regular.h",
   "./cmu_12_bold.h",
-  "./cmu_12_italic.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"

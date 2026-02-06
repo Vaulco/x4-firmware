@@ -35,18 +35,15 @@ Activity* currentActivity;
 
 EpdFont cmu8RegularFont(&cmu_8_regular);
 EpdFont cmu8BoldFont(&cmu_8_bold);
-EpdFont cmu8ItalicFont(&cmu_8_italic);
-EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont, &cmu8ItalicFont);
+EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont);
 
 EpdFont cmu10RegularFont(&cmu_10_regular);
 EpdFont cmu10BoldFont(&cmu_10_bold);
-EpdFont cmu10ItalicFont(&cmu_10_italic);
-EpdFontFamily cmu10FontFamily(&cmu10RegularFont, &cmu10BoldFont, &cmu10ItalicFont);
+EpdFontFamily cmu10FontFamily(&cmu10RegularFont, &cmu10BoldFont);
 
 EpdFont cmu12RegularFont(&cmu_12_regular);
 EpdFont cmu12BoldFont(&cmu_12_bold);
-EpdFont cmu12ItalicFont(&cmu_12_italic);
-EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont, &cmu12ItalicFont);
+EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont);
 
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
