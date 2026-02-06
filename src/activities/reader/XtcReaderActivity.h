@@ -21,9 +21,7 @@ class XtcReaderActivity final : public ActivityWithSubactivity {
   uint32_t currentPage = 0;
   int pagesUntilFullRefresh = 0;
   bool updateRequired = false;
-  unsigned long activityStartTime = 0;  // Track when activity started for button debouncing
-  const std::function<void()> onGoBack;
-  const std::function<void()> onGoHome;
+  const std::function<void()> onGoBackToFileSelection;
 
   static void taskTrampoline(void* param);
   [[noreturn]] void displayTaskLoop();
@@ -34,11 +32,10 @@ class XtcReaderActivity final : public ActivityWithSubactivity {
 
  public:
   explicit XtcReaderActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::unique_ptr<Xtc> xtc,
-                             const std::function<void()>& onGoBack, const std::function<void()>& onGoHome)
+                             const std::function<void()>& onGoBackToFileSelection)
       : ActivityWithSubactivity("XtcReader", renderer, mappedInput),
         xtc(std::move(xtc)),
-        onGoBack(onGoBack),
-        onGoHome(onGoHome) {}
+        onGoBackToFileSelection(onGoBackToFileSelection) {}
   void onEnter() override;
   void onExit() override;
   void loop() override;

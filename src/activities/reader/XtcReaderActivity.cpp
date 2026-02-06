@@ -16,10 +16,6 @@
 #include "XtcReaderChapterSelectionActivity.h"
 #include "fontIds.h"
 
-namespace {
-constexpr unsigned long skipPageMs = 700;
-}  // namespace
-
 void XtcReaderActivity::taskTrampoline(void* param) {
   auto* self = static_cast<XtcReaderActivity*>(param);
   self->displayTaskLoop();
@@ -96,9 +92,9 @@ void XtcReaderActivity::loop() {
   }
 
   // Short press BACK goes to file selection
-  // NOTE: Long press BACK (1.4s) to go to Settings is now handled globally in main.cpp
+  // NOTE: Long press BACK (1s) to go to Settings is handled globally in main.cpp
   if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
-    onGoBack();
+    onGoBackToFileSelection();
     return;
   }
 
@@ -118,22 +114,19 @@ void XtcReaderActivity::loop() {
     return;
   }
 
-  const bool skipPages = mappedInput.getHeldTime() > skipPageMs;
-  const int skipAmount = skipPages ? 10 : 1;
-
   if (prevReleased) {
-    if (currentPage >= static_cast<uint32_t>(skipAmount)) {
-      currentPage -= skipAmount;
-    } else {
-      currentPage = 0;
+    if (currentPage > 0) {
+      currentPage--;
+      updateRequired = true;
     }
-    updateRequired = true;
   } else if (nextReleased) {
-    currentPage += skipAmount;
-    if (currentPage >= xtc->getPageCount()) {
+    if (currentPage < xtc->getPageCount() - 1) {
+      currentPage++;
+      updateRequired = true;
+    } else {
       currentPage = xtc->getPageCount();  // Allow showing "End of book"
+      updateRequired = true;
     }
-    updateRequired = true;
   }
 }
 
@@ -236,16 +229,6 @@ void XtcReaderActivity::renderPage() {
 
     // Optimized grayscale rendering without storeBwBuffer (saves 48KB peak memory)
     // Flow: BW display → LSB/MSB passes → grayscale display → re-render BW for next frame
-
-    // Count pixel distribution for debugging
-    uint32_t pixelCounts[4] = {0, 0, 0, 0};
-    for (uint16_t y = 0; y < pageHeight; y++) {
-      for (uint16_t x = 0; x < pageWidth; x++) {
-        pixelCounts[getPixelValue(x, y)]++;
-      }
-    }
-    Serial.printf("[%lu] [XTR] Pixel distribution: White=%lu, DarkGrey=%lu, LightGrey=%lu, Black=%lu\n", millis(),
-                  pixelCounts[0], pixelCounts[1], pixelCounts[2], pixelCounts[3]);
 
     // Pass 1: BW buffer - draw all non-white pixels as black
     for (uint16_t y = 0; y < pageHeight; y++) {

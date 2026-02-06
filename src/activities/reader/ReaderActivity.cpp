@@ -66,8 +66,8 @@ void ReaderActivity::onGoToXtcReader(std::unique_ptr<Xtc> xtc) {
   currentBookPath = xtcPath;
   exitActivity();
   enterNewActivity(new XtcReaderActivity(
-      renderer, mappedInput, std::move(xtc), [this, xtcPath] { onGoToFileSelection(xtcPath); },
-      [this] { onGoBack(); }));
+      renderer, mappedInput, std::move(xtc), 
+      [this] { onGoToFileSelection(); }));  // Back goes to file selection
 }
 
 void ReaderActivity::onEnter() {
