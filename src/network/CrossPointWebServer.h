@@ -37,9 +37,21 @@ class CrossPointWebServer {
   bool apMode = false;  // true when running in AP mode, false for STA mode
   uint16_t port = 80;
 
+  // Upload state (member variables instead of static)
+  FsFile uploadFile;
+  String uploadFileName;
+  String uploadPath = "/";
+  size_t uploadSize = 0;
+  bool uploadSuccess = false;
+  String uploadError = "";
+
+  // Helper methods
+  String getIPAddress() const;
+  static bool isHiddenOrProtected(const String& name);
+  static String normalizePath(String path);
+
   // File scanning
   void scanFiles(const char* path, const std::function<void(FileInfo)>& callback) const;
-  String formatFileSize(size_t bytes) const;
 
   // Request handlers
   void handleNotFound() const;

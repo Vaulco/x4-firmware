@@ -19,6 +19,36 @@ CrossPointWebServer::CrossPointWebServer() {}
 
 CrossPointWebServer::~CrossPointWebServer() { stop(); }
 
+// Helper method: Get IP address based on current mode
+String CrossPointWebServer::getIPAddress() const {
+  return apMode ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
+}
+
+// Helper method: Check if item name should be hidden or is protected
+bool CrossPointWebServer::isHiddenOrProtected(const String& name) {
+  // Skip hidden items (starting with ".")
+  if (name.startsWith(".")) return true;
+
+  // Check against explicitly hidden items list
+  for (size_t i = 0; i < HIDDEN_ITEMS_COUNT; i++) {
+    if (name.equals(HIDDEN_ITEMS[i])) return true;
+  }
+  return false;
+}
+
+// Helper method: Normalize path (ensure starts with /, remove trailing / unless root)
+String CrossPointWebServer::normalizePath(String path) {
+  // Ensure path starts with /
+  if (!path.startsWith("/")) {
+    path = "/" + path;
+  }
+  // Remove trailing slash unless it's root
+  if (path.length() > 1 && path.endsWith("/")) {
+    path = path.substring(0, path.length() - 1);
+  }
+  return path;
+}
+
 void CrossPointWebServer::begin() {
   if (running) {
     Serial.printf("[%lu] [WEB] Web server already running\n", millis());
@@ -46,11 +76,7 @@ void CrossPointWebServer::begin() {
   server.reset(new WebServer(port));
 
   // Disable WiFi sleep to improve responsiveness and prevent 'unreachable' errors.
-  // This is critical for reliable web server operation on ESP32.
   WiFi.setSleep(false);
-
-  // Note: WebServer class doesn't have setNoDelay() in the standard ESP32 library.
-  // We rely on disabling WiFi sleep for responsiveness.
 
   Serial.printf("[%lu] [WEB] [MEM] Free heap after WebServer allocation: %d bytes\n", millis(), ESP.getFreeHeap());
 
@@ -82,9 +108,7 @@ void CrossPointWebServer::begin() {
   running = true;
 
   Serial.printf("[%lu] [WEB] Web server started on port %d\n", millis(), port);
-  // Show the correct IP based on network mode
-  const String ipAddr = apMode ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
-  Serial.printf("[%lu] [WEB] Access at http://%s/\n", millis(), ipAddr.c_str());
+  Serial.printf("[%lu] [WEB] Access at http://%s/\n", millis(), getIPAddress().c_str());
   Serial.printf("[%lu] [WEB] [MEM] Free heap after server.begin(): %d bytes\n", millis(), ESP.getFreeHeap());
 }
 
@@ -115,8 +139,16 @@ void CrossPointWebServer::stop() {
   Serial.printf("[%lu] [WEB] Web server stopped and deleted\n", millis());
   Serial.printf("[%lu] [WEB] [MEM] Free heap after delete server: %d bytes\n", millis(), ESP.getFreeHeap());
 
-  // Note: Static upload variables (uploadFileName, uploadPath, uploadError) are declared
-  // later in the file and will be cleared when they go out of scope or on next upload
+  // Clear upload state
+  if (uploadFile) {
+    uploadFile.close();
+  }
+  uploadFileName = "";
+  uploadPath = "/";
+  uploadSize = 0;
+  uploadSuccess = false;
+  uploadError = "";
+
   Serial.printf("[%lu] [WEB] [MEM] Free heap final: %d bytes\n", millis(), ESP.getFreeHeap());
 }
 
@@ -150,11 +182,8 @@ void CrossPointWebServer::handleNotFound() const {
 }
 
 void CrossPointWebServer::handleStatus() const {
-  // Get correct IP based on AP vs STA mode
-  const String ipAddr = apMode ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
-
   JsonDocument doc;
-  doc["ip"] = ipAddr;
+  doc["ip"] = getIPAddress();
   doc["mode"] = apMode ? "AP" : "STA";
   doc["rssi"] = apMode ? 0 : WiFi.RSSI();
   doc["freeHeap"] = ESP.getFreeHeap();
@@ -186,20 +215,7 @@ void CrossPointWebServer::scanFiles(const char* path, const std::function<void(F
     file.getName(name, sizeof(name));
     auto fileName = String(name);
 
-    // Skip hidden items (starting with ".")
-    bool shouldHide = fileName.startsWith(".");
-
-    // Check against explicitly hidden items list
-    if (!shouldHide) {
-      for (size_t i = 0; i < HIDDEN_ITEMS_COUNT; i++) {
-        if (fileName.equals(HIDDEN_ITEMS[i])) {
-          shouldHide = true;
-          break;
-        }
-      }
-    }
-
-    if (!shouldHide) {
+    if (!isHiddenOrProtected(fileName)) {
       FileInfo info;
       info.name = fileName;
       info.isDirectory = file.isDirectory();
@@ -219,18 +235,8 @@ void CrossPointWebServer::handleFileList() const { server->send(200, "text/html"
 
 void CrossPointWebServer::handleFileListData() const {
   // Get current path from query string (default to root)
-  String currentPath = "/";
-  if (server->hasArg("path")) {
-    currentPath = server->arg("path");
-    // Ensure path starts with /
-    if (!currentPath.startsWith("/")) {
-      currentPath = "/" + currentPath;
-    }
-    // Remove trailing slash unless it's root
-    if (currentPath.length() > 1 && currentPath.endsWith("/")) {
-      currentPath = currentPath.substring(0, currentPath.length() - 1);
-    }
-  }
+  String currentPath = server->hasArg("path") ? server->arg("path") : "/";
+  currentPath = normalizePath(currentPath);
 
   server->setContentLength(CONTENT_LENGTH_UNKNOWN);
   server->send(200, "application/json", "");
@@ -266,14 +272,6 @@ void CrossPointWebServer::handleFileListData() const {
   Serial.printf("[%lu] [WEB] Served file listing page for path: %s\n", millis(), currentPath.c_str());
 }
 
-// Static variables for upload handling
-static FsFile uploadFile;
-static String uploadFileName;
-static String uploadPath = "/";
-static size_t uploadSize = 0;
-static bool uploadSuccess = false;
-static String uploadError = "";
-
 void CrossPointWebServer::handleUpload() const {
   static unsigned long lastWriteTime = 0;
   static unsigned long uploadStartTime = 0;
@@ -288,29 +286,20 @@ void CrossPointWebServer::handleUpload() const {
   const HTTPUpload& upload = server->upload();
 
   if (upload.status == UPLOAD_FILE_START) {
-    uploadFileName = upload.filename;
-    uploadSize = 0;
-    uploadSuccess = false;
-    uploadError = "";
+    // Access member variables instead of static variables
+    const_cast<CrossPointWebServer*>(this)->uploadFileName = upload.filename;
+    const_cast<CrossPointWebServer*>(this)->uploadSize = 0;
+    const_cast<CrossPointWebServer*>(this)->uploadSuccess = false;
+    const_cast<CrossPointWebServer*>(this)->uploadError = "";
     uploadStartTime = millis();
     lastWriteTime = millis();
     lastLoggedSize = 0;
 
     // Get upload path from query parameter (defaults to root if not specified)
-    // Note: We use query parameter instead of form data because multipart form
-    // fields aren't available until after file upload completes
     if (server->hasArg("path")) {
-      uploadPath = server->arg("path");
-      // Ensure path starts with /
-      if (!uploadPath.startsWith("/")) {
-        uploadPath = "/" + uploadPath;
-      }
-      // Remove trailing slash unless it's root
-      if (uploadPath.length() > 1 && uploadPath.endsWith("/")) {
-        uploadPath = uploadPath.substring(0, uploadPath.length() - 1);
-      }
+      const_cast<CrossPointWebServer*>(this)->uploadPath = normalizePath(server->arg("path"));
     } else {
-      uploadPath = "/";
+      const_cast<CrossPointWebServer*>(this)->uploadPath = "/";
     }
 
     Serial.printf("[%lu] [WEB] [UPLOAD] START: %s to path: %s\n", millis(), uploadFileName.c_str(), uploadPath.c_str());
@@ -328,8 +317,8 @@ void CrossPointWebServer::handleUpload() const {
     }
 
     // Open file for writing
-    if (!SdMan.openFileForWrite("WEB", filePath, uploadFile)) {
-      uploadError = "Failed to create file on SD card";
+    if (!SdMan.openFileForWrite("WEB", filePath, const_cast<CrossPointWebServer*>(this)->uploadFile)) {
+      const_cast<CrossPointWebServer*>(this)->uploadError = "Failed to create file on SD card";
       Serial.printf("[%lu] [WEB] [UPLOAD] FAILED to create file: %s\n", millis(), filePath.c_str());
       return;
     }
@@ -338,17 +327,17 @@ void CrossPointWebServer::handleUpload() const {
   } else if (upload.status == UPLOAD_FILE_WRITE) {
     if (uploadFile && uploadError.isEmpty()) {
       const unsigned long writeStartTime = millis();
-      const size_t written = uploadFile.write(upload.buf, upload.currentSize);
+      const size_t written = const_cast<CrossPointWebServer*>(this)->uploadFile.write(upload.buf, upload.currentSize);
       const unsigned long writeEndTime = millis();
       const unsigned long writeDuration = writeEndTime - writeStartTime;
 
       if (written != upload.currentSize) {
-        uploadError = "Failed to write to SD card - disk may be full";
-        uploadFile.close();
+        const_cast<CrossPointWebServer*>(this)->uploadError = "Failed to write to SD card - disk may be full";
+        const_cast<CrossPointWebServer*>(this)->uploadFile.close();
         Serial.printf("[%lu] [WEB] [UPLOAD] WRITE ERROR - expected %d, wrote %d\n", millis(), upload.currentSize,
                       written);
       } else {
-        uploadSize += written;
+        const_cast<CrossPointWebServer*>(this)->uploadSize += written;
 
         // Log progress every 50KB or if write took >100ms
         if (uploadSize - lastLoggedSize >= 51200 || writeDuration > 100) {
@@ -367,23 +356,23 @@ void CrossPointWebServer::handleUpload() const {
     }
   } else if (upload.status == UPLOAD_FILE_END) {
     if (uploadFile) {
-      uploadFile.close();
+      const_cast<CrossPointWebServer*>(this)->uploadFile.close();
 
       if (uploadError.isEmpty()) {
-        uploadSuccess = true;
+        const_cast<CrossPointWebServer*>(this)->uploadSuccess = true;
         Serial.printf("[%lu] [WEB] Upload complete: %s (%d bytes)\n", millis(), uploadFileName.c_str(), uploadSize);
       }
     }
   } else if (upload.status == UPLOAD_FILE_ABORTED) {
     if (uploadFile) {
-      uploadFile.close();
+      const_cast<CrossPointWebServer*>(this)->uploadFile.close();
       // Try to delete the incomplete file
       String filePath = uploadPath;
       if (!filePath.endsWith("/")) filePath += "/";
       filePath += uploadFileName;
       SdMan.remove(filePath.c_str());
     }
-    uploadError = "Upload aborted";
+    const_cast<CrossPointWebServer*>(this)->uploadError = "Upload aborted";
     Serial.printf("[%lu] [WEB] Upload aborted\n", millis());
   }
 }
@@ -413,16 +402,8 @@ void CrossPointWebServer::handleCreateFolder() const {
   }
 
   // Get parent path
-  String parentPath = "/";
-  if (server->hasArg("path")) {
-    parentPath = server->arg("path");
-    if (!parentPath.startsWith("/")) {
-      parentPath = "/" + parentPath;
-    }
-    if (parentPath.length() > 1 && parentPath.endsWith("/")) {
-      parentPath = parentPath.substring(0, parentPath.length() - 1);
-    }
-  }
+  String parentPath = server->hasArg("path") ? server->arg("path") : "/";
+  parentPath = normalizePath(parentPath);
 
   // Build full folder path
   String folderPath = parentPath;
@@ -454,7 +435,7 @@ void CrossPointWebServer::handleDelete() const {
     return;
   }
 
-  String itemPath = server->arg("path");
+  String itemPath = normalizePath(server->arg("path"));
   const String itemType = server->hasArg("type") ? server->arg("type") : "file";
 
   // Validate path
@@ -463,28 +444,13 @@ void CrossPointWebServer::handleDelete() const {
     return;
   }
 
-  // Ensure path starts with /
-  if (!itemPath.startsWith("/")) {
-    itemPath = "/" + itemPath;
-  }
-
   // Security check: prevent deletion of protected items
   const String itemName = itemPath.substring(itemPath.lastIndexOf('/') + 1);
 
-  // Check if item starts with a dot (hidden/system file)
-  if (itemName.startsWith(".")) {
-    Serial.printf("[%lu] [WEB] Delete rejected - hidden/system item: %s\n", millis(), itemPath.c_str());
-    server->send(403, "text/plain", "Cannot delete system files");
+  if (isHiddenOrProtected(itemName)) {
+    Serial.printf("[%lu] [WEB] Delete rejected - protected/hidden item: %s\n", millis(), itemPath.c_str());
+    server->send(403, "text/plain", "Cannot delete protected or system items");
     return;
-  }
-
-  // Check against explicitly protected items
-  for (size_t i = 0; i < HIDDEN_ITEMS_COUNT; i++) {
-    if (itemName.equals(HIDDEN_ITEMS[i])) {
-      Serial.printf("[%lu] [WEB] Delete rejected - protected item: %s\n", millis(), itemPath.c_str());
-      server->send(403, "text/plain", "Cannot delete protected items");
-      return;
-    }
   }
 
   // Check if item exists
