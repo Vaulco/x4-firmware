@@ -26,7 +26,7 @@ class Settings {
   // E-ink refresh frequency (default 15 pages)
   uint8_t refreshFrequency = REFRESH_15;
   
-  // Last opened book path (merged from State)
+  // Last opened book path
   std::string openBookPath;
 
   ~Settings() = default;

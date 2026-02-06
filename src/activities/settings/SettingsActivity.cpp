@@ -101,13 +101,7 @@ void SettingsActivity::handleSettingAction() {
   if (setting.type == SettingType::ACTION) {
     // Handle action settings
     if (strcmp(setting.name, "Continue Reading") == 0) {
-      // Check if we have a book to continue reading
-      if (!SETTINGS.openBookPath.empty() && SdMan.exists(SETTINGS.openBookPath.c_str())) {
-        onContinueReading();
-      } else {
-        // No book available - could show a message or do nothing
-        Serial.printf("[%lu] [SETTINGS] No book available to continue reading\n", millis());
-      }
+      onContinueReading();
     } else if (strcmp(setting.name, "File Transfer") == 0) {
       onFileTransferOpen();
     }

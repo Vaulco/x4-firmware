@@ -7,10 +7,8 @@
 Settings Settings::instance;
 
 namespace {
-constexpr uint8_t SETTINGS_FILE_VERSION = 2;  // Increment version for new field
-constexpr uint8_t SETTINGS_COUNT = 3;  // Now we have 3 settings (sleepTimeout, refreshFrequency, openBookPath)
 constexpr char SETTINGS_FILE[] = "/.ereader/settings.bin";
-}  // namespace
+}
 
 bool Settings::saveToFile() const {
   // Make sure the directory exists
@@ -21,8 +19,6 @@ bool Settings::saveToFile() const {
     return false;
   }
 
-  serialization::writePod(outputFile, SETTINGS_FILE_VERSION);
-  serialization::writePod(outputFile, SETTINGS_COUNT);
   serialization::writePod(outputFile, sleepTimeout);
   serialization::writePod(outputFile, refreshFrequency);
   serialization::writeString(outputFile, openBookPath);
@@ -38,56 +34,11 @@ bool Settings::loadFromFile() {
     return false;
   }
 
-  uint8_t version;
-  serialization::readPod(inputFile, version);
-  
-  // Handle version 1 (old format without openBookPath)
-  if (version == 1) {
-    Serial.printf("[%lu] [CPS] Loading v1 settings file, migrating to v2\n", millis());
-    
-    uint8_t fileSettingsCount = 0;
-    serialization::readPod(inputFile, fileSettingsCount);
-
-    // Load old settings
-    uint8_t settingsRead = 0;
-    do {
-      serialization::readPod(inputFile, sleepTimeout);
-      if (++settingsRead >= fileSettingsCount) break;
-      serialization::readPod(inputFile, refreshFrequency);
-      if (++settingsRead >= fileSettingsCount) break;
-    } while (false);
-    
-    inputFile.close();
-    
-    // openBookPath remains empty (default value)
-    // Save immediately to upgrade to v2
-    saveToFile();
-    
-    Serial.printf("[%lu] [CPS] Settings migrated from v1 to v2\n", millis());
-    return true;
-  }
-  
-  // Handle version 2 (current format)
-  if (version != SETTINGS_FILE_VERSION) {
-    Serial.printf("[%lu] [CPS] Deserialization failed: Unknown version %u\n",
-                  millis(), version);
-    inputFile.close();
-    return false;
-  }
-
-  uint8_t fileSettingsCount = 0;
-  serialization::readPod(inputFile, fileSettingsCount);
-
-  // Load settings that exist (support older files with more or fewer fields)
-  uint8_t settingsRead = 0;
-  do {
-    serialization::readPod(inputFile, sleepTimeout);
-    if (++settingsRead >= fileSettingsCount) break;
-    serialization::readPod(inputFile, refreshFrequency);
-    if (++settingsRead >= fileSettingsCount) break;
-    serialization::readString(inputFile, openBookPath);
-    if (++settingsRead >= fileSettingsCount) break;
-  } while (false);
+  // Read settings fields - if file is corrupted or incomplete, 
+  // the fields will keep their default values
+  serialization::readPod(inputFile, sleepTimeout);
+  serialization::readPod(inputFile, refreshFrequency);
+  serialization::readString(inputFile, openBookPath);
 
   inputFile.close();
   Serial.printf("[%lu] [CPS] Settings loaded from file\n", millis());
