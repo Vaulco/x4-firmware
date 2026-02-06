@@ -18,7 +18,6 @@
 
 namespace {
 constexpr unsigned long skipPageMs = 700;
-constexpr unsigned long goHomeMs = 1000;
 constexpr unsigned long INPUT_DEBOUNCE_MS = 300;  // Ignore button releases for first 300ms
 }  // namespace
 
@@ -103,14 +102,9 @@ void XtcReaderActivity::loop() {
     }
   }
 
-  // Long press BACK (1s+) goes directly to home
-  if (mappedInput.isPressed(MappedInputManager::Button::Back) && mappedInput.getHeldTime() >= goHomeMs) {
-    onGoHome();
-    return;
-  }
-
   // Short press BACK goes to file selection
-  if (mappedInput.wasReleased(MappedInputManager::Button::Back) && mappedInput.getHeldTime() < goHomeMs) {
+  // NOTE: Long press BACK (1.4s) to go to Settings is now handled globally in main.cpp
+  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     onGoBack();
     return;
   }

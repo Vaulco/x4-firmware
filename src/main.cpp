@@ -60,6 +60,10 @@ EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFon
 unsigned long t1 = 0;
 unsigned long t2 = 0;
 
+// Global BACK button long press tracking
+constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1.4 seconds to go to settings
+bool backLongPressConsumed = false;  // Flag to ignore BACK release after long press
+
 void exitActivity() {
   if (currentActivity) {
     currentActivity->onExit();
@@ -221,6 +225,33 @@ void loop() {
   if (inputManager.wasPressed(InputManager::BTN_POWER)) {
     enterDeepSleep();
     // This should never be hit as `enterDeepSleep` calls esp_deep_sleep_start
+    return;
+  }
+
+  // GLOBAL: Check for 1.4-second BACK button hold to go to Settings
+  if (inputManager.isPressed(InputManager::BTN_BACK) && 
+      inputManager.getHeldTime() >= BACK_LONG_PRESS_MS && 
+      !backLongPressConsumed) {
+    
+    Serial.printf("[%lu] [MAIN] BACK button held for %lu ms - navigating to Settings\n", 
+                  millis(), inputManager.getHeldTime());
+    
+    // Set flag to ignore the subsequent release
+    backLongPressConsumed = true;
+    
+    // Navigate to Settings immediately
+    onGoToSettings();
+    
+    // Don't process activity loop this iteration since we just switched activities
+    return;
+  }
+
+  // Clear the consumed flag when BACK button is released
+  if (backLongPressConsumed && inputManager.wasReleased(InputManager::BTN_BACK)) {
+    Serial.printf("[%lu] [MAIN] BACK button released after long press - ignoring release event\n", millis());
+    backLongPressConsumed = false;
+    // Don't process this release event - it's been consumed
+    // Skip activity loop this iteration to prevent the release from being processed
     return;
   }
 
