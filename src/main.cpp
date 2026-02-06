@@ -56,10 +56,6 @@ EpdFont cmu14BoldFont(&cmu_14_bold);
 EpdFont cmu14ItalicFont(&cmu_14_italic);
 EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont);
 
-// measurement of power button press duration calibration value
-unsigned long t1 = 0;
-unsigned long t2 = 0;
-
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1.4 seconds to go to settings
 bool backLongPressConsumed = false;  // Flag to ignore BACK release after long press
@@ -96,7 +92,6 @@ void enterDeepSleep() {
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
   
   einkDisplay.deepSleep();
-  Serial.printf("[%lu] [   ] Power button press calibration value: %lu ms\n", millis(), t2 - t1);
   Serial.printf("[%lu] [   ] Entering deep sleep.\n", millis());
   esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
   // Ensure that the power button has been released to avoid immediately turning back on if you're holding it
@@ -146,7 +141,6 @@ void setupDisplayAndFonts() {
 }
 
 void setup() {
-  t1 = millis();
 
   // Only start serial if USB connected
   pinMode(UART0_RXD, INPUT);
