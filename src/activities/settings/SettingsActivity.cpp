@@ -104,17 +104,13 @@ void SettingsActivity::handleSettingAction() {
     if (strcmp(setting.name, "Continue Reading") == 0) {
       // Check if we have a book to continue reading
       if (!APP_STATE.openEpubPath.empty() && SdMan.exists(APP_STATE.openEpubPath.c_str())) {
-        if (onContinueReading) {
-          onContinueReading();
-        }
+        onContinueReading();
       } else {
         // No book available - could show a message or do nothing
         Serial.printf("[%lu] [SETTINGS] No book available to continue reading\n", millis());
       }
     } else if (strcmp(setting.name, "File Transfer") == 0) {
-      if (onFileTransferOpen) {
-        onFileTransferOpen();
-      }
+      onFileTransferOpen();
     }
     return;
   }

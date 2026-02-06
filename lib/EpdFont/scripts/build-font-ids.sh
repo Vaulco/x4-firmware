@@ -31,11 +31,3 @@ ruby -rdigest -e 'puts [
   "./cmu_12_italic.h",
 ].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
 ))"
-
-echo "#define CMU_14_FONT_ID ($(
-ruby -rdigest -e 'puts [
-  "./cmu_14_regular.h",
-  "./cmu_14_bold.h",
-  "./cmu_14_italic.h",
-].map{|f| Digest::SHA256.hexdigest(File.read(f)).to_i(16) }.sum % (2 ** 32) - (2 ** 31)'
-))"

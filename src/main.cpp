@@ -26,8 +26,6 @@
 #define EPD_RST 5    // Reset
 #define EPD_BUSY 6   // Busy
 
-#define UART0_RXD 20  // Used for USB connection detection
-
 #define SD_SPI_MISO 7
 
 EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
@@ -50,11 +48,6 @@ EpdFont cmu12RegularFont(&cmu_12_regular);
 EpdFont cmu12BoldFont(&cmu_12_bold);
 EpdFont cmu12ItalicFont(&cmu_12_italic);
 EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont, &cmu12ItalicFont);
-
-EpdFont cmu14RegularFont(&cmu_14_regular);
-EpdFont cmu14BoldFont(&cmu_14_bold);
-EpdFont cmu14ItalicFont(&cmu_14_italic);
-EpdFontFamily cmu14FontFamily(&cmu14RegularFont, &cmu14BoldFont, &cmu14ItalicFont);
 
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
@@ -136,7 +129,6 @@ void setupDisplayAndFonts() {
   renderer.insertFont(CMU_8_FONT_ID, cmu8FontFamily);
   renderer.insertFont(CMU_10_FONT_ID, cmu10FontFamily);
   renderer.insertFont(CMU_12_FONT_ID, cmu12FontFamily);
-  renderer.insertFont(CMU_14_FONT_ID, cmu14FontFamily);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 
