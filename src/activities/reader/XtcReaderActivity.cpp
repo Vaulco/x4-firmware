@@ -73,7 +73,6 @@ void XtcReaderActivity::loop() {
   // Enter chapter selection activity
   if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
     if (xtc && xtc->hasChapters() && !xtc->getChapters().empty()) {
-      xSemaphoreTake(renderingMutex, portMAX_DELAY);
       exitActivity();
       enterNewActivity(new XtcReaderChapterSelectionActivity(
           this->renderer, this->mappedInput, xtc, currentPage,
@@ -86,7 +85,6 @@ void XtcReaderActivity::loop() {
             exitActivity();
             updateRequired = true;
           }));
-      xSemaphoreGive(renderingMutex);
     }
   }
 
@@ -106,13 +104,6 @@ void XtcReaderActivity::loop() {
     return;
   }
 
-  // Handle end of book
-  if (currentPage >= xtc->getPageCount()) {
-    currentPage = xtc->getPageCount() - 1;
-    updateRequired = true;
-    return;
-  }
-
   if (prevReleased) {
     if (currentPage > 0) {
       currentPage--;
@@ -121,9 +112,6 @@ void XtcReaderActivity::loop() {
   } else if (nextReleased) {
     if (currentPage < xtc->getPageCount() - 1) {
       currentPage++;
-      updateRequired = true;
-    } else {
-      currentPage = xtc->getPageCount();  // Allow showing "End of book"
       updateRequired = true;
     }
   }
@@ -134,29 +122,14 @@ void XtcReaderActivity::displayTaskLoop() {
     if (updateRequired) {
       updateRequired = false;
       xSemaphoreTake(renderingMutex, portMAX_DELAY);
-      renderScreen();
+      if (xtc) {
+        renderPage();
+        saveProgress();
+      }
       xSemaphoreGive(renderingMutex);
     }
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
-}
-
-void XtcReaderActivity::renderScreen() {
-  if (!xtc) {
-    return;
-  }
-
-  // Bounds check
-  if (currentPage >= xtc->getPageCount()) {
-    // Show end of book screen
-    renderer.clearScreen();
-    renderer.drawCenteredText(CMU_12_FONT_ID, 300, "End of book", true, EpdFontFamily::BOLD);
-    renderer.displayBuffer();
-    return;
-  }
-
-  renderPage();
-  saveProgress();
 }
 
 void XtcReaderActivity::renderPage() {
@@ -177,21 +150,15 @@ void XtcReaderActivity::renderPage() {
   // Allocate page buffer
   uint8_t* pageBuffer = static_cast<uint8_t*>(malloc(pageBufferSize));
   if (!pageBuffer) {
-    Serial.printf("[%lu] [XTR] Failed to allocate page buffer (%lu bytes)\n", millis(), pageBufferSize);
-    renderer.clearScreen();
-    renderer.drawCenteredText(CMU_12_FONT_ID, 300, "Memory error", true, EpdFontFamily::BOLD);
-    renderer.displayBuffer();
+    Serial.printf("[%lu] [XTR] ERROR: Failed to allocate %lu bytes for page buffer\n", millis(), pageBufferSize);
     return;
   }
 
   // Load page data
   size_t bytesRead = xtc->loadPage(currentPage, pageBuffer, pageBufferSize);
   if (bytesRead == 0) {
-    Serial.printf("[%lu] [XTR] Failed to load page %lu\n", millis(), currentPage);
+    Serial.printf("[%lu] [XTR] ERROR: Failed to load page %lu\n", millis(), currentPage);
     free(pageBuffer);
-    renderer.clearScreen();
-    renderer.drawCenteredText(CMU_12_FONT_ID, 300, "Page load error", true, EpdFontFamily::BOLD);
-    renderer.displayBuffer();
     return;
   }
 
@@ -288,11 +255,8 @@ void XtcReaderActivity::renderPage() {
     // Cleanup grayscale buffers with current frame buffer
     renderer.cleanupGrayscaleWithFrameBuffer();
 
-    free(pageBuffer);
-
-    Serial.printf("[%lu] [XTR] Rendered page %lu/%lu (2-bit grayscale)\n", millis(), currentPage + 1,
-                  xtc->getPageCount());
-    return;
+    Serial.printf("[%lu] [XTR] Rendered page %lu/%lu (%u-bit grayscale)\n", millis(), currentPage + 1,
+                  xtc->getPageCount(), bitDepth);
   } else {
     // 1-bit mode: 8 pixels per byte, MSB first
     const size_t srcRowBytes = (pageWidth + 7) / 8;  // 60 bytes for 480 width
@@ -311,9 +275,12 @@ void XtcReaderActivity::renderPage() {
         }
       }
     }
+    
+    Serial.printf("[%lu] [XTR] Rendered page %lu/%lu (%u-bit)\n", millis(), currentPage + 1, xtc->getPageCount(),
+                  bitDepth);
   }
+  
   // White pixels are already cleared by clearScreen()
-
   free(pageBuffer);
 
   // XTC pages already have status bar pre-rendered, no need to add our own
@@ -326,9 +293,6 @@ void XtcReaderActivity::renderPage() {
     renderer.displayBuffer();
     pagesUntilFullRefresh--;
   }
-
-  Serial.printf("[%lu] [XTR] Rendered page %lu/%lu (%u-bit)\n", millis(), currentPage + 1, xtc->getPageCount(),
-                bitDepth);
 }
 
 void XtcReaderActivity::saveProgress() const {
