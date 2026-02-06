@@ -135,7 +135,7 @@ void WifiSelectionActivity::processWifiScanResults() {
       network.ssid = ssid;
       network.rssi = rssi;
       network.isEncrypted = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
-      network.hasSavedPassword = WIFI_STORE.hasSavedCredential(network.ssid);
+      network.hasSavedPassword = (WIFI_STORE.getPassword(network.ssid) != nullptr);
       uniqueNetworks[ssid] = network;
     }
   }
@@ -174,10 +174,10 @@ void WifiSelectionActivity::selectNetwork(const int index) {
   enteredPassword.clear();
 
   // Check if we have saved credentials for this network
-  const auto* savedCred = WIFI_STORE.findCredential(selectedSSID);
-  if (savedCred && !savedCred->password.empty()) {
+  const auto* savedPassword = WIFI_STORE.getPassword(selectedSSID);
+  if (savedPassword && !savedPassword->empty()) {
     // Use saved password - connect directly
-    enteredPassword = savedCred->password;
+    enteredPassword = *savedPassword;
     usedSavedPassword = true;
     Serial.printf("[%lu] [WiFi] Using saved password for %s, length: %zu\n", millis(), selectedSSID.c_str(),
                   enteredPassword.size());
