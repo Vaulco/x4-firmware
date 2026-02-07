@@ -16,7 +16,6 @@
 // These values are calculated by taking the midpoint of the pairs of averaged values above
 const int InputManager::ADC_RANGES_1[] = {ADC_NO_BUTTON, 3100, 2090, 750, INT32_MIN};
 const int InputManager::ADC_RANGES_2[] = {ADC_NO_BUTTON, 1120, INT32_MIN};
-const char* InputManager::BUTTON_NAMES[] = {"Back", "Confirm", "Left", "Right", "Up", "Down", "Power"};
 
 InputManager::InputManager()
     : currentState(0),
@@ -112,16 +111,8 @@ bool InputManager::wasPressed(const uint8_t buttonIndex) const {
   return pressedEvents & (1 << buttonIndex);
 }
 
-bool InputManager::wasAnyPressed() const {
-  return pressedEvents > 0;
-}
-
 bool InputManager::wasReleased(const uint8_t buttonIndex) const {
   return releasedEvents & (1 << buttonIndex);
-}
-
-bool InputManager::wasAnyReleased() const {
-  return releasedEvents > 0;
 }
 
 unsigned long InputManager::getHeldTime() const {
@@ -131,15 +122,4 @@ unsigned long InputManager::getHeldTime() const {
   }
 
   return buttonPressFinish - buttonPressStart;
-}
-
-const char* InputManager::getButtonName(const uint8_t buttonIndex) {
-  if (buttonIndex <= BTN_POWER) {
-    return BUTTON_NAMES[buttonIndex];
-  }
-  return "Unknown";
-}
-
-bool InputManager::isPowerButtonPressed() const {
-  return isPressed(BTN_POWER);
 }

@@ -6,7 +6,6 @@ class InputManager {
  public:
   InputManager();
   void begin();
-  uint8_t getState();
 
   /**
    * Updates the button states. Should be called regularly in the main loop.
@@ -38,7 +37,7 @@ class InputManager {
    *
    * @return true if any button started being pressed between the last two #update() calls
    */
-  bool wasAnyPressed() const;
+  bool wasAnyPressed() const { return pressedEvents > 0; }
 
   /**
    * Returns true if the button went from pressed to unpressed between the last two #update() calls
@@ -53,7 +52,7 @@ class InputManager {
    *
    * @return  true if any button was released between the last two #update() calls
    */
-  bool wasAnyReleased() const;
+  bool wasAnyReleased() const { return releasedEvents > 0; }
 
   /**
    * Returns the time between any button starting to be depressed and all buttons between released
@@ -76,13 +75,8 @@ class InputManager {
   static constexpr int BUTTON_ADC_PIN_2 = 2;
   static constexpr int POWER_BUTTON_PIN = 3;
 
-  // Power button methods
-  bool isPowerButtonPressed() const;
-
-  // Button names
-  static const char* getButtonName(uint8_t buttonIndex);
-
  private:
+  uint8_t getState();
   int getButtonFromADC(int adcValue, const int ranges[], int numButtons);
 
   uint8_t currentState;
@@ -101,6 +95,4 @@ class InputManager {
 
   static constexpr int ADC_NO_BUTTON = 3800;
   static constexpr unsigned long DEBOUNCE_DELAY = 5;
-
-  static const char* BUTTON_NAMES[];
 };
