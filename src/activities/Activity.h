@@ -1,22 +1,22 @@
 #pragma once
 
 #include <HardwareSerial.h>
+#include <InputManager.h>
 
 #include <string>
 #include <utility>
 
-class MappedInputManager;
 class GfxRenderer;
 
 class Activity {
  protected:
   std::string name;
   GfxRenderer& renderer;
-  MappedInputManager& mappedInput;
+  InputManager& inputManager;
 
  public:
-  explicit Activity(std::string name, GfxRenderer& renderer, MappedInputManager& mappedInput)
-      : name(std::move(name)), renderer(renderer), mappedInput(mappedInput) {}
+  explicit Activity(std::string name, GfxRenderer& renderer, InputManager& inputManager)
+      : name(std::move(name)), renderer(renderer), inputManager(inputManager) {}
   virtual ~Activity() = default;
   virtual void onEnter() { Serial.printf("[%lu] [ACT] Entering activity: %s\n", millis(), name.c_str()); }
   virtual void onExit() { Serial.printf("[%lu] [ACT] Exiting activity: %s\n", millis(), name.c_str()); }

@@ -25,10 +25,10 @@ class FileSelectionActivity final : public Activity {
   void loadFiles();
 
  public:
-  explicit FileSelectionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
+  explicit FileSelectionActivity(GfxRenderer& renderer, InputManager& inputManager,
                                  const std::function<void(const std::string&)>& onSelect,
                                  const std::function<void()>& onGoToSettings, std::string initialPath = "/")
-      : Activity("FileSelection", renderer, mappedInput),
+      : Activity("FileSelection", renderer, inputManager),
         basepath(initialPath.empty() ? "/" : std::move(initialPath)),
         onSelect(onSelect),
         onGoToSettings(onGoToSettings) {}

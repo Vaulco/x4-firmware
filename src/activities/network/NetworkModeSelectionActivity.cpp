@@ -2,7 +2,6 @@
 
 #include <GfxRenderer.h>
 
-#include "MappedInputManager.h"
 #include "Battery.h"
 #include "fontIds.h"
 
@@ -50,23 +49,23 @@ void NetworkModeSelectionActivity::onExit() {
 
 void NetworkModeSelectionActivity::loop() {
   // Handle back button - cancel
-  if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+  if (inputManager.wasPressed(InputManager::Button::Back)) {
     onCancel();
     return;
   }
 
   // Handle confirm button - select current option
-  if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+  if (inputManager.wasPressed(InputManager::Button::Confirm)) {
     const NetworkMode mode = (selectedIndex == 0) ? NetworkMode::JOIN_NETWORK : NetworkMode::CREATE_HOTSPOT;
     onModeSelected(mode);
     return;
   }
 
   // Handle navigation
-  const bool prevPressed = mappedInput.wasPressed(MappedInputManager::Button::Up) ||
-                           mappedInput.wasPressed(MappedInputManager::Button::Left);
-  const bool nextPressed = mappedInput.wasPressed(MappedInputManager::Button::Down) ||
-                           mappedInput.wasPressed(MappedInputManager::Button::Right);
+  const bool prevPressed = inputManager.wasPressed(InputManager::Button::Up) ||
+                           inputManager.wasPressed(InputManager::Button::Left);
+  const bool nextPressed = inputManager.wasPressed(InputManager::Button::Down) ||
+                           inputManager.wasPressed(InputManager::Button::Right);
 
   if (prevPressed) {
     selectedIndex = (selectedIndex + MENU_ITEM_COUNT - 1) % MENU_ITEM_COUNT;

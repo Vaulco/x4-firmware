@@ -38,7 +38,7 @@ std::unique_ptr<Xtc> ReaderActivity::loadXtc(const std::string& path) {
 void ReaderActivity::onSelectBookFile(const std::string& path) {
   currentBookPath = path;  // Track current book path
   exitActivity();
-  enterNewActivity(new FullScreenMessageActivity(renderer, mappedInput, "Loading..."));
+  enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "Loading..."));
 
   // Load XTC file
   auto xtc = loadXtc(path);
@@ -46,7 +46,7 @@ void ReaderActivity::onSelectBookFile(const std::string& path) {
     onGoToXtcReader(std::move(xtc));
   } else {
     exitActivity();
-    enterNewActivity(new FullScreenMessageActivity(renderer, mappedInput, "Failed to load XTC",
+    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "Failed to load XTC",
                                                    EpdFontFamily::REGULAR, EInkDisplay::HALF_REFRESH));
     delay(2000);
     onGoToFileSelection();
@@ -58,7 +58,7 @@ void ReaderActivity::onGoToFileSelection(const std::string& fromBookPath) {
   // If coming from a book, start in that book's folder; otherwise start from root
   const auto initialPath = fromBookPath.empty() ? "/" : extractFolderPath(fromBookPath);
   enterNewActivity(new FileSelectionActivity(
-      renderer, mappedInput, [this](const std::string& path) { onSelectBookFile(path); }, onGoBack, initialPath));
+      renderer, inputManager, [this](const std::string& path) { onSelectBookFile(path); }, onGoBack, initialPath));
 }
 
 void ReaderActivity::onGoToXtcReader(std::unique_ptr<Xtc> xtc) {
@@ -66,7 +66,7 @@ void ReaderActivity::onGoToXtcReader(std::unique_ptr<Xtc> xtc) {
   currentBookPath = xtcPath;
   exitActivity();
   enterNewActivity(new XtcReaderActivity(
-      renderer, mappedInput, std::move(xtc), 
+      renderer, inputManager, std::move(xtc), 
       [this] { onGoToFileSelection(); }));  // Back goes to file selection
 }
 

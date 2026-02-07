@@ -11,7 +11,6 @@
 #include <SDCardManager.h>
 
 #include "Settings.h"
-#include "MappedInputManager.h"
 #include "XtcReaderChapterSelectionActivity.h"
 #include "fontIds.h"
 
@@ -71,11 +70,11 @@ void XtcReaderActivity::loop() {
   }
 
   // Enter chapter selection activity
-  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+  if (inputManager.wasReleased(InputManager::Button::Confirm)) {
     if (xtc && xtc->hasChapters() && !xtc->getChapters().empty()) {
       exitActivity();
       enterNewActivity(new XtcReaderChapterSelectionActivity(
-          this->renderer, this->mappedInput, xtc, currentPage,
+          this->renderer, this->inputManager, xtc, currentPage,
           [this] {
             exitActivity();
             updateRequired = true;
@@ -90,15 +89,15 @@ void XtcReaderActivity::loop() {
 
   // Short press BACK goes to file selection
   // NOTE: Long press BACK (1s) to go to Settings is handled globally in main.cpp
-  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+  if (inputManager.wasReleased(InputManager::Button::Back)) {
     onGoBackToFileSelection();
     return;
   }
 
-  const bool prevReleased = mappedInput.wasReleased(MappedInputManager::Button::PageBack) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Left);
-  const bool nextReleased = mappedInput.wasReleased(MappedInputManager::Button::PageForward) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Right);
+  const bool prevReleased = inputManager.wasReleased(InputManager::Button::PageBack) ||
+                            inputManager.wasReleased(InputManager::Button::Left);
+  const bool nextReleased = inputManager.wasReleased(InputManager::Button::PageForward) ||
+                            inputManager.wasReleased(InputManager::Button::Right);
 
   if (!prevReleased && !nextReleased) {
     return;

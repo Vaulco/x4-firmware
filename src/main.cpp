@@ -8,7 +8,6 @@
 
 #include "Battery.h"
 #include "Settings.h"
-#include "MappedInputManager.h"
 #include "activities/network/CrossPointWebServerActivity.h"
 #include "activities/reader/FileSelectionActivity.h"
 #include "activities/reader/ReaderActivity.h"
@@ -29,7 +28,6 @@
 
 EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
-MappedInputManager mappedInputManager(inputManager);
 GfxRenderer renderer(einkDisplay);
 Activity* currentActivity;
 
@@ -95,26 +93,26 @@ void onGoToSettings();
 
 void onGoToReader(const std::string& initialBookPath) {
   exitActivity();
-  enterNewActivity(new ReaderActivity(renderer, mappedInputManager, initialBookPath, onGoToSettings));
+  enterNewActivity(new ReaderActivity(renderer, inputManager, initialBookPath, onGoToSettings));
 }
 
 void onContinueReading() { onGoToReader(SETTINGS.openBookPath); }
 
 void onGoToFileTransfer() {
   exitActivity();
-  enterNewActivity(new CrossPointWebServerActivity(renderer, mappedInputManager, onGoToFileSelection));
+  enterNewActivity(new CrossPointWebServerActivity(renderer, inputManager, onGoToFileSelection));
 }
 
 void onGoToSettings() {
   exitActivity();
   enterNewActivity(
-      new SettingsActivity(renderer, mappedInputManager, onGoToFileSelection, onContinueReading, onGoToFileTransfer));
+      new SettingsActivity(renderer, inputManager, onGoToFileSelection, onContinueReading, onGoToFileTransfer));
 }
 
 void onGoToFileSelection() {
   exitActivity();
   enterNewActivity(new FileSelectionActivity(
-      renderer, mappedInputManager,
+      renderer, inputManager,
       [](const std::string& path) { onGoToReader(path); },
       onGoToSettings));
 }
@@ -143,7 +141,7 @@ void setup() {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
     setupDisplayAndFonts();
     exitActivity();
-    enterNewActivity(new FullScreenMessageActivity(renderer, mappedInputManager, "SD card error", EpdFontFamily::BOLD));
+    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error", EpdFontFamily::BOLD));
     return;
   }
 

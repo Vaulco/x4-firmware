@@ -8,7 +8,6 @@
 
 #include <cstddef>
 
-#include "MappedInputManager.h"
 #include "NetworkModeSelectionActivity.h"
 #include "WifiSelectionActivity.h"
 #include "fontIds.h"
@@ -57,7 +56,7 @@ void CrossPointWebServerActivity::onEnter() {
   // Launch network mode selection subactivity
   Serial.printf("[%lu] [WEBACT] Launching NetworkModeSelectionActivity...\n", millis());
   enterNewActivity(new NetworkModeSelectionActivity(
-      renderer, mappedInput, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
+      renderer, inputManager, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
       [this]() { onGoBack(); }  // Cancel goes back to home
       ));
 }
@@ -141,7 +140,7 @@ void CrossPointWebServerActivity::onNetworkModeSelected(const NetworkMode mode) 
 
     state = WebServerActivityState::WIFI_SELECTION;
     Serial.printf("[%lu] [WEBACT] Launching WifiSelectionActivity...\n", millis());
-    enterNewActivity(new WifiSelectionActivity(renderer, mappedInput,
+    enterNewActivity(new WifiSelectionActivity(renderer, inputManager,
                                                [this](const bool connected) { onWifiSelectionComplete(connected); }));
   } else {
     // AP mode - start access point
@@ -174,7 +173,7 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
     exitActivity();
     state = WebServerActivityState::MODE_SELECTION;
     enterNewActivity(new NetworkModeSelectionActivity(
-        renderer, mappedInput, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
+        renderer, inputManager, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
         [this]() { onGoBack(); }));
   }
 }
@@ -305,7 +304,7 @@ void CrossPointWebServerActivity::loop() {
     }
 
     // Handle exit on Back button
-    if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+    if (inputManager.wasPressed(InputManager::Button::Back)) {
       onGoBack();
       return;
     }

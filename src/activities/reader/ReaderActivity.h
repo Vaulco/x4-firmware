@@ -18,9 +18,9 @@ class ReaderActivity final : public ActivityWithSubactivity {
   void onGoToXtcReader(std::unique_ptr<Xtc> xtc);
 
  public:
-  explicit ReaderActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string initialBookPath,
+  explicit ReaderActivity(GfxRenderer& renderer, InputManager& inputManager, std::string initialBookPath,
                           const std::function<void()>& onGoBack)
-      : ActivityWithSubactivity("Reader", renderer, mappedInput),
+      : ActivityWithSubactivity("Reader", renderer, inputManager),
         initialBookPath(std::move(initialBookPath)),
         onGoBack(onGoBack) {}
   void onEnter() override;

@@ -2,7 +2,6 @@
 
 #include <GfxRenderer.h>
 
-#include "MappedInputManager.h"
 #include "fontIds.h"
 
 namespace {
@@ -73,20 +72,20 @@ void XtcReaderChapterSelectionActivity::onExit() {
 }
 
 void XtcReaderChapterSelectionActivity::loop() {
-  const bool prevReleased = mappedInput.wasReleased(MappedInputManager::Button::Up) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Left);
-  const bool nextReleased = mappedInput.wasReleased(MappedInputManager::Button::Down) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Right);
+  const bool prevReleased = inputManager.wasReleased(InputManager::Button::Up) ||
+                            inputManager.wasReleased(InputManager::Button::Left);
+  const bool nextReleased = inputManager.wasReleased(InputManager::Button::Down) ||
+                            inputManager.wasReleased(InputManager::Button::Right);
 
-  const bool skipPage = mappedInput.getHeldTime() > SKIP_PAGE_MS;
+  const bool skipPage = inputManager.getHeldTime() > SKIP_PAGE_MS;
   const int pageItems = getPageItems();
 
-  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+  if (inputManager.wasReleased(InputManager::Button::Confirm)) {
     const auto& chapters = xtc->getChapters();
     if (!chapters.empty() && selectorIndex >= 0 && selectorIndex < static_cast<int>(chapters.size())) {
       onSelectPage(chapters[selectorIndex].startPage);
     }
-  } else if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+  } else if (inputManager.wasReleased(InputManager::Button::Back)) {
     onGoBack();
   } else if (prevReleased) {
     const int total = static_cast<int>(xtc->getChapters().size());

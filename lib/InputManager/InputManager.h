@@ -4,6 +4,27 @@
 
 class InputManager {
  public:
+  // Semantic button names for easier reading
+  enum Button {
+    Back,
+    Confirm,
+    Left,
+    Right,
+    Up,
+    Down,
+    Power,
+    PageBack,    // Alias for Up
+    PageForward  // Alias for Down
+  };
+
+  // Label structure for displaying button instructions
+  struct Labels {
+    const char* btn1;
+    const char* btn2;
+    const char* btn3;
+    const char* btn4;
+  };
+
   InputManager();
   void begin();
 
@@ -15,22 +36,22 @@ class InputManager {
   /**
    * Returns true if the button was being held at the time of the last #update() call.
    *
-   * @param buttonIndex the button indexes
+   * @param button the semantic button name
    * @return the button current press state
    */
-  bool isPressed(uint8_t buttonIndex) const;
+  bool isPressed(Button button) const;
 
- /**
+  /**
    * Returns true if the button went from unpressed to pressed between the last two #update() calls.
    *
    * This differs from #isPressed() in that pressing and holding a button will cause this function
    * to return true after the first #update() call, but false on subsequent calls, whereas #isPressed()
    * will continue to return true.
    *
-   * @param buttonIndex
+   * @param button the semantic button name
    * @return the button pressed state
    */
-  bool wasPressed(uint8_t buttonIndex) const;
+  bool wasPressed(Button button) const;
 
   /**
    * Returns true if any button started being pressed between the last two #update() calls
@@ -42,10 +63,10 @@ class InputManager {
   /**
    * Returns true if the button went from pressed to unpressed between the last two #update() calls
    *
-   * @param buttonIndex the button indexes
+   * @param button the semantic button name
    * @return the button release state
    */
-  bool wasReleased(uint8_t buttonIndex) const;
+  bool wasReleased(Button button) const;
 
   /**
    * Returns true if any button was released between the last two #update() calls
@@ -61,7 +82,18 @@ class InputManager {
    */
   unsigned long getHeldTime() const;
 
-  // Button indices
+  /**
+   * Create button labels for display
+   * 
+   * @param back Label for back button
+   * @param confirm Label for confirm button
+   * @param previous Label for previous button
+   * @param next Label for next button
+   * @return Labels structure with button labels
+   */
+  static Labels mapLabels(const char* back, const char* confirm, const char* previous, const char* next);
+
+  // Physical button indices (internal use)
   static constexpr uint8_t BTN_BACK = 0;
   static constexpr uint8_t BTN_CONFIRM = 1;
   static constexpr uint8_t BTN_LEFT = 2;
@@ -78,6 +110,7 @@ class InputManager {
  private:
   uint8_t getState();
   int getButtonFromADC(int adcValue, const int ranges[], int numButtons);
+  static uint8_t mapButton(Button button);
 
   uint8_t currentState;
   uint8_t lastState;

@@ -26,11 +26,11 @@ class XtcReaderChapterSelectionActivity final : public Activity {
   void renderScreen();
 
  public:
-  explicit XtcReaderChapterSelectionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
+  explicit XtcReaderChapterSelectionActivity(GfxRenderer& renderer, InputManager& inputManager,
                                              const std::shared_ptr<Xtc>& xtc, uint32_t currentPage,
                                              const std::function<void()>& onGoBack,
                                              const std::function<void(uint32_t newPage)>& onSelectPage)
-      : Activity("XtcReaderChapterSelection", renderer, mappedInput),
+      : Activity("XtcReaderChapterSelection", renderer, inputManager),
         xtc(xtc),
         currentPage(currentPage),
         onGoBack(onGoBack),

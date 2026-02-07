@@ -4,7 +4,6 @@
 #include <SDCardManager.h>
 
 #include "Settings.h"
-#include "MappedInputManager.h"
 #include "Battery.h"
 #include "fontIds.h"
 
@@ -63,27 +62,27 @@ void SettingsActivity::loop() {
   }
 
   // Handle actions with early return
-  if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+  if (inputManager.wasPressed(InputManager::Button::Confirm)) {
     handleSettingAction();
     updateRequired = true;
     return;
   }
 
   // Back button goes to file selection (no debounce)
-  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+  if (inputManager.wasReleased(InputManager::Button::Back)) {
     SETTINGS.saveToFile();
     onGoBack();
     return;
   }
 
   // Handle navigation
-  if (mappedInput.wasPressed(MappedInputManager::Button::Up) ||
-      mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+  if (inputManager.wasPressed(InputManager::Button::Up) ||
+      inputManager.wasPressed(InputManager::Button::Left)) {
     // Move selection up (with wrap-around)
     selectedSettingIndex = (selectedSettingIndex > 0) ? (selectedSettingIndex - 1) : (settingsCount - 1);
     updateRequired = true;
-  } else if (mappedInput.wasPressed(MappedInputManager::Button::Down) ||
-             mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+  } else if (inputManager.wasPressed(InputManager::Button::Down) ||
+             inputManager.wasPressed(InputManager::Button::Right)) {
     // Move selection down (with wrap around)
     selectedSettingIndex = (selectedSettingIndex < settingsCount - 1) ? (selectedSettingIndex + 1) : 0;
     updateRequired = true;

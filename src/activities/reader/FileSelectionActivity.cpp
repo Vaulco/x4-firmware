@@ -3,7 +3,6 @@
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
 
-#include "MappedInputManager.h"
 #include "Battery.h"
 #include "fontIds.h"
 
@@ -99,7 +98,7 @@ void FileSelectionActivity::onExit() {
 
 void FileSelectionActivity::loop() {
   // Back button: go up one directory, or to Settings if at root
-  if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
+  if (inputManager.wasReleased(InputManager::Button::Back)) {
     if (basepath != "/") {
       // Go up one directory
       basepath.replace(basepath.find_last_of('/'), std::string::npos, "");
@@ -113,14 +112,14 @@ void FileSelectionActivity::loop() {
     return;
   }
 
-  const bool prevReleased = mappedInput.wasReleased(MappedInputManager::Button::Up) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Left);
-  const bool nextReleased = mappedInput.wasReleased(MappedInputManager::Button::Down) ||
-                            mappedInput.wasReleased(MappedInputManager::Button::Right);
+  const bool prevReleased = inputManager.wasReleased(InputManager::Button::Up) ||
+                            inputManager.wasReleased(InputManager::Button::Left);
+  const bool nextReleased = inputManager.wasReleased(InputManager::Button::Down) ||
+                            inputManager.wasReleased(InputManager::Button::Right);
 
-  const bool skipPage = mappedInput.getHeldTime() > SKIP_PAGE_MS;
+  const bool skipPage = inputManager.getHeldTime() > SKIP_PAGE_MS;
 
-  if (mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+  if (inputManager.wasReleased(InputManager::Button::Confirm)) {
     if (files.empty()) {
       return;
     }

@@ -44,11 +44,11 @@ class SettingsActivity final : public ActivityWithSubactivity {
   void handleSettingAction();
 
  public:
-  explicit SettingsActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
+  explicit SettingsActivity(GfxRenderer& renderer, InputManager& inputManager,
                             const std::function<void()>& onGoBack, 
                             const std::function<void()>& onContinueReading,
                             const std::function<void()>& onFileTransferOpen)
-      : ActivityWithSubactivity("Settings", renderer, mappedInput),
+      : ActivityWithSubactivity("Settings", renderer, inputManager),
         onGoBack(onGoBack),
         onContinueReading(onContinueReading),
         onFileTransferOpen(onFileTransferOpen) {}

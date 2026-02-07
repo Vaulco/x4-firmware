@@ -30,9 +30,9 @@ class XtcReaderActivity final : public ActivityWithSubactivity {
   void loadProgress();
 
  public:
-  explicit XtcReaderActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::unique_ptr<Xtc> xtc,
+  explicit XtcReaderActivity(GfxRenderer& renderer, InputManager& inputManager, std::unique_ptr<Xtc> xtc,
                              const std::function<void()>& onGoBackToFileSelection)
-      : ActivityWithSubactivity("XtcReader", renderer, mappedInput),
+      : ActivityWithSubactivity("XtcReader", renderer, inputManager),
         xtc(std::move(xtc)),
         onGoBackToFileSelection(onGoBackToFileSelection) {}
   void onEnter() override;

@@ -5,7 +5,6 @@
 
 #include <map>
 
-#include "MappedInputManager.h"
 #include "WifiCredentialStore.h"
 #include "activities/util/KeyboardEntryActivity.h"
 #include "fontIds.h"
@@ -191,7 +190,7 @@ void WifiSelectionActivity::selectNetwork(const int index) {
     // Don't allow screen updates while changing activity
     xSemaphoreTake(renderingMutex, portMAX_DELAY);
     enterNewActivity(new KeyboardEntryActivity(
-        renderer, mappedInput, "Enter WiFi Password",
+        renderer, inputManager, "Enter WiFi Password",
         "",     // No initial text
         50,     // Y position
         64,     // Max password length
@@ -303,19 +302,19 @@ void WifiSelectionActivity::loop() {
 
   // Handle save prompt state
   if (state == WifiSelectionState::SAVE_PROMPT) {
-    if (mappedInput.wasPressed(MappedInputManager::Button::Up) ||
-        mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+    if (inputManager.wasPressed(InputManager::Button::Up) ||
+        inputManager.wasPressed(InputManager::Button::Left)) {
       if (savePromptSelection > 0) {
         savePromptSelection--;
         updateRequired = true;
       }
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Down) ||
-               mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Down) ||
+               inputManager.wasPressed(InputManager::Button::Right)) {
       if (savePromptSelection < 1) {
         savePromptSelection++;
         updateRequired = true;
       }
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Confirm)) {
       if (savePromptSelection == 0) {
         // User chose "Yes" - save the password
         xSemaphoreTake(renderingMutex, portMAX_DELAY);
@@ -324,7 +323,7 @@ void WifiSelectionActivity::loop() {
       }
       // Complete - parent will start web server
       onComplete(true);
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Back)) {
       // Skip saving, complete anyway
       onComplete(true);
     }
@@ -333,19 +332,19 @@ void WifiSelectionActivity::loop() {
 
   // Handle forget prompt state (connection failed with saved credentials)
   if (state == WifiSelectionState::FORGET_PROMPT) {
-    if (mappedInput.wasPressed(MappedInputManager::Button::Up) ||
-        mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+    if (inputManager.wasPressed(InputManager::Button::Up) ||
+        inputManager.wasPressed(InputManager::Button::Left)) {
       if (forgetPromptSelection > 0) {
         forgetPromptSelection--;
         updateRequired = true;
       }
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Down) ||
-               mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Down) ||
+               inputManager.wasPressed(InputManager::Button::Right)) {
       if (forgetPromptSelection < 1) {
         forgetPromptSelection++;
         updateRequired = true;
       }
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Confirm)) {
       if (forgetPromptSelection == 0) {
         // User chose "Yes" - forget the network
         xSemaphoreTake(renderingMutex, portMAX_DELAY);
@@ -361,7 +360,7 @@ void WifiSelectionActivity::loop() {
       // Go back to network list
       state = WifiSelectionState::NETWORK_LIST;
       updateRequired = true;
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Back)) {
       // Skip forgetting, go back to network list
       state = WifiSelectionState::NETWORK_LIST;
       updateRequired = true;
@@ -378,8 +377,8 @@ void WifiSelectionActivity::loop() {
 
   // Handle connection failed state
   if (state == WifiSelectionState::CONNECTION_FAILED) {
-    if (mappedInput.wasPressed(MappedInputManager::Button::Back) ||
-        mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+    if (inputManager.wasPressed(InputManager::Button::Back) ||
+        inputManager.wasPressed(InputManager::Button::Confirm)) {
       // If we used saved credentials, offer to forget the network
       if (usedSavedPassword) {
         state = WifiSelectionState::FORGET_PROMPT;
@@ -396,13 +395,13 @@ void WifiSelectionActivity::loop() {
   // Handle network list state
   if (state == WifiSelectionState::NETWORK_LIST) {
     // Check for Back button to exit (cancel)
-    if (mappedInput.wasPressed(MappedInputManager::Button::Back)) {
+    if (inputManager.wasPressed(InputManager::Button::Back)) {
       onComplete(false);
       return;
     }
 
     // Check for Confirm button to select network or rescan
-    if (mappedInput.wasPressed(MappedInputManager::Button::Confirm)) {
+    if (inputManager.wasPressed(InputManager::Button::Confirm)) {
       if (!networks.empty()) {
         selectNetwork(selectedNetworkIndex);
       } else {
@@ -412,14 +411,14 @@ void WifiSelectionActivity::loop() {
     }
 
     // Handle UP/DOWN navigation with loop scrolling
-    if (mappedInput.wasPressed(MappedInputManager::Button::Up) ||
-        mappedInput.wasPressed(MappedInputManager::Button::Left)) {
+    if (inputManager.wasPressed(InputManager::Button::Up) ||
+        inputManager.wasPressed(InputManager::Button::Left)) {
       if (!networks.empty()) {
         selectedNetworkIndex = (selectedNetworkIndex - 1 + networks.size()) % networks.size();
         updateRequired = true;
       }
-    } else if (mappedInput.wasPressed(MappedInputManager::Button::Down) ||
-               mappedInput.wasPressed(MappedInputManager::Button::Right)) {
+    } else if (inputManager.wasPressed(InputManager::Button::Down) ||
+               inputManager.wasPressed(InputManager::Button::Right)) {
       if (!networks.empty()) {
         selectedNetworkIndex = (selectedNetworkIndex + 1) % networks.size();
         updateRequired = true;

@@ -63,9 +63,9 @@ class CrossPointWebServerActivity final : public ActivityWithSubactivity {
   void stopWebServer();
 
  public:
-  explicit CrossPointWebServerActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
+  explicit CrossPointWebServerActivity(GfxRenderer& renderer, InputManager& inputManager,
                                        const std::function<void()>& onGoBack)
-      : ActivityWithSubactivity("CrossPointWebServer", renderer, mappedInput), onGoBack(onGoBack) {}
+      : ActivityWithSubactivity("CrossPointWebServer", renderer, inputManager), onGoBack(onGoBack) {}
   void onEnter() override;
   void onExit() override;
   void loop() override;

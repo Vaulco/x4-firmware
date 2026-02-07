@@ -103,16 +103,42 @@ void InputManager::update() {
   }
 }
 
-bool InputManager::isPressed(const uint8_t buttonIndex) const {
-  return currentState & (1 << buttonIndex);
+uint8_t InputManager::mapButton(const Button button) {
+  // Always use default layout: Back, Confirm, Left, Right
+  switch (button) {
+    case Button::Back:
+      return BTN_BACK;
+    case Button::Confirm:
+      return BTN_CONFIRM;
+    case Button::Left:
+      return BTN_LEFT;
+    case Button::Right:
+      return BTN_RIGHT;
+    case Button::Up:
+      return BTN_UP;
+    case Button::Down:
+      return BTN_DOWN;
+    case Button::Power:
+      return BTN_POWER;
+    case Button::PageBack:
+      return BTN_UP;
+    case Button::PageForward:
+      return BTN_DOWN;
+  }
+
+  return BTN_BACK;
 }
 
-bool InputManager::wasPressed(const uint8_t buttonIndex) const {
-  return pressedEvents & (1 << buttonIndex);
+bool InputManager::isPressed(const Button button) const {
+  return currentState & (1 << mapButton(button));
 }
 
-bool InputManager::wasReleased(const uint8_t buttonIndex) const {
-  return releasedEvents & (1 << buttonIndex);
+bool InputManager::wasPressed(const Button button) const {
+  return pressedEvents & (1 << mapButton(button));
+}
+
+bool InputManager::wasReleased(const Button button) const {
+  return releasedEvents & (1 << mapButton(button));
 }
 
 unsigned long InputManager::getHeldTime() const {
@@ -122,4 +148,10 @@ unsigned long InputManager::getHeldTime() const {
   }
 
   return buttonPressFinish - buttonPressStart;
+}
+
+InputManager::Labels InputManager::mapLabels(const char* back, const char* confirm, const char* previous,
+                                             const char* next) {
+  // Always use default layout: Back, Confirm, Left, Right
+  return {back, confirm, previous, next};
 }
