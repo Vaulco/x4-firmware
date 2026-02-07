@@ -62,7 +62,7 @@ void enterNewActivity(Activity* activity) {
 
 void waitForPowerRelease() {
   inputManager.update();
-  while (inputManager.isPressed(InputManager::BTN_POWER)) {
+  while (inputManager.isPressed(InputManager::Button::Power)) {
     delay(50);
     inputManager.update();
   }
@@ -190,13 +190,13 @@ void loop() {
   }
 
   // Power button instant sleep
-  if (inputManager.wasPressed(InputManager::BTN_POWER)) {
+  if (inputManager.wasPressed(InputManager::Button::Power)) {
     enterDeepSleep();
     return;
   }
 
   // GLOBAL: Back button long press to Settings
-  if (inputManager.isPressed(InputManager::BTN_BACK) && 
+  if (inputManager.isPressed(InputManager::Button::Back) && 
       inputManager.getHeldTime() >= BACK_LONG_PRESS_MS && 
       !backLongPressConsumed) {
     
@@ -208,7 +208,7 @@ void loop() {
   }
 
   // Clear consumed flag when released
-  if (backLongPressConsumed && inputManager.wasReleased(InputManager::BTN_BACK)) {
+  if (backLongPressConsumed && inputManager.wasReleased(InputManager::Button::Back)) {
     Serial.printf("[%lu] [MAIN] BACK button released after long press - ignoring release event\n", 
                   millis());
     backLongPressConsumed = false;
