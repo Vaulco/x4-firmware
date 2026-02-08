@@ -23,8 +23,7 @@ InputManager::InputManager()
       pressedEvents(0),
       releasedEvents(0),
       lastDebounceTime(0),
-      buttonPressStart(0),
-      buttonPressFinish(0) {}
+      buttonPressStart(0) {}
 
 void InputManager::begin() {
   pinMode(BUTTON_ADC_PIN_1, INPUT);
@@ -93,65 +92,7 @@ void InputManager::update() {
         buttonPressStart = currentTime;
       }
 
-      // If releasing a button and no other buttons being pressed, record finish time
-      if (releasedEvents > 0 && state == 0) {
-        buttonPressFinish = currentTime;
-      }
-
       currentState = state;
     }
   }
-}
-
-uint8_t InputManager::mapButton(const Button button) {
-  // Always use default layout: Back, Confirm, Left, Right
-  switch (button) {
-    case Button::Back:
-      return BTN_BACK;
-    case Button::Confirm:
-      return BTN_CONFIRM;
-    case Button::Left:
-      return BTN_LEFT;
-    case Button::Right:
-      return BTN_RIGHT;
-    case Button::Up:
-      return BTN_UP;
-    case Button::Down:
-      return BTN_DOWN;
-    case Button::Power:
-      return BTN_POWER;
-    case Button::PageBack:
-      return BTN_UP;
-    case Button::PageForward:
-      return BTN_DOWN;
-  }
-
-  return BTN_BACK;
-}
-
-bool InputManager::isPressed(const Button button) const {
-  return currentState & (1 << mapButton(button));
-}
-
-bool InputManager::wasPressed(const Button button) const {
-  return pressedEvents & (1 << mapButton(button));
-}
-
-bool InputManager::wasReleased(const Button button) const {
-  return releasedEvents & (1 << mapButton(button));
-}
-
-unsigned long InputManager::getHeldTime() const {
-  // Still hold a button
-  if (currentState > 0) {
-    return millis() - buttonPressStart;
-  }
-
-  return buttonPressFinish - buttonPressStart;
-}
-
-InputManager::Labels InputManager::mapLabels(const char* back, const char* confirm, const char* previous,
-                                             const char* next) {
-  // Always use default layout: Back, Confirm, Left, Right
-  return {back, confirm, previous, next};
 }
