@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>E-Reader - Files</title>
   <style>
-    body { max-width: 800px; margin: 0 auto; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    td, th { text-align: left; }
+    body { max-width: 600px; margin: 0 auto; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    td, th { text-align: left;}
+    td:first-child { width: 85%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    td:last-child { width: 15%; text-align: right; }
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
     .modal { background: white; padding: 20px; max-width: 450px; width: 90%; }
@@ -15,16 +17,21 @@
     #progress-fill { height: 100%; background: green; width: 0%; transition: width 0.3s; }
     .banner { background: #ffe; border: 1px solid #cc0; padding: 10px; margin-bottom: 10px; display: none; }
     .banner.show { display: block; }
-    .loader { width: 40px; height: 40px; border: 4px solid #aaa; border-bottom-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    button, input { font-family: serif; }
+    .folder-creation { margin-top: 10px; display: flex; gap: 5px; align-items: center; }
+    .folder-creation input { width: 200px;}
+    .folder-creation button {white-space: nowrap; }
   </style>
 </head>
 <body>
 
 <div>
-  <span id="directory-breadcrumbs"></span>
   <button onclick="openUploadModal()">Upload</button>
-  <button onclick="openFolderModal()">New Folder</button>
+</div>
+
+<div class="folder-creation">
+  <input type="text" id="folderName" placeholder="Folder name...">
+  <button onclick="createFolder()">Create Folder</button>
 </div>
 
 <!-- Failed Uploads Banner -->
@@ -36,9 +43,8 @@
 </div>
 
 <div>
-  <h2>Contents <small id="folder-summary"></small></h2>
+  <p>Contents in <span id="directory-breadcrumbs"></span> : <span id="folder-summary"></span></p>
   <div id="file-table">
-    <div class="loader"></div>
   </div>
 </div>
 
@@ -53,17 +59,6 @@
     <p>Uploading to <b id="uploadPathDisplay"></b></p>
     <div id="progress-bar"><div id="progress-fill"></div></div>
     <div id="progress-text"></div>
-  </div>
-</div>
-
-<!-- New Folder Modal -->
-<div class="modal-overlay" id="folderModal">
-  <div class="modal">
-    <button onclick="closeFolderModal()" style="float:right">&times;</button>
-    <h3>📁 New Folder</h3>
-    <p>Create in <b id="folderPathDisplay"></b></p>
-    <input type="text" id="folderName" placeholder="Folder name..." style="width:100%;padding:8px;margin:10px 0">
-    <button onclick="createFolder()" style="width:100%;padding:10px">Create Folder</button>
   </div>
 </div>
 
@@ -110,7 +105,7 @@
       pathSegments.slice(1, pathSegments.length - 1).forEach(function(segment, index) {
         breadcrumbContent += '<a href="/?path=' + encodeURIComponent(pathSegments.slice(0, index + 2).join('/')) + '">' + escapeHtml(segment) + '/</a>';
       });
-      breadcrumbContent += '<b>' + escapeHtml(pathSegments[pathSegments.length - 1]) + '</b>';
+      breadcrumbContent += '<span>' + escapeHtml(pathSegments[pathSegments.length - 1]) + '</span>';
     }
     breadcrumbs.innerHTML = breadcrumbContent;
 
@@ -134,7 +129,7 @@
       totalSize += file.size;
     });
 
-    document.getElementById('folder-summary').innerHTML = `(${folderCount} folders, ${files.length - folderCount} files, ${formatFileSize(totalSize)})`;
+    document.getElementById('folder-summary').innerHTML = `${folderCount} folders, ${files.length - folderCount} files, ${formatFileSize(totalSize)}`;
 
     if (files.length === 0) {
       fileTable.innerHTML = '<p><i>This folder is empty</i></p>';
@@ -155,7 +150,7 @@
           folderPath += file.name;
 
           fileTableContent += '<tr>';
-          fileTableContent += `<td><a href="/?path=${encodeURIComponent(folderPath)}">${escapeHtml(file.name)}/</a></td>`;
+          fileTableContent += `<td><a href="/?path=${encodeURIComponent(folderPath)}" title="${escapeHtml(file.name)}/">${escapeHtml(file.name)}/</a></td>`;
           fileTableContent += `<td><button onclick="deleteItem('${folderPath.replaceAll("'", "\\'")}', true)">Delete</button></td>`;
           fileTableContent += '</tr>';
         } else {
@@ -164,7 +159,7 @@
           filePath += file.name;
 
           fileTableContent += '<tr>';
-          fileTableContent += `<td>${escapeHtml(file.name)}</td>`;
+          fileTableContent += `<td title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</td>`;
           fileTableContent += `<td><button onclick="deleteItem('${filePath.replaceAll("'", "\\'")}', false)">Delete</button></td>`;
           fileTableContent += '</tr>';
         }
@@ -196,16 +191,6 @@
     document.getElementById('uploadModal').classList.remove('open');
     document.getElementById('progress-fill').style.width = '0%';
     document.getElementById('progress-fill').style.backgroundColor = 'green';
-  }
-
-  function openFolderModal() {
-    document.getElementById('folderPathDisplay').textContent = currentPath;
-    document.getElementById('folderModal').classList.add('open');
-    document.getElementById('folderName').value = '';
-  }
-
-  function closeFolderModal() {
-    document.getElementById('folderModal').classList.remove('open');
   }
 
 let failedUploadsGlobal = [];
