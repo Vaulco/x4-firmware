@@ -5,18 +5,12 @@ Built using **PlatformIO** and targeting the **ESP32-C3** microcontroller.
 
 The E-Reader is a purpose-built firmware designed to be a drop-in, fully open-source replacement for the official 
 Xteink firmware. It aims to match or improve upon the standard reading experience.
-
-## Installing
-
 ### Checking out the code
 
 The E-Reader uses PlatformIO for building and flashing the firmware. To get started, clone the repository:
 
 ```
-git clone --recursive https://github.com/vaulco/...
-
-# Or, if you've already cloned without --recursive:
-git submodule update --init --recursive
+git clone https://github.com/Vaulco/xteink-reader.git
 ```
 
 ### Flashing your device
