@@ -368,13 +368,6 @@ void WifiSelectionActivity::loop() {
     return;
   }
 
-  // Handle connected state (should not normally be reached - connection completes immediately)
-  if (state == WifiSelectionState::CONNECTED) {
-    // Safety fallback - immediately complete
-    onComplete(true);
-    return;
-  }
-
   // Handle connection failed state
   if (state == WifiSelectionState::CONNECTION_FAILED) {
     if (inputManager.wasPressed(InputManager::Button::Back) ||
@@ -481,9 +474,6 @@ void WifiSelectionActivity::render() const {
       break;
     case WifiSelectionState::CONNECTING:
       renderConnecting();
-      break;
-    case WifiSelectionState::CONNECTED:
-      renderConnected();
       break;
     case WifiSelectionState::SAVE_PROMPT:
       renderSavePrompt();
@@ -602,62 +592,31 @@ void WifiSelectionActivity::renderConnecting() const {
   }
 }
 
-void WifiSelectionActivity::renderConnected() const {
-  const auto pageHeight = renderer.getScreenHeight();
-  const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
-  const auto top = (pageHeight - height * 4) / 2;
-
-  renderer.drawCenteredText(CMU_12_FONT_ID, top - 30, "Connected!", true, EpdFontFamily::BOLD);
-
-  std::string ssidInfo = "Network: " + selectedSSID;
-  if (ssidInfo.length() > 28) {
-    ssidInfo.replace(25, ssidInfo.length() - 25, "...");
-  }
-  renderer.drawCenteredText(CMU_10_FONT_ID, top + 10, ssidInfo.c_str());
-
-  const std::string ipInfo = "IP Address: " + connectedIP;
-  renderer.drawCenteredText(CMU_10_FONT_ID, top + 40, ipInfo.c_str());
-
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "Press any button to continue");
-}
-
 void WifiSelectionActivity::renderSavePrompt() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
-  const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
-  const auto top = (pageHeight - height * 3) / 2;
+  const auto centerY = pageHeight / 2;
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, top - 40, "Connected!", true, EpdFontFamily::BOLD);
+  // Draw question above center
+  renderer.drawCenteredText(CMU_10_FONT_ID, centerY - 30, "Connected: Save password for next time?");
 
-  std::string ssidInfo = "Network: " + selectedSSID;
-  if (ssidInfo.length() > 28) {
-    ssidInfo.replace(25, ssidInfo.length() - 25, "...");
-  }
-  renderer.drawCenteredText(CMU_10_FONT_ID, top, ssidInfo.c_str());
-
-  renderer.drawCenteredText(CMU_10_FONT_ID, top + 40, "Save password for next time?");
-
-  // Draw Yes/No buttons
-  const int buttonY = top + 80;
+  // Draw Yes/No buttons at center
+  const int buttonY = centerY + 10;
   constexpr int buttonWidth = 60;
   constexpr int buttonSpacing = 30;
-  constexpr int totalWidth = buttonWidth * 2 + buttonSpacing;
-  const int startX = (pageWidth - totalWidth) / 2;
+  constexpr int totalButtonWidth = buttonWidth * 2 + buttonSpacing;
+  const int buttonStartX = (pageWidth - totalButtonWidth) / 2;
 
-  // Draw "Yes" button
-  if (savePromptSelection == 0) {
-    renderer.drawText(CMU_10_FONT_ID, startX, buttonY, "[Yes]");
-  } else {
-    renderer.drawText(CMU_10_FONT_ID, startX + 4, buttonY, "Yes");
-  }
+  // Draw buttons with selection brackets
+  const char* yesText = savePromptSelection == 0 ? "[Yes]" : "Yes";
+  const char* noText = savePromptSelection == 1 ? "[No]" : "No";
+  const int yesX = savePromptSelection == 0 ? buttonStartX : buttonStartX + 4;
+  const int noX = savePromptSelection == 1 ? buttonStartX + buttonWidth + buttonSpacing : buttonStartX + buttonWidth + buttonSpacing + 4;
+  
+  renderer.drawText(CMU_10_FONT_ID, yesX, buttonY, yesText);
+  renderer.drawText(CMU_10_FONT_ID, noX, buttonY, noText);
 
-  // Draw "No" button
-  if (savePromptSelection == 1) {
-    renderer.drawText(CMU_10_FONT_ID, startX + buttonWidth + buttonSpacing, buttonY, "[No]");
-  } else {
-    renderer.drawText(CMU_10_FONT_ID, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
-  }
-
+  // Draw help text at bottom
   renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
 }
 

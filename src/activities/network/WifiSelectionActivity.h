@@ -25,7 +25,6 @@ enum class WifiSelectionState {
   NETWORK_LIST,       // Displaying available networks
   PASSWORD_ENTRY,     // Entering password for selected network
   CONNECTING,         // Attempting to connect
-  CONNECTED,          // Successfully connected
   SAVE_PROMPT,        // Asking user if they want to save the password
   CONNECTION_FAILED,  // Connection failed
   FORGET_PROMPT       // Asking user if they want to forget the network
@@ -79,7 +78,6 @@ class WifiSelectionActivity final : public ActivityWithSubactivity {
   void renderNetworkList() const;
   void renderPasswordEntry() const;
   void renderConnecting() const;
-  void renderConnected() const;
   void renderSavePrompt() const;
   void renderConnectionFailed() const;
   void renderForgetPrompt() const;
