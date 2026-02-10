@@ -59,10 +59,6 @@ class Xtc {
   bool hasChapters() const;
   const std::vector<xtc::ChapterInfo>& getChapters() const;
 
-  // Cover image support (for sleep screen)
-  std::string getCoverBmpPath() const;
-  bool generateCoverBmp() const;
-
   // Page access
   uint32_t getPageCount() const;
   uint16_t getPageWidth() const;
