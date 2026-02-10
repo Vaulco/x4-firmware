@@ -38,7 +38,7 @@ Four proprietary file formats designed for ESP32 e-paper displays:
 
 XTG stores 1-bit per pixel monochrome bitmaps optimized for e-paper displays.
 
-### Header (22 bytes)
+### Header (14 bytes)
 
 | Offset | Size | Type     | Field       | Description                  | Value                |
 |--------|------|----------|-------------|------------------------------|----------------------|
@@ -48,7 +48,6 @@ XTG stores 1-bit per pixel monochrome bitmaps optimized for e-paper displays.
 | 0x08   | 1    | uint8_t  | colorMode   | Color mode                   | 0=monochrome         |
 | 0x09   | 1    | uint8_t  | compression | Compression                  | 0=uncompressed       |
 | 0x0A   | 4    | uint32_t | dataSize    | Image data size (bytes)      | Calculated           |
-| 0x0E   | 8    | uint64_t | md5         | MD5 checksum (first 8 bytes) | Optional             |
 
 ### Image Data
 

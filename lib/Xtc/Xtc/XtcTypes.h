@@ -79,27 +79,17 @@ struct PageTableEntry {
 };
 #pragma pack(pop)
 
-// XTG/XTH page data header (22 bytes)
+// XTG/XTH page data header (14 bytes)
 // Used for both 1-bit (XTG) and 2-bit (XTH) formats
 #pragma pack(push, 1)
 struct XtgPageHeader {
-  uint32_t magic;       // 0x00: File identifier (XTG: 0x00475458, XTH: 0x00485458)
+  uint32_t magic;       // 0x00: File identifier
   uint16_t width;       // 0x04: Image width (pixels)
   uint16_t height;      // 0x06: Image height (pixels)
   uint8_t colorMode;    // 0x08: Color mode (0=monochrome)
   uint8_t compression;  // 0x09: Compression (0=uncompressed)
   uint32_t dataSize;    // 0x0A: Image data size (bytes)
-  uint64_t md5;         // 0x0E: MD5 checksum (first 8 bytes, optional)
-  // Followed by bitmap data at offset 0x16 (22)
-  //
-  // XTG (1-bit): Row-major, 8 pixels/byte, MSB first
-  //   dataSize = ((width + 7) / 8) * height
-  //
-  // XTH (2-bit): Two bit planes, column-major (right-to-left), 8 vertical pixels/byte
-  //   dataSize = ((width * height + 7) / 8) * 2
-  //   First plane: Bit1 for all pixels
-  //   Second plane: Bit2 for all pixels
-  //   pixelValue = (bit1 << 1) | bit2
+  // Followed by bitmap data at offset 0x0E (14)  ← UPDATE OFFSET
 };
 #pragma pack(pop)
 
