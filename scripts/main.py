@@ -283,8 +283,8 @@ class XTCWriter:
         img_final = img_rgb.convert('1')
         w, h = img_final.size
         img_bytes = img_final.tobytes()
-        xtg_header = struct.pack('<IHHBBIQ', XTCWriter.XTG_MAGIC, w, h, 
-                                0, 0, (w + 7) // 8 * h, 0)
+        xtg_header = struct.pack('<IHHBBI', XTCWriter.XTG_MAGIC, w, h, 
+                                0, 0, len(img_bytes))
         return xtg_header + img_bytes
     
     @staticmethod
