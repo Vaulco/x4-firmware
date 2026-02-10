@@ -10,61 +10,40 @@
     td, th { text-align: left;}
     td:first-child { width: 85%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     td:last-child { width: 15%; text-align: right; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: white; padding: 20px; max-width: 450px; width: 90%; }
-    #progress-bar { width: 100%; height: 20px; background: #ddd; margin: 10px 0; }
-    #progress-fill { height: 100%; background: green; width: 0%; transition: width 0.3s; }
-    .banner { background: #ffe; border: 1px solid #cc0; padding: 10px; margin-bottom: 10px; display: none; }
-    .banner.show { display: block; }
     button, input { font-family: serif; }
-    .folder-creation { margin-top: 10px; display: flex; gap: 5px; align-items: center; }
-    .folder-creation input { width: 200px;}
-    .folder-creation button {white-space: nowrap; }
+    .controls { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .controls input { width: 200px;}
+    .upload-progress { display: none; font-size: 14px; }
+    .upload-progress.show { display: inline; }
+    #retryAllButton { display: none; }
+    #retryAllButton.show { display: inline-block; }
+    input[type="file"] {
+      display: inline-block;
+      font-family: serif;
+    }
   </style>
 </head>
 <body>
 
-<div>
-  <button onclick="openUploadModal()">Upload</button>
+<div class="controls">
+  <input type="file" id="fileInput" multiple>
+  <button id="retryAllButton" onclick="retryAllFailedUploads()">Retry All</button>
+  <span class="upload-progress" id="uploadProgress"></span>
 </div>
 
-<div class="folder-creation">
+<div class="controls">
   <input type="text" id="folderName" placeholder="Folder name...">
   <button onclick="createFolder()">Create Folder</button>
 </div>
 
-<!-- Failed Uploads Banner -->
-<div class="banner" id="failedUploadsBanner">
-  <b>⚠️ Some files failed to upload</b>
-  <button onclick="dismissFailedUploads()" style="float:right">&times;</button>
-  <div id="failedFilesList"></div>
-  <button onclick="retryAllFailedUploads()">Retry All</button>
-</div>
-
 <div>
-  <p>Contents in <span id="directory-breadcrumbs"></span> : <span id="folder-summary"></span></p>
-  <div id="file-table">
-  </div>
-</div>
-
-<!-- Hidden file input -->
-<input type="file" id="fileInput" style="display: none;" multiple>
-
-<!-- Upload Progress Modal -->
-<div class="modal-overlay" id="uploadModal">
-  <div class="modal">
-    <button onclick="closeUploadModal()" style="float:right">&times;</button>
-    <h3>📤 Uploading files</h3>
-    <p>Uploading to <b id="uploadPathDisplay"></b></p>
-    <div id="progress-bar"><div id="progress-fill"></div></div>
-    <div id="progress-text"></div>
-  </div>
+  <p id="headerInfo"></p>
+  <div id="file-table"></div>
 </div>
 
 <script>
-  // get current path from query parameter
   const currentPath = decodeURIComponent(new URLSearchParams(window.location.search).get('path') || '/');
+  let failedUploads = [];
 
   function escapeHtml(unsafe) {
     return unsafe
@@ -83,32 +62,42 @@
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)).toLocaleString() + ' ' + sizes[i];
   }
 
-  async function hydrate() {
-    // Close modals when clicking overlay
-    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
-      overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-          overlay.classList.remove('open');
-        }
-      });
-    });
+  function buildPath(fileName) {
+    return currentPath.endsWith("/") ? currentPath + fileName : currentPath + "/" + fileName;
+  }
 
-    const breadcrumbs = document.getElementById('directory-breadcrumbs');
+  function toggleRetryButton(show) {
+    document.getElementById('retryAllButton').classList.toggle('show', show);
+  }
+
+  function updateProgress(message, show = true) {
+    const progressText = document.getElementById('uploadProgress');
+    progressText.textContent = message;
+    progressText.classList.toggle('show', show);
+  }
+
+  function handleXhrError(action) {
+    alert(`Failed to ${action} - network error`);
+  }
+
+  async function hydrate() {
+    const headerInfo = document.getElementById('headerInfo');
     const fileTable = document.getElementById('file-table');
 
-    let breadcrumbContent = '';
+    // Build breadcrumbs
+    let breadcrumbs = '';
     if (currentPath === '/') {
-      breadcrumbContent += '/';
+      breadcrumbs = '/';
     } else {
-      breadcrumbContent += '<a href="/">/</a>';
+      breadcrumbs = '<a href="/">/</a>';
       const pathSegments = currentPath.split('/');
-      pathSegments.slice(1, pathSegments.length - 1).forEach(function(segment, index) {
-        breadcrumbContent += '<a href="/?path=' + encodeURIComponent(pathSegments.slice(0, index + 2).join('/')) + '">' + escapeHtml(segment) + '/</a>';
+      pathSegments.slice(1, pathSegments.length - 1).forEach((segment, index) => {
+        breadcrumbs += '<a href="/?path=' + encodeURIComponent(pathSegments.slice(0, index + 2).join('/')) + '">' + escapeHtml(segment) + '/</a>';
       });
-      breadcrumbContent += '<span>' + escapeHtml(pathSegments[pathSegments.length - 1]) + '</span>';
+      breadcrumbs += '<span>' + escapeHtml(pathSegments[pathSegments.length - 1]) + '</span>';
     }
-    breadcrumbs.innerHTML = breadcrumbContent;
 
+    // Fetch files
     let files = [];
     try {
       const response = await fetch('/api/files?path=' + encodeURIComponent(currentPath));
@@ -122,237 +111,134 @@
       return;
     }
 
-    let folderCount = 0;
-    let totalSize = 0;
-    files.forEach(file => {
-      if (file.isDirectory) folderCount++;
-      totalSize += file.size;
-    });
+    // Calculate summary
+    const folderCount = files.filter(f => f.isDirectory).length;
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+    const summary = `${folderCount} folders, ${files.length - folderCount} files, ${formatFileSize(totalSize)}`;
 
-    document.getElementById('folder-summary').innerHTML = `${folderCount} folders, ${files.length - folderCount} files, ${formatFileSize(totalSize)}`;
+    // Combined header
+    headerInfo.innerHTML = `<strong>${breadcrumbs}</strong> — ${summary}`;
 
     if (files.length === 0) {
       fileTable.innerHTML = '<p><i>This folder is empty</i></p>';
-    } else {
-      let fileTableContent = '<table>';
-
-      const sortedFiles = files.sort((a, b) => {
-        // Directories first, then other files, alphabetically within each group
-        if (a.isDirectory && !b.isDirectory) return -1;
-        if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name);
-      });
-
-      sortedFiles.forEach(file => {
-        if (file.isDirectory) {
-          let folderPath = currentPath;
-          if (!folderPath.endsWith("/")) folderPath += "/";
-          folderPath += file.name;
-
-          fileTableContent += '<tr>';
-          fileTableContent += `<td><a href="/?path=${encodeURIComponent(folderPath)}" title="${escapeHtml(file.name)}/">${escapeHtml(file.name)}/</a></td>`;
-          fileTableContent += `<td><button onclick="deleteItem('${folderPath.replaceAll("'", "\\'")}', true)">Delete</button></td>`;
-          fileTableContent += '</tr>';
-        } else {
-          let filePath = currentPath;
-          if (!filePath.endsWith("/")) filePath += "/";
-          filePath += file.name;
-
-          fileTableContent += '<tr>';
-          fileTableContent += `<td title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</td>`;
-          fileTableContent += `<td><button onclick="deleteItem('${filePath.replaceAll("'", "\\'")}', false)">Delete</button></td>`;
-          fileTableContent += '</tr>';
-        }
-      });
-
-      fileTableContent += '</table>';
-      fileTable.innerHTML = fileTableContent;
+      return;
     }
-  }
 
-  // Modal functions
-  function openUploadModal() {
-    document.getElementById('uploadPathDisplay').textContent = currentPath;
+    // Sort and render files
+    const sortedFiles = files.sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    let tableHTML = '<table>';
+    sortedFiles.forEach(file => {
+      const fullPath = buildPath(file.name);
+      const escapedPath = fullPath.replaceAll("'", "\\'");
+      const displayName = escapeHtml(file.name) + (file.isDirectory ? '/' : '');
+      
+      tableHTML += '<tr>';
+      if (file.isDirectory) {
+        tableHTML += `<td><a href="/?path=${encodeURIComponent(fullPath)}" title="${displayName}">${displayName}</a></td>`;
+      } else {
+        tableHTML += `<td title="${displayName}">${displayName}</td>`;
+      }
+      tableHTML += `<td><button onclick="deleteItem('${escapedPath}', ${file.isDirectory})">Delete</button></td>`;
+      tableHTML += '</tr>';
+    });
+    tableHTML += '</table>';
     
-    // Trigger file picker immediately
-    const fileInput = document.getElementById('fileInput');
-    fileInput.value = ''; // Reset file input
-    fileInput.click();
+    fileTable.innerHTML = tableHTML;
   }
 
   // Auto-upload when files are selected
   document.getElementById('fileInput').addEventListener('change', function() {
     if (this.files.length > 0) {
-      uploadFile();
+      uploadFiles();
     }
   });
 
-  function closeUploadModal() {
-    document.getElementById('uploadModal').classList.remove('open');
-    document.getElementById('progress-fill').style.width = '0%';
-    document.getElementById('progress-fill').style.backgroundColor = 'green';
-  }
+  function uploadFiles() {
+    const fileInput = document.getElementById('fileInput');
+    const files = Array.from(fileInput.files);
 
-let failedUploadsGlobal = [];
+    if (files.length === 0) return;
 
-function uploadFile() {
-  const fileInput = document.getElementById('fileInput');
-  const files = Array.from(fileInput.files);
+    let currentIndex = 0;
+    const failedFiles = [];
 
-  if (files.length === 0) {
-    return; // Don't show alert, just silently return
-  }
-
-  // Show the upload modal
-  document.getElementById('uploadModal').classList.add('open');
-
-  const progressFill = document.getElementById('progress-fill');
-  const progressText = document.getElementById('progress-text');
-
-  let currentIndex = 0;
-  const failedFiles = [];
-
-  function uploadNextFile() {
-    if (currentIndex >= files.length) {
-      // All files processed - show summary
-      if (failedFiles.length === 0) {
-        progressFill.style.backgroundColor = 'green';
-        progressText.textContent = 'All uploads complete!';
-        setTimeout(() => {
-          closeUploadModal();
-          hydrate(); // Refresh file list instead of reloading
-        }, 1000);
-      } else {
-        progressFill.style.backgroundColor = 'red';
-        const failedList = failedFiles.map(f => f.name).join(', ');
-        progressText.textContent = `${files.length - failedFiles.length}/${files.length} uploaded. Failed: ${failedList}`;
-        
-        // Store failed files globally and show banner
-        failedUploadsGlobal = failedFiles;
-        
-        setTimeout(() => {
-          closeUploadModal();
-          showFailedUploadsBanner();
-          hydrate(); // Refresh file list to show successfully uploaded files
-        }, 2000);
+    function uploadNext() {
+      if (currentIndex >= files.length) {
+        // All files processed
+        if (failedFiles.length === 0) {
+          updateProgress('✓ Complete');
+          setTimeout(() => {
+            updateProgress('', false);
+            hydrate();
+          }, 1000);
+        } else {
+          updateProgress(`⚠ ${files.length - failedFiles.length}/${files.length} uploaded`);
+          failedUploads = failedFiles;
+          setTimeout(() => {
+            updateProgress('', false);
+            toggleRetryButton(true);
+            hydrate();
+          }, 2000);
+        }
+        return;
       }
-      return;
+
+      const file = files[currentIndex];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload?path=' + encodeURIComponent(currentPath), true);
+
+      updateProgress(`Uploading ${file.name} (${currentIndex + 1}/${files.length}) — 0%`);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          updateProgress(`Uploading ${file.name} (${currentIndex + 1}/${files.length}) — ${percent}%`);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          currentIndex++;
+          uploadNext();
+        } else {
+          failedFiles.push({ name: file.name, error: xhr.responseText, file: file });
+          currentIndex++;
+          uploadNext();
+        }
+      };
+
+      xhr.onerror = () => {
+        failedFiles.push({ name: file.name, error: 'network error', file: file });
+        currentIndex++;
+        uploadNext();
+      };
+
+      xhr.send(formData);
     }
 
-    const file = files[currentIndex];
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const xhr = new XMLHttpRequest();
-    // Include path as query parameter since multipart form data doesn't make
-    // form fields available until after file upload completes
-    xhr.open('POST', '/upload?path=' + encodeURIComponent(currentPath), true);
-
-    progressFill.style.width = '0%';
-    progressFill.style.backgroundColor = 'green';
-    progressText.textContent = `Uploading ${file.name} (${currentIndex + 1}/${files.length})`;
-
-    xhr.upload.onprogress = function (e) {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        progressFill.style.width = percent + '%';
-        progressText.textContent =
-          `Uploading ${file.name} (${currentIndex + 1}/${files.length}) — ${percent}%`;
-      }
-    };
-
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        currentIndex++;
-        uploadNextFile(); // upload next file
-      } else {
-        // Track failure and continue with next file
-        failedFiles.push({ name: file.name, error: xhr.responseText, file: file });
-        currentIndex++;
-        uploadNextFile();
-      }
-    };
-
-    xhr.onerror = function () {
-      // Track network error and continue with next file
-      failedFiles.push({ name: file.name, error: 'network error', file: file });
-      currentIndex++;
-      uploadNextFile();
-    };
-
-    xhr.send(formData);
+    uploadNext();
   }
 
-  uploadNextFile();
-}
-
-function showFailedUploadsBanner() {
-  const banner = document.getElementById('failedUploadsBanner');
-  const filesList = document.getElementById('failedFilesList');
-  
-  filesList.innerHTML = '';
-  
-  failedUploadsGlobal.forEach((failedFile, index) => {
-    const item = document.createElement('div');
-    item.style.margin = '5px 0';
-    item.innerHTML = `
-      📄 ${escapeHtml(failedFile.name)} <small>(${escapeHtml(failedFile.error)})</small>
-      <button onclick="retrySingleUpload(${index})">Retry</button>
-    `;
-    filesList.appendChild(item);
-  });
-  
-  banner.classList.add('show');
-}
-
-function dismissFailedUploads() {
-  const banner = document.getElementById('failedUploadsBanner');
-  banner.classList.remove('show');
-  failedUploadsGlobal = [];
-}
-
-function retrySingleUpload(index) {
-  const failedFile = failedUploadsGlobal[index];
-  if (!failedFile) return;
-  
-  // Create a DataTransfer to set the file input
-  const dt = new DataTransfer();
-  dt.items.add(failedFile.file);
-  
-  const fileInput = document.getElementById('fileInput');
-  fileInput.files = dt.files;
-  
-  // Remove this file from failed list
-  failedUploadsGlobal.splice(index, 1);
-  
-  // If no more failed files, hide banner
-  if (failedUploadsGlobal.length === 0) {
-    dismissFailedUploads();
+  function retryAllFailedUploads() {
+    if (failedUploads.length === 0) return;
+    
+    const dt = new DataTransfer();
+    failedUploads.forEach(failed => dt.items.add(failed.file));
+    
+    document.getElementById('fileInput').files = dt.files;
+    failedUploads = [];
+    toggleRetryButton(false);
+    
+    uploadFiles();
   }
-  
-  // Trigger upload directly
-  uploadFile();
-}
-
-function retryAllFailedUploads() {
-  if (failedUploadsGlobal.length === 0) return;
-  
-  // Create a DataTransfer with all failed files
-  const dt = new DataTransfer();
-  failedUploadsGlobal.forEach(failedFile => {
-    dt.items.add(failedFile.file);
-  });
-  
-  const fileInput = document.getElementById('fileInput');
-  fileInput.files = dt.files;
-  
-  // Clear failed files list
-  failedUploadsGlobal = [];
-  dismissFailedUploads();
-  
-  // Trigger upload directly
-  uploadFile();
-}
 
   function createFolder() {
     const folderName = document.getElementById('folderName').value.trim();
@@ -362,10 +248,8 @@ function retryAllFailedUploads() {
       return;
     }
 
-    // Validate folder name (no special characters except underscore and hyphen)
-    const validName = /^[a-zA-Z0-9_\-]+$/.test(folderName);
-    if (!validName) {
-      alert('Folder name can only contain letters, numbers, underscores, and hyphens.');
+    if (!/^[a-zA-Z0-9_\- ]+$/.test(folderName)) {
+      alert('Folder name can only contain letters, numbers, underscores, hyphens, and spaces.');
       return;
     }
 
@@ -376,7 +260,7 @@ function retryAllFailedUploads() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/mkdir', true);
 
-    xhr.onload = function() {
+    xhr.onload = () => {
       if (xhr.status === 200) {
         window.location.reload();
       } else {
@@ -384,14 +268,10 @@ function retryAllFailedUploads() {
       }
     };
 
-    xhr.onerror = function() {
-      alert('Failed to create folder - network error');
-    };
-
+    xhr.onerror = () => handleXhrError('create folder');
     xhr.send(formData);
   }
 
-  // Delete function - now directly deletes without confirmation
   function deleteItem(path, isFolder) {
     const formData = new FormData();
     formData.append('path', path);
@@ -400,7 +280,7 @@ function retryAllFailedUploads() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/delete', true);
 
-    xhr.onload = function() {
+    xhr.onload = () => {
       if (xhr.status === 200) {
         window.location.reload();
       } else {
@@ -408,10 +288,7 @@ function retryAllFailedUploads() {
       }
     };
 
-    xhr.onerror = function() {
-      alert('Failed to delete - network error');
-    };
-
+    xhr.onerror = () => handleXhrError('delete');
     xhr.send(formData);
   }
 
