@@ -57,19 +57,6 @@ class XtcParser {
    */
   size_t loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize);
 
-  /**
-   * Streaming page load
-   * Memory-efficient method that reads page data in chunks.
-   *
-   * @param pageIndex Page index
-   * @param callback Callback function to receive data chunks
-   * @param chunkSize Chunk size (default: 1024 bytes)
-   * @return Error code
-   */
-  XtcError loadPageStreaming(uint32_t pageIndex,
-                             std::function<void(const uint8_t* data, size_t size, size_t offset)> callback,
-                             size_t chunkSize = 1024);
-
   // Get title from metadata
   std::string getTitle() const { return m_title; }
 
