@@ -129,11 +129,11 @@ void XtcReaderChapterSelectionActivity::renderScreen() {
 
   const auto pageWidth = renderer.getScreenWidth();
   const int pageItems = getPageItems();
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Select Chapter", true);
+  renderer.drawCenteredText("cmu_12", 15, "Select Chapter", true);
 
   const auto& chapters = xtc->getChapters();
   if (chapters.empty()) {
-    renderer.drawCenteredText(CMU_10_FONT_ID, 120, "No chapters");
+    renderer.drawCenteredText("cmu_10", 120, "No chapters");
     renderer.displayBuffer();
     return;
   }
@@ -157,20 +157,20 @@ void XtcReaderChapterSelectionActivity::renderScreen() {
     // Prepare page number (to calculate available space for title)
     char pageNum[16];
     snprintf(pageNum, sizeof(pageNum), "%u", chapter.startPage + 1);
-    const int pageNumWidth = renderer.getTextWidth(CMU_10_FONT_ID, pageNum);
+    const int pageNumWidth = renderer.getTextWidth("cmu_10", pageNum);
     
     // Calculate available width for chapter title (10px gap from page number)
     const int availableWidth = pageWidth - leftMargin - pageNumWidth - 10 - 20;  // left margin (with indent) + page number width + 10px gap + right margin
     
     // Truncate chapter title if necessary using renderer's truncate function
     std::string displayTitle = chapter.name.empty() ? "Unnamed" : chapter.name;
-    displayTitle = renderer.truncatedText(CMU_10_FONT_ID, displayTitle.c_str(), availableWidth);
+    displayTitle = renderer.truncatedText("cmu_10", displayTitle.c_str(), availableWidth);
     
     // Draw chapter title on the left with indentation
-    renderer.drawText(CMU_10_FONT_ID, leftMargin, itemY, displayTitle.c_str(), !isSelected);
+    renderer.drawText("cmu_10", leftMargin, itemY, displayTitle.c_str(), !isSelected);
     
     // Draw page number on the right
-    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
+    renderer.drawText("cmu_10", pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
   }
 
   renderer.displayBuffer();

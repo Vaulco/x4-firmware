@@ -167,16 +167,16 @@ void FileSelectionActivity::render() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Library", true);
+  renderer.drawCenteredText("cmu_12", 15, "Library", true);
 
   if (files.empty()) {
-    renderer.drawText(CMU_10_FONT_ID, 20, 60, "No books found");
+    renderer.drawText("cmu_10", 20, 60, "No books found");
   } else {
     const auto pageStartIndex = selectorIndex / PAGE_ITEMS * PAGE_ITEMS;
     renderer.fillRect(0, 60 + (selectorIndex % PAGE_ITEMS) * 30 - 2, pageWidth - 1, 30);
     for (int i = pageStartIndex; i < files.size() && i < pageStartIndex + PAGE_ITEMS; i++) {
-      auto item = renderer.truncatedText(CMU_10_FONT_ID, files[i].c_str(), renderer.getScreenWidth() - 40);
-      renderer.drawText(CMU_10_FONT_ID, 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
+      auto item = renderer.truncatedText("cmu_10", files[i].c_str(), renderer.getScreenWidth() - 40);
+      renderer.drawText("cmu_10", 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
     }
   }
 

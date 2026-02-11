@@ -135,7 +135,7 @@ void SettingsActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Options", true);
+  renderer.drawCenteredText("cmu_12", 15, "Options", true);
 
   // Draw selection
   renderer.fillRect(0, 60 + selectedSettingIndex * 30 - 2, pageWidth - 1, 30);
@@ -145,7 +145,7 @@ void SettingsActivity::render() const {
     const int settingY = 60 + i * 30;  // 30 pixels between settings
 
     // Draw setting name
-    renderer.drawText(CMU_10_FONT_ID, 20, settingY, settingsList[i].name, i != selectedSettingIndex);
+    renderer.drawText("cmu_10", 20, settingY, settingsList[i].name, i != selectedSettingIndex);
 
     // Draw value based on setting type
     std::string valueText = "";
@@ -154,8 +154,8 @@ void SettingsActivity::render() const {
       valueText = settingsList[i].enumValues[value];
     }
     
-    const auto width = renderer.getTextWidth(CMU_10_FONT_ID, valueText.c_str());
-    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
+    const auto width = renderer.getTextWidth("cmu_10", valueText.c_str());
+    renderer.drawText("cmu_10", pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
 
   // Draw battery indicator centered at bottom

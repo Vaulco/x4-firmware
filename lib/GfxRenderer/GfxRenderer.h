@@ -14,7 +14,7 @@ class GfxRenderer {
  private:
   EInkDisplay& einkDisplay;
   RenderMode renderMode;
-  std::map<int, const EpdFont*> fontMap;
+  std::map<std::string, const EpdFont*> fontMap;
   void renderChar(const EpdFont* font, uint32_t cp, int* x, const int* y, bool pixelState) const;
   void rotateCoordinates(int x, int y, int* rotatedX, int* rotatedY) const;
 

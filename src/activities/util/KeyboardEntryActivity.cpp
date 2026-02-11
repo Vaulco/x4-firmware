@@ -240,11 +240,11 @@ void KeyboardEntryActivity::render() const {
   renderer.clearScreen();
 
   // Draw title
-  renderer.drawCenteredText(CMU_10_FONT_ID, startY, title.c_str());
+  renderer.drawCenteredText("cmu_10", startY, title.c_str());
 
   // Draw input field
   const int inputY = startY + 22;
-  renderer.drawText(CMU_10_FONT_ID, 10, inputY, "[");
+  renderer.drawText("cmu_10", 10, inputY, "[");
 
   std::string displayText;
   if (isPassword) {
@@ -257,15 +257,15 @@ void KeyboardEntryActivity::render() const {
   displayText += "_";
 
   // Truncate if too long for display - use actual character width from font
-  int approxCharWidth = renderer.getSpaceWidth(CMU_10_FONT_ID);
+  int approxCharWidth = renderer.getSpaceWidth("cmu_10");
   if (approxCharWidth < 1) approxCharWidth = 8;  // Fallback to approximate width
   const int maxDisplayLen = (pageWidth - 40) / approxCharWidth;
   if (displayText.length() > static_cast<size_t>(maxDisplayLen)) {
     displayText = "..." + displayText.substr(displayText.length() - maxDisplayLen + 3);
   }
 
-  renderer.drawText(CMU_10_FONT_ID, 20, inputY, displayText.c_str());
-  renderer.drawText(CMU_10_FONT_ID, pageWidth - 15, inputY, "]");
+  renderer.drawText("cmu_10", 20, inputY, displayText.c_str());
+  renderer.drawText("cmu_10", pageWidth - 15, inputY, "]");
 
   // Draw keyboard - use compact spacing to fit 5 rows on screen
   const int keyboardStartY = inputY + 25;
@@ -299,7 +299,7 @@ void KeyboardEntryActivity::render() const {
 
       // Space bar (logical cols 2-6, spans 5 key widths)
       const bool spaceSelected = (selectedRow == 4 && selectedCol >= SPACE_COL && selectedCol < BACKSPACE_COL);
-      const int spaceTextWidth = renderer.getTextWidth(CMU_10_FONT_ID, "_____");
+      const int spaceTextWidth = renderer.getTextWidth("cmu_10", "_____");
       const int spaceXWidth = 5 * (keyWidth + keySpacing);
       const int spaceXPos = currentX + (spaceXWidth - spaceTextWidth) / 2;
       renderItemWithSelector(spaceXPos, rowY, "_____", spaceSelected);
@@ -319,7 +319,7 @@ void KeyboardEntryActivity::render() const {
         // Get the character to display
         const char c = layout[row][col];
         std::string keyLabel(1, c);
-        const int charWidth = renderer.getTextWidth(CMU_10_FONT_ID, keyLabel.c_str());
+        const int charWidth = renderer.getTextWidth("cmu_10", keyLabel.c_str());
 
         const int keyX = startX + col * (keyWidth + keySpacing) + (keyWidth - charWidth) / 2;
         const bool isSelected = row == selectedRow && col == selectedCol;
@@ -334,9 +334,9 @@ void KeyboardEntryActivity::render() const {
 void KeyboardEntryActivity::renderItemWithSelector(const int x, const int y, const char* item,
                                                    const bool isSelected) const {
   if (isSelected) {
-    const int itemWidth = renderer.getTextWidth(CMU_10_FONT_ID, item);
-    renderer.drawText(CMU_10_FONT_ID, x - 6, y, "[");
-    renderer.drawText(CMU_10_FONT_ID, x + itemWidth, y, "]");
+    const int itemWidth = renderer.getTextWidth("cmu_10", item);
+    renderer.drawText("cmu_10", x - 6, y, "[");
+    renderer.drawText("cmu_10", x + itemWidth, y, "]");
   }
-  renderer.drawText(CMU_10_FONT_ID, x, y, item);
+  renderer.drawText("cmu_10", x, y, item);
 }

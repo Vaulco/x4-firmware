@@ -56,7 +56,7 @@ void Battery::draw(const GfxRenderer& renderer, int left, int top) const {
 
   // Draw percentage text
   const std::string text = std::to_string(percentage) + "%";
-  renderer.drawText(CMU_8_FONT_ID, left + 27, top, text.c_str());
+  renderer.drawText("cmu_8", left + 27, top, text.c_str());
 
   constexpr int bodyW = 20;
   constexpr int bodyH = 12;

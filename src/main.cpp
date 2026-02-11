@@ -67,7 +67,7 @@ void enterDeepSleep() {
   // Display "SLEEPING" message
   const auto pageHeight = renderer.getScreenHeight();
   renderer.clearScreen();
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight / 2, "SLEEPING");
+  renderer.drawCenteredText("cmu_8", pageHeight / 2, "SLEEPING");
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
   
   einkDisplay.deepSleep();
@@ -112,9 +112,9 @@ void onGoToFileSelection() {
 void setupDisplayAndFonts() {
   einkDisplay.begin();
   Serial.printf("[%lu] [   ] Display initialized\n", millis());
-  renderer.insertFont(CMU_8_FONT_ID, &cmu8RegularFont);
-  renderer.insertFont(CMU_10_FONT_ID, &cmu10RegularFont);
-  renderer.insertFont(CMU_12_FONT_ID, &cmu12RegularFont);
+  renderer.insertFont("cmu_8", &cmu8RegularFont);
+  renderer.insertFont("cmu_10", &cmu10RegularFont);
+  renderer.insertFont("cmu_12", &cmu12RegularFont);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 
