@@ -6,7 +6,7 @@ Firmware for the **Xteink X4** e-paper display reader (unaffiliated with Xteink)
 
 ```
 git clone https://github.com/Vaulco/x4-firmware.git
-cd xteink-reader
+cd x4-firmware
 ```
 
 ### I have the hardware
