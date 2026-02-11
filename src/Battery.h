@@ -10,8 +10,6 @@ class Battery {
   explicit Battery(int pin, float dividerMultiplier = 2.0f) 
       : adcPin(pin), dividerMultiplier(dividerMultiplier) {}
 
-  void draw(const GfxRenderer& renderer, int left, int top) const;
-
   // Read voltage and return percentage (0-100)
   uint16_t readPercentage() const;
 

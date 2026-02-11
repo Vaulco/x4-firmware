@@ -180,10 +180,10 @@ void FileSelectionActivity::render() const {
     }
   }
 
-  // Draw battery indicator centered at bottom
-  const int batteryWidth = 70;  // Approximate width for battery icon + percentage text
-  const int batteryX = (pageWidth - batteryWidth) / 2;
-  battery.draw(renderer, batteryX, pageHeight - 30);
+  // New code - text-only battery percentage
+  const uint16_t batteryPercentage = battery.readPercentage();
+  const std::string batteryText = std::to_string(batteryPercentage) + "%";
+  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, batteryText.c_str());
 
   renderer.displayBuffer();
 }
