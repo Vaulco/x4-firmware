@@ -42,25 +42,23 @@ void GfxRenderer::drawPixel(const int x, const int y, const bool state) const {
   }
 }
 
-int GfxRenderer::getTextWidth(const int fontId, const char* text, const EpdFontFamily::Style style) const {
+int GfxRenderer::getTextWidth(const int fontId, const char* text) const {
   if (fontMap.count(fontId) == 0) {
     Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
     return 0;
   }
 
   int w = 0, h = 0;
-  fontMap.at(fontId).getTextDimensions(text, &w, &h, style);
+  fontMap.at(fontId).getTextDimensions(text, &w, &h, EpdFontFamily::REGULAR);
   return w;
 }
 
-void GfxRenderer::drawCenteredText(const int fontId, const int y, const char* text, const bool black,
-                                   const EpdFontFamily::Style style) const {
-  const int x = (getScreenWidth() - getTextWidth(fontId, text, style)) / 2;
-  drawText(fontId, x, y, text, black, style);
+void GfxRenderer::drawCenteredText(const int fontId, const int y, const char* text, const bool black) const {
+  const int x = (getScreenWidth() - getTextWidth(fontId, text)) / 2;
+  drawText(fontId, x, y, text, black);
 }
 
-void GfxRenderer::drawText(const int fontId, const int x, const int y, const char* text, const bool black,
-                           const EpdFontFamily::Style style) const {
+void GfxRenderer::drawText(const int fontId, const int x, const int y, const char* text, const bool black) const {
   const int yPos = y + getFontAscenderSize(fontId);
   int xpos = x;
 
@@ -76,13 +74,13 @@ void GfxRenderer::drawText(const int fontId, const int x, const int y, const cha
   const auto font = fontMap.at(fontId);
 
   // no printable characters
-  if (!font.hasPrintableChars(text, style)) {
+  if (!font.hasPrintableChars(text, EpdFontFamily::REGULAR)) {
     return;
   }
 
   uint32_t cp;
   while ((cp = utf8NextCodepoint(reinterpret_cast<const uint8_t**>(&text)))) {
-    renderChar(font, cp, &xpos, &yPos, black, style);
+    renderChar(font, cp, &xpos, &yPos, black, EpdFontFamily::REGULAR);
   }
 }
 
@@ -219,13 +217,12 @@ void GfxRenderer::displayBuffer(const EInkDisplay::RefreshMode refreshMode) cons
   einkDisplay.displayBuffer(refreshMode);
 }
 
-std::string GfxRenderer::truncatedText(const int fontId, const char* text, const int maxWidth,
-                                       const EpdFontFamily::Style style) const {
+std::string GfxRenderer::truncatedText(const int fontId, const char* text, const int maxWidth) const {
   std::string item = text;
-  int itemWidth = getTextWidth(fontId, item.c_str(), style);
+  int itemWidth = getTextWidth(fontId, item.c_str());
   while (itemWidth > maxWidth && item.length() > 8) {
     item.replace(item.length() - 5, 5, "...");
-    itemWidth = getTextWidth(fontId, item.c_str(), style);
+    itemWidth = getTextWidth(fontId, item.c_str());
   }
   return item;
 }

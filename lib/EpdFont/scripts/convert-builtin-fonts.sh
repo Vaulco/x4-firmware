@@ -4,7 +4,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-READER_FONT_STYLES=("Regular" "Bold")
+READER_FONT_STYLES=("Regular")
 CMU_FONT_SIZES=(8 10 12 14)
 
 for size in ${CMU_FONT_SIZES[@]}; do

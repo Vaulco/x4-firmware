@@ -135,7 +135,7 @@ void SettingsActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Options", true, EpdFontFamily::REGULAR);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Options", true);
 
   // Draw selection
   renderer.fillRect(0, 60 + selectedSettingIndex * 30 - 2, pageWidth - 1, 30);

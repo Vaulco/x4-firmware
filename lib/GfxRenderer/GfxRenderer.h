@@ -47,16 +47,13 @@ class GfxRenderer {
                   float cropY = 0) const;
 
   // Text
-  int getTextWidth(int fontId, const char* text, EpdFontFamily::Style style = EpdFontFamily::REGULAR) const;
-  void drawCenteredText(int fontId, int y, const char* text, bool black = true,
-                        EpdFontFamily::Style style = EpdFontFamily::REGULAR) const;
-  void drawText(int fontId, int x, int y, const char* text, bool black = true,
-                EpdFontFamily::Style style = EpdFontFamily::REGULAR) const;
+  void drawCenteredText(int fontId, int y, const char* text, bool black = true) const;
+  void drawText(int fontId, int x, int y, const char* text, bool black = true) const;
+  int getTextWidth(int fontId, const char* text) const;
+  std::string truncatedText(int fontId, const char* text, int maxWidth) const;
   int getSpaceWidth(int fontId) const;
   int getFontAscenderSize(int fontId) const;
   int getLineHeight(int fontId) const;
-  std::string truncatedText(int fontId, const char* text, int maxWidth,
-                            EpdFontFamily::Style style = EpdFontFamily::REGULAR) const;
 
  public:
   // Grayscale functions

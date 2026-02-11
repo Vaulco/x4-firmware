@@ -167,7 +167,7 @@ void FileSelectionActivity::render() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Library", true, EpdFontFamily::REGULAR);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Library", true);
 
   if (files.empty()) {
     renderer.drawText(CMU_10_FONT_ID, 20, 60, "No books found");

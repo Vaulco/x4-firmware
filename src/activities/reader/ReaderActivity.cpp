@@ -47,7 +47,7 @@ void ReaderActivity::onSelectBookFile(const std::string& path) {
   } else {
     exitActivity();
     enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "Failed to load XTC",
-                                                   EpdFontFamily::REGULAR, EInkDisplay::HALF_REFRESH));
+                                                   EInkDisplay::HALF_REFRESH));
     delay(2000);
     onGoToFileSelection();
   }

@@ -95,7 +95,7 @@ void NetworkModeSelectionActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header (same style as Settings)
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true, EpdFontFamily::REGULAR);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true);
 
   // Draw selection (same style as Settings - 30px spacing between items)
   renderer.fillRect(0, 60 + selectedIndex * 30 - 2, pageWidth - 1, 30);

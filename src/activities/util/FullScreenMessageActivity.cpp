@@ -11,6 +11,6 @@ void FullScreenMessageActivity::onEnter() {
   const auto top = (renderer.getScreenHeight() - height) / 2;
 
   renderer.clearScreen();
-  renderer.drawCenteredText(CMU_10_FONT_ID, top, text.c_str(), true, style);
+  renderer.drawCenteredText(CMU_10_FONT_ID, top, text.c_str(), true);
   renderer.displayBuffer(refreshMode);
 }

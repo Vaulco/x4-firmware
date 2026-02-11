@@ -32,16 +32,13 @@ GfxRenderer renderer(einkDisplay);
 Activity* currentActivity;
 
 EpdFont cmu8RegularFont(&cmu_8_regular);
-EpdFont cmu8BoldFont(&cmu_8_bold);
-EpdFontFamily cmu8FontFamily(&cmu8RegularFont, &cmu8BoldFont);
+EpdFontFamily cmu8FontFamily(&cmu8RegularFont);
 
 EpdFont cmu10RegularFont(&cmu_10_regular);
-EpdFont cmu10BoldFont(&cmu_10_bold);
-EpdFontFamily cmu10FontFamily(&cmu10RegularFont, &cmu10BoldFont);
+EpdFontFamily cmu10FontFamily(&cmu10RegularFont);
 
 EpdFont cmu12RegularFont(&cmu_12_regular);
-EpdFont cmu12BoldFont(&cmu_12_bold);
-EpdFontFamily cmu12FontFamily(&cmu12RegularFont, &cmu12BoldFont);
+EpdFontFamily cmu12FontFamily(&cmu12RegularFont);
 
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
@@ -141,7 +138,7 @@ void setup() {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
     setupDisplayAndFonts();
     exitActivity();
-    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error", EpdFontFamily::BOLD));
+    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error"));
     return;
   }
 

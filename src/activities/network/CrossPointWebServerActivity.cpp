@@ -333,7 +333,7 @@ void CrossPointWebServerActivity::render() const {
   } else if (state == WebServerActivityState::AP_STARTING) {
     renderer.clearScreen();
     const auto pageHeight = renderer.getScreenHeight();
-    renderer.drawCenteredText(CMU_12_FONT_ID, pageHeight / 2 - 20, "Starting Hotspot...", true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_12_FONT_ID, pageHeight / 2 - 20, "Starting Hotspot...", true);
     renderer.displayBuffer();
   }
 }
@@ -364,7 +364,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
   // Use consistent line spacing
   constexpr int LINE_SPACING = 28;  // Space between lines
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true, EpdFontFamily::REGULAR);
+  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true);
 
   if (isApMode) {
     // AP mode display - center the content blockd
@@ -384,7 +384,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     startY += 6 * 29 + 3 * LINE_SPACING;
     // Show primary URL (hostname)
     std::string hostnameUrl = std::string("http://") + AP_HOSTNAME + ".local/";
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true);
 
     // Show IP address as fallback
     std::string ipUrl = "or http://" + connectedIP + "/";
@@ -409,7 +409,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
 
     // Show web server URL prominently
     std::string webInfo = "http://" + connectedIP + "/";
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 2, webInfo.c_str(), true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 2, webInfo.c_str(), true);
 
     // Also show hostname URL
     std::string hostnameUrl = std::string("or http://") + AP_HOSTNAME + ".local/";
