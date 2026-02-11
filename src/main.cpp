@@ -32,13 +32,8 @@ GfxRenderer renderer(einkDisplay);
 Activity* currentActivity;
 
 EpdFont cmu8RegularFont(&cmu_8_regular);
-EpdFontFamily cmu8FontFamily(&cmu8RegularFont);
-
 EpdFont cmu10RegularFont(&cmu_10_regular);
-EpdFontFamily cmu10FontFamily(&cmu10RegularFont);
-
 EpdFont cmu12RegularFont(&cmu_12_regular);
-EpdFontFamily cmu12FontFamily(&cmu12RegularFont);
 
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
@@ -117,9 +112,9 @@ void onGoToFileSelection() {
 void setupDisplayAndFonts() {
   einkDisplay.begin();
   Serial.printf("[%lu] [   ] Display initialized\n", millis());
-  renderer.insertFont(CMU_8_FONT_ID, cmu8FontFamily);
-  renderer.insertFont(CMU_10_FONT_ID, cmu10FontFamily);
-  renderer.insertFont(CMU_12_FONT_ID, cmu12FontFamily);
+  renderer.insertFont(CMU_8_FONT_ID, &cmu8RegularFont);
+  renderer.insertFont(CMU_10_FONT_ID, &cmu10RegularFont);
+  renderer.insertFont(CMU_12_FONT_ID, &cmu12RegularFont);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 

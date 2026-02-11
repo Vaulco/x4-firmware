@@ -2,7 +2,9 @@
 
 #include <Utf8.h>
 
-void GfxRenderer::insertFont(const int fontId, EpdFontFamily font) { fontMap.insert({fontId, font}); }
+void GfxRenderer::insertFont(const int fontId, const EpdFont* font) { 
+  fontMap.insert({fontId, font}); 
+}
 
 void GfxRenderer::rotateCoordinates(const int x, const int y, int* rotatedX, int* rotatedY) const {
   // Portrait mode (480x800 logical) → panel (800x480 physical)
@@ -49,7 +51,7 @@ int GfxRenderer::getTextWidth(const int fontId, const char* text) const {
   }
 
   int w = 0, h = 0;
-  fontMap.at(fontId).getTextDimensions(text, &w, &h, EpdFontFamily::REGULAR);
+  fontMap.at(fontId)->getTextDimensions(text, &w, &h);
   return w;
 }
 
@@ -74,13 +76,13 @@ void GfxRenderer::drawText(const int fontId, const int x, const int y, const cha
   const auto font = fontMap.at(fontId);
 
   // no printable characters
-  if (!font.hasPrintableChars(text, EpdFontFamily::REGULAR)) {
+  if (!font->hasPrintableChars(text)) {
     return;
   }
 
   uint32_t cp;
   while ((cp = utf8NextCodepoint(reinterpret_cast<const uint8_t**>(&text)))) {
-    renderChar(font, cp, &xpos, &yPos, black, EpdFontFamily::REGULAR);
+    renderChar(font, cp, &xpos, &yPos, black);
   }
 }
 
@@ -242,7 +244,7 @@ int GfxRenderer::getSpaceWidth(const int fontId) const {
     return 0;
   }
 
-  return fontMap.at(fontId).getGlyph(' ', EpdFontFamily::REGULAR)->advanceX;
+  return fontMap.at(fontId)->getGlyph(' ')->advanceX;
 }
 
 int GfxRenderer::getFontAscenderSize(const int fontId) const {
@@ -251,7 +253,7 @@ int GfxRenderer::getFontAscenderSize(const int fontId) const {
     return 0;
   }
 
-  return fontMap.at(fontId).getData(EpdFontFamily::REGULAR)->ascender;
+  return fontMap.at(fontId)->data->ascender;
 }
 
 int GfxRenderer::getLineHeight(const int fontId) const {
@@ -260,7 +262,7 @@ int GfxRenderer::getLineHeight(const int fontId) const {
     return 0;
   }
 
-  return fontMap.at(fontId).getData(EpdFontFamily::REGULAR)->advanceY;
+  return fontMap.at(fontId)->data->advanceY;
 }
 
 uint8_t* GfxRenderer::getFrameBuffer() const { return einkDisplay.getFrameBuffer(); }
@@ -286,12 +288,12 @@ void GfxRenderer::cleanupGrayscaleWithFrameBuffer() const {
   }
 }
 
-void GfxRenderer::renderChar(const EpdFontFamily& fontFamily, const uint32_t cp, int* x, const int* y,
-                             const bool pixelState, const EpdFontFamily::Style style) const {
-  const EpdGlyph* glyph = fontFamily.getGlyph(cp, style);
+void GfxRenderer::renderChar(const EpdFont* font, const uint32_t cp, int* x, const int* y,
+                             const bool pixelState) const {
+  const EpdGlyph* glyph = font->getGlyph(cp);
   if (!glyph) {
     // TODO: Replace with fallback glyph property?
-    glyph = fontFamily.getGlyph('?', style);
+    glyph = font->getGlyph('?');
   }
 
   // no glyph?
@@ -300,14 +302,14 @@ void GfxRenderer::renderChar(const EpdFontFamily& fontFamily, const uint32_t cp,
     return;
   }
 
-  const int is2Bit = fontFamily.getData(style)->is2Bit;
+  const int is2Bit = font->data->is2Bit;
   const uint32_t offset = glyph->dataOffset;
   const uint8_t width = glyph->width;
   const uint8_t height = glyph->height;
   const int left = glyph->left;
 
   const uint8_t* bitmap = nullptr;
-  bitmap = &fontFamily.getData(style)->bitmap[offset];
+  bitmap = &font->data->bitmap[offset];
 
   if (bitmap != nullptr) {
     for (int glyphY = 0; glyphY < height; glyphY++) {
