@@ -1,14 +1,15 @@
 Firmware for the **Xteink X4** e-paper display reader (unaffiliated with Xteink). Built using **PlatformIO** and targeting the **ESP32-C3** microcontroller.
 
-### Checking out the code
+---
 
-The E-Reader uses PlatformIO for building and flashing the firmware. To get started, clone the repository:
+### I want to contribute code (no hardware needed)
 
 ```
-git clone https://github.com/Vaulco/xteink-reader.git
+git clone https://github.com/Vaulco/x4-firmware.git
+cd xteink-reader
 ```
 
-### Flashing your device
+### I have the hardware
 
 Connect your Xteink X4 to your computer via USB-C and run the following command.
 
