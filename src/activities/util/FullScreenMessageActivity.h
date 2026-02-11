@@ -1,5 +1,6 @@
 #pragma once
 #include <EInkDisplay.h>
+#include <EpdFontFamily.h>
 
 #include <string>
 #include <utility>
@@ -8,6 +9,7 @@
 
 class FullScreenMessageActivity final : public Activity {
   std::string text;
+  EpdFontFamily::Style style;
   EInkDisplay::RefreshMode refreshMode;
 
  public:
@@ -15,6 +17,7 @@ class FullScreenMessageActivity final : public Activity {
                                      const EInkDisplay::RefreshMode refreshMode = EInkDisplay::FAST_REFRESH)
       : Activity("FullScreenMessage", renderer, inputManager),
         text(std::move(text)),
+        style(style),
         refreshMode(refreshMode) {}
   void onEnter() override;
 };

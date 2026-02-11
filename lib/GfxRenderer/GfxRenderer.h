@@ -1,7 +1,7 @@
 #pragma once
 
 #include <EInkDisplay.h>
-#include <EpdFont.h>
+#include <EpdFontFamily.h>
 
 #include <map>
 
@@ -14,8 +14,9 @@ class GfxRenderer {
  private:
   EInkDisplay& einkDisplay;
   RenderMode renderMode;
-  std::map<int, const EpdFont*> fontMap;
-  void renderChar(const EpdFont* font, uint32_t cp, int* x, const int* y, bool pixelState) const;
+  std::map<int, EpdFontFamily> fontMap;
+  void renderChar(const EpdFontFamily& fontFamily, uint32_t cp, int* x, const int* y, bool pixelState,
+                  EpdFontFamily::Style style) const;
   void rotateCoordinates(int x, int y, int* rotatedX, int* rotatedY) const;
 
  public:
@@ -28,7 +29,7 @@ class GfxRenderer {
   static constexpr int VIEWABLE_MARGIN_LEFT = 3;
 
   // Setup
-  void insertFont(int fontId, const EpdFont* font);
+  void insertFont(int fontId, EpdFontFamily font);
 
   // Screen ops
   int getScreenWidth() const;
