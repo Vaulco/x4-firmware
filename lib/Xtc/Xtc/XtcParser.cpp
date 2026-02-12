@@ -304,7 +304,7 @@ bool XtcParser::getPageInfo(uint32_t pageIndex, PageInfo& info) const {
   return true;
 }
 
-size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) {
+size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) const {
   if (!m_isOpen) {
     m_lastError = XtcError::FILE_NOT_FOUND;
     return 0;

@@ -138,7 +138,7 @@ size_t Xtc::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) con
   if (!loaded || !parser) {
     return 0;
   }
-  return const_cast<xtc::XtcParser*>(parser.get())->loadPage(pageIndex, buffer, bufferSize);
+  return parser->loadPage(pageIndex, buffer, bufferSize);
 }
 
 xtc::XtcError Xtc::getLastError() const {

@@ -54,7 +54,7 @@ class XtcParser {
    * @param bufferSize Buffer size
    * @return Number of bytes read on success, 0 on failure
    */
-  size_t loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize);
+  size_t loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) const;
 
   // Get title from metadata
   std::string getTitle() const { return m_title; }
@@ -66,7 +66,7 @@ class XtcParser {
   XtcError getLastError() const { return m_lastError; }
 
  private:
-  FsFile m_file;
+  mutable FsFile m_file;
   bool m_isOpen;
   XtcHeader m_header;
   std::vector<PageInfo> m_pageTable;
@@ -76,7 +76,7 @@ class XtcParser {
   uint16_t m_defaultHeight;
   uint8_t m_bitDepth;  // 1 = XTC/XTG (1-bit), 2 = XTCH/XTH (2-bit)
   bool m_hasChapters;
-  XtcError m_lastError;
+  mutable XtcError m_lastError;  // Mutable because error state can be updated during const operations
 
   // Internal helper functions
   XtcError readHeader();
