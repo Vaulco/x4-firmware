@@ -29,7 +29,7 @@
 EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 GfxRenderer renderer(einkDisplay);
-Activity* currentActivity;
+Activity* currentActivity = nullptr;
 
 EpdFont cmu8Font(&cmu_8);
 EpdFont cmu10Font(&cmu_10);
@@ -48,6 +48,7 @@ void exitActivity() {
 }
 
 void enterNewActivity(Activity* activity) {
+  exitActivity();
   currentActivity = activity;
   currentActivity->onEnter();
 }
@@ -84,25 +85,21 @@ void onGoToFileSelection();
 void onGoToSettings();
 
 void onGoToReader(const std::string& initialBookPath) {
-  exitActivity();
   enterNewActivity(new ReaderActivity(renderer, inputManager, initialBookPath, onGoToSettings));
 }
 
 void onContinueReading() { onGoToReader(SETTINGS.openBookPath); }
 
 void onGoToFileTransfer() {
-  exitActivity();
   enterNewActivity(new CrossPointWebServerActivity(renderer, inputManager, onGoToFileSelection));
 }
 
 void onGoToSettings() {
-  exitActivity();
   enterNewActivity(
       new SettingsActivity(renderer, inputManager, onGoToFileSelection, onContinueReading, onGoToFileTransfer));
 }
 
 void onGoToFileSelection() {
-  exitActivity();
   enterNewActivity(new FileSelectionActivity(
       renderer, inputManager,
       [](const std::string& path) { onGoToReader(path); },
@@ -132,7 +129,6 @@ void setup() {
   if (!SdMan.begin()) {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
     setupDisplayAndFonts();
-    exitActivity();
     enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error"));
     return;
   }
