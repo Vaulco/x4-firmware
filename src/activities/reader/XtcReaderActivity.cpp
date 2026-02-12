@@ -313,7 +313,7 @@ void XtcReaderActivity::loadProgress() {
     uint8_t data[4];
     if (f.read(data, 4) == 4) {
       currentPage = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
-      Serial.printf("[%lu] [XTR] Loaded progress: page %lu\n", millis(), currentPage);
+      Serial.printf("[%lu] [XTR] Loaded progress: page %lu\n", millis(), currentPage + 1);
 
       // Validate page number
       if (currentPage >= xtc->getPageCount()) {

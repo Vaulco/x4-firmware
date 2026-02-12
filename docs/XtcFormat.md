@@ -188,18 +188,20 @@ If `hasChapters == 1`, stored at `chapterOffset`:
 
 Number of chapters specified by `XtcMetadata.chapterCount`.
 
-### Page Index Table (16 bytes per page)
+### Page Index Table (18 bytes per page)
 
 Stored at `indexOffset`, one entry per page:
 
-| Offset | Size | Type     | Field  | Description                                            |
-|--------|------|----------|--------|--------------------------------------------------------|
-| 0x00   | 8    | uint64_t | offset | XTG/XTH image offset (absolute, from file start)       |
-| 0x08   | 4    | uint32_t | size   | XTG/XTH image size in bytes (including 22-byte header) |
-| 0x0C   | 2    | uint16_t | width  | Image width (pixels)                                   |
-| 0x0E   | 2    | uint16_t | height | Image height (pixels)                                  |
+| Offset | Size | Type     | Field       | Description                                            |
+|--------|------|----------|-------------|--------------------------------------------------------|
+| 0x00   | 8    | uint64_t | offset      | XTG/XTH image offset (absolute, from file start)       |
+| 0x08   | 4    | uint32_t | size        | XTG/XTH image size in bytes (including 22-byte header) |
+| 0x0C   | 2    | uint16_t | width       | Image width (pixels)                                   |
+| 0x0E   | 2    | uint16_t | height      | Image height (pixels)                                  |
+| 0x10   | 1    | uint8_t  | headerLevel | Header level (0 = no header, 1-6 = H1-H6)              |
+| 0x11   | 1    | uint8_t  | reserved    | Reserved for future use                                |
 
-Total index table size: `pageCount * 16` bytes.
+Total index table size: `pageCount * 18` bytes.
 
 ### Data Area
 
@@ -215,7 +217,7 @@ If `hasThumbnails == 1`, thumbnails stored at `thumbOffset`. Thumbnails are also
 [Header: 56 bytes]
 [Metadata: 256 bytes] (optional, at metadataOffset)
 [Chapters: N × 96 bytes] (optional, at chapterOffset)
-[Page Index Table: pageCount × 16 bytes] (at indexOffset)
+[Page Index Table: pageCount × 18 bytes] (at indexOffset)
 [Data Area: All XTG page data] (at dataOffset)
 [Thumbnail Area] (optional, at thumbOffset)
 ```
@@ -345,3 +347,4 @@ All other structures, fields, and data formats are identical to XTC.
 - Reserved fields should be zero-filled
 - MD5 checksum field is optional and may be zero
 - Compression is currently not implemented (compression field = 0)
+- **Page index entries are 18 bytes** (modern format with header level support)

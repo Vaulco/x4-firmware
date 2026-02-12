@@ -50,24 +50,8 @@ struct XtcHeader {
 };
 #pragma pack(pop)
 
-// Page table entry - TWO FORMATS SUPPORTED:
-// Legacy format (16 bytes): No header level support (older XTC files)
-// Modern format (18 bytes): Includes header level (0 = no header, 1-6 = H1-H6)
-//
-// The parser auto-detects which format by checking if the calculated
-// table size matches expected size based on page count
-
-// Legacy format (16 bytes per page) - older XTC files
-#pragma pack(push, 1)
-struct PageTableEntryLegacy {
-  uint64_t dataOffset;  // 0x00: Absolute offset to page data
-  uint32_t dataSize;    // 0x08: Page data size in bytes
-  uint16_t width;       // 0x0C: Page width (480)
-  uint16_t height;      // 0x0E: Page height (800)
-};
-#pragma pack(pop)
-
-// Modern format (18 bytes per page) - newer XTC files with chapter support
+// Page table entry (18 bytes per page)
+// Includes header level support for chapter navigation (0 = no header, 1-6 = H1-H6)
 #pragma pack(push, 1)
 struct PageTableEntry {
   uint64_t dataOffset;  // 0x00: Absolute offset to page data

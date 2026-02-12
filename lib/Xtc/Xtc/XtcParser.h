@@ -24,8 +24,7 @@ namespace xtc {
  * Reads XTC files from SD card and extracts page data.
  * Designed for ESP32-C3's limited RAM (~380KB) using streaming.
  * 
- * Supports both legacy (16-byte) and modern (18-byte) page table formats.
- * Auto-detects format based on available space between page table and data offsets.
+ * Uses modern page table format (18 bytes per entry) with header level support.
  */
 class XtcParser {
  public:
@@ -77,7 +76,6 @@ class XtcParser {
   uint16_t m_defaultHeight;
   uint8_t m_bitDepth;  // 1 = XTC/XTG (1-bit), 2 = XTCH/XTH (2-bit)
   bool m_hasChapters;
-  bool m_usesLegacyPageTable;  // true = 16-byte entries (no header levels), false = 18-byte entries
   XtcError m_lastError;
 
   // Internal helper functions

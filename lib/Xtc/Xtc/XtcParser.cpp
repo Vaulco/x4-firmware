@@ -20,7 +20,6 @@ XtcParser::XtcParser()
       m_defaultHeight(DISPLAY_HEIGHT),
       m_bitDepth(1),
       m_hasChapters(false),
-      m_usesLegacyPageTable(false),
       m_lastError(XtcError::OK) {
   memset(&m_header, 0, sizeof(m_header));
 }
@@ -67,8 +66,6 @@ XtcError XtcParser::open(const char* filepath) {
   }
 
   m_isOpen = true;
-  Serial.printf("[%lu] [XTC] Opened file: %s (%u pages, %dx%d, %s format)\n", millis(), filepath, m_header.pageCount,
-                m_defaultWidth, m_defaultHeight, m_usesLegacyPageTable ? "legacy" : "modern");
   return XtcError::OK;
 }
 
@@ -81,7 +78,6 @@ void XtcParser::close() {
   m_chapters.clear();
   m_title.clear();
   m_hasChapters = false;
-  m_usesLegacyPageTable = false;
   memset(&m_header, 0, sizeof(m_header));
 }
 
@@ -155,74 +151,38 @@ XtcError XtcParser::readPageTable() {
     return XtcError::READ_ERROR;
   }
 
-  // Auto-detect page table format by checking available space
-  // Calculate how many bytes are available from page table offset to first page data
+  // Validate page table size
   const uint64_t availableBytes = m_header.dataOffset - m_header.pageTableOffset;
-  const uint64_t modernTableSize = m_header.pageCount * sizeof(PageTableEntry);        // 18 bytes per entry
-  const uint64_t legacyTableSize = m_header.pageCount * sizeof(PageTableEntryLegacy);  // 16 bytes per entry
+  const uint64_t expectedTableSize = m_header.pageCount * sizeof(PageTableEntry);  // 18 bytes per entry
 
-  // Determine which format to use
-  if (availableBytes >= modernTableSize) {
-    // Enough space for modern format - use it
-    m_usesLegacyPageTable = false;
-    Serial.printf("[%lu] [XTC] Detected modern page table format (18 bytes/entry)\n", millis());
-  } else if (availableBytes >= legacyTableSize) {
-    // Only enough space for legacy format
-    m_usesLegacyPageTable = true;
-    Serial.printf("[%lu] [XTC] Detected legacy page table format (16 bytes/entry)\n", millis());
-  } else {
-    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%llu, need=%llu (modern) or %llu (legacy)\n",
-                  millis(), availableBytes, modernTableSize, legacyTableSize);
+  if (availableBytes < expectedTableSize) {
+    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%llu, expected=%llu\n",
+                  millis(), availableBytes, expectedTableSize);
     return XtcError::CORRUPTED_HEADER;
   }
 
   m_pageTable.resize(m_header.pageCount);
 
-  if (m_usesLegacyPageTable) {
-    // Read legacy format (16 bytes per entry, no header level)
-    for (uint16_t i = 0; i < m_header.pageCount; i++) {
-      PageTableEntryLegacy entry;
-      size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&entry), sizeof(PageTableEntryLegacy));
-      if (bytesRead != sizeof(PageTableEntryLegacy)) {
-        Serial.printf("[%lu] [XTC] Failed to read legacy page table entry %u\n", millis(), i);
-        return XtcError::READ_ERROR;
-      }
-
-      m_pageTable[i].offset = static_cast<uint32_t>(entry.dataOffset);
-      m_pageTable[i].size = entry.dataSize;
-      m_pageTable[i].width = entry.width;
-      m_pageTable[i].height = entry.height;
-      m_pageTable[i].bitDepth = m_bitDepth;
-      m_pageTable[i].headerLevel = 0;  // No header level in legacy format
-
-      // Update default dimensions from first page
-      if (i == 0) {
-        m_defaultWidth = entry.width;
-        m_defaultHeight = entry.height;
-      }
+  // Read modern format (18 bytes per entry, includes header level)
+  for (uint16_t i = 0; i < m_header.pageCount; i++) {
+    PageTableEntry entry;
+    size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&entry), sizeof(PageTableEntry));
+    if (bytesRead != sizeof(PageTableEntry)) {
+      Serial.printf("[%lu] [XTC] Failed to read page table entry %u\n", millis(), i);
+      return XtcError::READ_ERROR;
     }
-  } else {
-    // Read modern format (18 bytes per entry, includes header level)
-    for (uint16_t i = 0; i < m_header.pageCount; i++) {
-      PageTableEntry entry;
-      size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&entry), sizeof(PageTableEntry));
-      if (bytesRead != sizeof(PageTableEntry)) {
-        Serial.printf("[%lu] [XTC] Failed to read modern page table entry %u\n", millis(), i);
-        return XtcError::READ_ERROR;
-      }
 
-      m_pageTable[i].offset = static_cast<uint32_t>(entry.dataOffset);
-      m_pageTable[i].size = entry.dataSize;
-      m_pageTable[i].width = entry.width;
-      m_pageTable[i].height = entry.height;
-      m_pageTable[i].bitDepth = m_bitDepth;
-      m_pageTable[i].headerLevel = entry.headerLevel;
+    m_pageTable[i].offset = static_cast<uint32_t>(entry.dataOffset);
+    m_pageTable[i].size = entry.dataSize;
+    m_pageTable[i].width = entry.width;
+    m_pageTable[i].height = entry.height;
+    m_pageTable[i].bitDepth = m_bitDepth;
+    m_pageTable[i].headerLevel = entry.headerLevel;
 
-      // Update default dimensions from first page
-      if (i == 0) {
-        m_defaultWidth = entry.width;
-        m_defaultHeight = entry.height;
-      }
+    // Update default dimensions from first page
+    if (i == 0) {
+      m_defaultWidth = entry.width;
+      m_defaultHeight = entry.height;
     }
   }
 
