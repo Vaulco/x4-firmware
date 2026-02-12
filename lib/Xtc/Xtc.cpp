@@ -45,17 +45,15 @@ bool Xtc::clearCache() const {
 }
 
 void Xtc::setupCacheDir() const {
-  if (SdMan.exists(cachePath.c_str())) {
-    return;
-  }
-
-  // Create directories recursively
-  for (size_t i = 1; i < cachePath.length(); i++) {
-    if (cachePath[i] == '/') {
-      SdMan.mkdir(cachePath.substr(0, i).c_str());
+    std::string current;
+    for (size_t i = 0; i < cachePath.length(); i++) {
+        current += cachePath[i];
+        if (cachePath[i] == '/' || i == cachePath.length() - 1) {
+            if (!SdMan.exists(current.c_str())) {
+                SdMan.mkdir(current.c_str());
+            }
+        }
     }
-  }
-  SdMan.mkdir(cachePath.c_str());
 }
 
 std::string Xtc::getTitle() const {
