@@ -170,8 +170,6 @@ If `hasChapters == 1`, stored at `chapterOffset`:
 | 0x58   | 4    | uint32_t | reserved2   | Reserved 2 (zero-filled)              |
 | 0x5C   | 4    | uint32_t | reserved3   | Reserved 3 (zero-filled)              |
 
-Number of chapters specified by `XtcMetadata.chapterCount`.
-
 ### Page Index Table (18 bytes per page)
 
 Stored at `indexOffset`, one entry per page:
@@ -195,13 +193,12 @@ All XTG/XTH page images stored starting at `dataOffset`. Each page's data is sto
 
 ```
 [Header: 56 bytes]
-[Metadata: 256 bytes] (optional, at metadataOffset)
 [Chapters: N × 96 bytes] (optional, at chapterOffset)
 [Page Index Table: pageCount × 18 bytes] (at indexOffset)
 [Data Area: All XTG page data] (at dataOffset)
 ```
 
-Note: The actual order of sections in the file is determined by the offset fields in the header. The typical layout places metadata first, then chapters, then the page index, and finally page data.
+Note: The actual order of sections in the file is determined by the offset fields in the header. The typical layout places chapters first, then the page index, and finally page data.
 
 ---
 

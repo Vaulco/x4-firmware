@@ -116,11 +116,9 @@ XtcError XtcParser::readHeader() {
 XtcError XtcParser::readTitle() {
   // Title is usually at offset 0x38 (56) for 88-byte headers
   // Read title as null-terminated UTF-8 string
-  if (m_header.titleOffset == 0) {
-    m_header.titleOffset = 0x38;  // Default offset
-  }
+  const uint64_t titleOffset = 0x38;  // Default offset after 56-byte header
 
-  if (!m_file.seek(m_header.titleOffset)) {
+  if (!m_file.seek(titleOffset)) {
     return XtcError::READ_ERROR;
   }
 
@@ -133,19 +131,19 @@ XtcError XtcParser::readTitle() {
 }
 
 XtcError XtcParser::readPageTable() {
-  if (m_header.pageTableOffset == 0) {
+  if (m_header.indexOffset == 0) {
     Serial.printf("[%lu] [XTC] Page table offset is 0, cannot read\n", millis());
     return XtcError::CORRUPTED_HEADER;
   }
 
   // Seek to page table
-  if (!m_file.seek(m_header.pageTableOffset)) {
-    Serial.printf("[%lu] [XTC] Failed to seek to page table at %llu\n", millis(), m_header.pageTableOffset);
+  if (!m_file.seek(m_header.indexOffset)) {
+    Serial.printf("[%lu] [XTC] Failed to seek to page table at %llu\n", millis(), m_header.indexOffset);
     return XtcError::READ_ERROR;
   }
 
   // Validate page table size
-  const uint64_t availableBytes = m_header.dataOffset - m_header.pageTableOffset;
+  const uint64_t availableBytes = m_header.dataOffset - m_header.indexOffset;
   const uint64_t expectedTableSize = m_header.pageCount * sizeof(PageTableEntry);  // 18 bytes per entry
 
   if (availableBytes < expectedTableSize) {
@@ -217,8 +215,8 @@ XtcError XtcParser::readChapters() {
   }
 
   uint64_t maxOffset = 0;
-  if (m_header.pageTableOffset > chapterOffset) {
-    maxOffset = m_header.pageTableOffset;
+  if (m_header.indexOffset > chapterOffset) {
+    maxOffset = m_header.indexOffset;
   } else if (m_header.dataOffset > chapterOffset) {
     maxOffset = m_header.dataOffset;
   } else {
