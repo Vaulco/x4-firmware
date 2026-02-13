@@ -45,8 +45,8 @@ XTG stores 1-bit per pixel monochrome bitmaps optimized for e-paper displays.
 | 0x00   | 4    | uint32_t | mark        | File identifier              | 0x00475458 ("XTG\0") |
 | 0x04   | 2    | uint16_t | width       | Image width (pixels)         | 1-65535              |
 | 0x06   | 2    | uint16_t | height      | Image height (pixels)        | 1-65535              |
-| 0x08   | 1    | uint8_t  | colorMode   | Color mode                   | 0=monochrome         |
-| 0x09   | 1    | uint8_t  | compression | Compression                  | 0=uncompressed       |
+| 0x08   | 1    | uint8_t  | compression | Compression                  | 0=uncompressed       |
+| 0x09   | 1    | uint8_t  | reserved    | Reserved for future use      | 0                    |
 | 0x0A   | 4    | uint32_t | dataSize    | Image data size (bytes)      | Calculated           |
 
 ### Image Data
@@ -86,10 +86,9 @@ Same structure as XTG, but with different file identifier:
 | 0x00   | 4    | uint32_t | mark        | File identifier              | 0x00485458 ("XTH\0") |
 | 0x04   | 2    | uint16_t | width       | Image width (pixels)         | 1-65535              |
 | 0x06   | 2    | uint16_t | height      | Image height (pixels)        | 1-65535              |
-| 0x08   | 1    | uint8_t  | colorMode   | Color mode                   | 0=monochrome         |
-| 0x09   | 1    | uint8_t  | compression | Compression                  | 0=uncompressed       |
+| 0x08   | 1    | uint8_t  | compression | Compression                  | 0=uncompressed       |
+| 0x09   | 1    | uint8_t  | reserved    | Reserved for future use      | 0                    |
 | 0x0A   | 4    | uint32_t | dataSize    | Image data size (bytes)      | Calculated           |
-| 0x0E   | 8    | uint64_t | md5         | MD5 checksum (first 8 bytes) | Optional             |
 
 ### Image Data
 
@@ -136,18 +135,19 @@ XTC is a container format storing multiple XTG-format pages for comic/PDF readin
 
 | Offset | Size | Type     | Field          | Description            | Value                |
 |--------|------|----------|----------------|------------------------|----------------------|
-| 0x00   | 4    | uint32_t | mark           | File identifier        | 0x00435458 ("XTC\0") |
-| 0x04   | 2    | uint16_t | version        | Version number         | 0x0100 (v1.0)        |
+| 0x00   | 4    | uint32_t | magic          | File identifier        | 0x00435458 ("XTC\0") |
+| 0x04   | 1    | uint8_t  | versionMajor   | Version major          | 1                    |
+| 0x05   | 1    | uint8_t  | versionMinor   | Version minor          | 0                    |
 | 0x06   | 2    | uint16_t | pageCount      | Total pages            | 1-65535              |
-| 0x08   | 1    | uint8_t  | readDirection  | Reading direction      | 0-2                  |
-| 0x09   | 1    | uint8_t  | hasMetadata    | Has metadata           | 0-1                  |
-| 0x0A   | 1    | uint8_t  | hasThumbnails  | Has thumbnails         | 0-1                  |
+| 0x08   | 1    | uint8_t  | readDirection  | Reading direction      | 0-1                  |
+| 0x09   | 1    | uint8_t  | reserved1      | Reserved               | 0                    |
+| 0x0A   | 1    | uint8_t  | reserved2      | Reserved               | 0                    |
 | 0x0B   | 1    | uint8_t  | hasChapters    | Has chapters           | 0-1                  |
 | 0x0C   | 4    | uint32_t | currentPage    | Current page (1-based) | 0-65535              |
-| 0x10   | 8    | uint64_t | metadataOffset | Metadata offset        | Byte offset          |
+| 0x10   | 8    | uint64_t | reserved3      | Reserved               | 0                    |
 | 0x18   | 8    | uint64_t | indexOffset    | Index table offset     | Byte offset          |
 | 0x20   | 8    | uint64_t | dataOffset     | Data area offset       | Byte offset          |
-| 0x28   | 8    | uint64_t | thumbOffset    | Thumbnail offset       | Byte offset          |
+| 0x28   | 8    | uint64_t | reserved4      | Reserved               | 0                    |
 | 0x30   | 8    | uint64_t | chapterOffset  | Chapter data offset    | Byte offset          |
 
 ### Reading Direction
@@ -156,22 +156,6 @@ XTC is a container format storing multiple XTG-format pages for comic/PDF readin
 |-------|------------|--------------------------------|
 | 0     | L→R        | Left to right (normal)         |
 | 1     | R→L        | Right to left (Japanese manga) |
-| 2     | Top→Bottom | Top to bottom (vertical)       |
-
-### Metadata Structure (256 bytes, optional)
-
-If `hasMetadata == 1`, stored at `metadataOffset`:
-
-| Offset | Size | Type     | Field        | Description                               |
-|--------|------|----------|--------------|-------------------------------------------|
-| 0x00   | 128  | char[]   | title        | Title (UTF-8, null-terminated)            |
-| 0x80   | 64   | char[]   | author       | Author (UTF-8, null-terminated)           |
-| 0xC0   | 32   | char[]   | publisher    | Publisher/source (UTF-8, null-terminated) |
-| 0xE0   | 16   | char[]   | language     | Language code (e.g., "zh-CN", "en-US")    |
-| 0xF0   | 4    | uint32_t | createTime   | Creation time (Unix timestamp)            |
-| 0xF4   | 2    | uint16_t | coverPage    | Cover page (0-based, 0xFFFF=none)         |
-| 0xF6   | 2    | uint16_t | chapterCount | Number of chapters                        |
-| 0xF8   | 8    | uint64_t | reserved     | Reserved (zero-filled)                    |
 
 ### Chapter Structure (96 bytes per chapter, optional)
 
@@ -207,10 +191,6 @@ Total index table size: `pageCount * 18` bytes.
 
 All XTG/XTH page images stored starting at `dataOffset`. Each page's data is stored contiguously, with position specified by the index table's `offset` field (absolute offset from file start).
 
-### Thumbnail Area (optional)
-
-If `hasThumbnails == 1`, thumbnails stored at `thumbOffset`. Thumbnails are also in XTG format with the same index structure.
-
 ### File Layout
 
 ```
@@ -219,10 +199,9 @@ If `hasThumbnails == 1`, thumbnails stored at `thumbOffset`. Thumbnails are also
 [Chapters: N × 96 bytes] (optional, at chapterOffset)
 [Page Index Table: pageCount × 18 bytes] (at indexOffset)
 [Data Area: All XTG page data] (at dataOffset)
-[Thumbnail Area] (optional, at thumbOffset)
 ```
 
-Note: The actual order of sections in the file is determined by the offset fields in the header. The typical layout places metadata first, then chapters, then the page index, then page data, and finally thumbnails.
+Note: The actual order of sections in the file is determined by the offset fields in the header. The typical layout places metadata first, then chapters, then the page index, and finally page data.
 
 ---
 

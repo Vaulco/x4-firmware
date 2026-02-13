@@ -292,20 +292,20 @@ class XTCWriter:
                      data_offset: int, chapter_offset: int) -> None:
         """Write XTC file header."""
         header = struct.pack(
-            '<IHHBBBBIQQQQQ',
-            XTCWriter.XTC_MAGIC,
-            0x0100,
-            page_count,
-            0,
-            0,
-            0,
-            has_chapters,
-            0,
-            0,
-            index_offset,
-            data_offset,
-            0,
-            chapter_offset
+            '<I BB H BBBB I QQQQQ',
+            XTCWriter.XTC_MAGIC,     # 4 bytes: magic
+            0x01, 0x00,              # 2 bytes: versionMajor, versionMinor
+            page_count,              # 2 bytes: pageCount
+            0,                       # 1 byte: readDirection
+            0,                       # 1 byte: reserved1 (was hasMetadata)
+            0,                       # 1 byte: reserved2 (was hasThumbnails)
+            has_chapters,            # 1 byte: hasChapters
+            0,                       # 4 bytes: currentPage
+            0,                       # 8 bytes: reserved3 (was metadataOffset)
+            index_offset,            # 8 bytes: indexOffset
+            data_offset,             # 8 bytes: dataOffset
+            0,                       # 8 bytes: reserved4 (was thumbOffset)
+            chapter_offset           # 8 bytes: chapterOffset
         )
         f.write(header)
     

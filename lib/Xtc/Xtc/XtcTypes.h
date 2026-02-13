@@ -23,18 +23,19 @@ constexpr uint16_t DISPLAY_HEIGHT = 800;
 #pragma pack(push, 1)
 struct XtcHeader {
   uint32_t magic;            // 0x00: Magic number "XTC\0" (0x00435458)
-  uint8_t versionMajor;      // 0x04: Format version major (typically 1) (together with minor = 1.0)
+  uint8_t versionMajor;      // 0x04: Format version major (typically 1)
   uint8_t versionMinor;      // 0x05: Format version minor (typically 0)
   uint16_t pageCount;        // 0x06: Total page count
-  uint32_t flags;            // 0x08: Flags/reserved
-  uint32_t headerSize;       // 0x0C: Size of header section (typically 88)
-  uint32_t reserved1;        // 0x10: Reserved
-  uint32_t tocOffset;        // 0x14: TOC offset (0 if unused) - 4 bytes, not 8!
-  uint64_t pageTableOffset;  // 0x18: Page table offset
-  uint64_t dataOffset;       // 0x20: First page data offset
-  uint64_t reserved2;        // 0x28: Reserved
-  uint32_t titleOffset;      // 0x30: Title string offset
-  uint32_t padding;          // 0x34: Padding to 56 bytes
+  uint8_t readDirection;     // 0x08: Reading direction (0=L→R, 1=R→L)
+  uint8_t reserved1;         // 0x09: Reserved (was hasMetadata)
+  uint8_t reserved2;         // 0x0A: Reserved
+  uint8_t hasChapters;       // 0x0B: Has chapters (0 or 1)
+  uint32_t currentPage;      // 0x0C: Current page (1-based)
+  uint64_t reserved3;        // 0x10: Reserved (was metadataOffset)
+  uint64_t indexOffset;      // 0x18: Index table offset
+  uint64_t dataOffset;       // 0x20: Data area offset
+  uint64_t reserved4;        // 0x28: Reserved (was thumbOffset)
+  uint64_t chapterOffset;    // 0x30: Chapter data offset
 };
 #pragma pack(pop)
 
@@ -58,10 +59,9 @@ struct XtgPageHeader {
   uint32_t magic;       // 0x00: File identifier
   uint16_t width;       // 0x04: Image width (pixels)
   uint16_t height;      // 0x06: Image height (pixels)
-  uint8_t colorMode;    // 0x08: Color mode (0=monochrome)
-  uint8_t compression;  // 0x09: Compression (0=uncompressed)
+  uint8_t compression;  // 0x08: Compression (0=uncompressed)
+  uint8_t reserved;     // 0x09: Reserved for future use
   uint32_t dataSize;    // 0x0A: Image data size (bytes)
-  // Followed by bitmap data at offset 0x0E (14)  ← UPDATE OFFSET
 };
 #pragma pack(pop)
 
