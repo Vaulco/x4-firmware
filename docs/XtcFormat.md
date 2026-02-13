@@ -140,15 +140,11 @@ XTC is a container format storing multiple XTG-format pages for comic/PDF readin
 | 0x05   | 1    | uint8_t  | versionMinor   | Version minor          | 0                    |
 | 0x06   | 2    | uint16_t | pageCount      | Total pages            | 1-65535              |
 | 0x08   | 1    | uint8_t  | readDirection  | Reading direction      | 0-1                  |
-| 0x09   | 1    | uint8_t  | reserved1      | Reserved               | 0                    |
-| 0x0A   | 1    | uint8_t  | reserved2      | Reserved               | 0                    |
-| 0x0B   | 1    | uint8_t  | hasChapters    | Has chapters           | 0-1                  |
-| 0x0C   | 4    | uint32_t | currentPage    | Current page (1-based) | 0-65535              |
-| 0x10   | 8    | uint64_t | reserved3      | Reserved               | 0                    |
-| 0x18   | 8    | uint64_t | indexOffset    | Index table offset     | Byte offset          |
-| 0x20   | 8    | uint64_t | dataOffset     | Data area offset       | Byte offset          |
-| 0x28   | 8    | uint64_t | reserved4      | Reserved               | 0                    |
-| 0x30   | 8    | uint64_t | chapterOffset  | Chapter data offset    | Byte offset          |
+| 0x09   | 1    | uint8_t  | hasChapters    | Has chapters           | 0-1                  |
+| 0x0A   | 2    | uint16_t | reserved       | Reserved (alignment)   | 0                    |
+| 0x0C   | 4    | uint32_t | indexOffset    | Index table offset     | Byte offset          |
+| 0x10   | 4    | uint32_t | dataOffset     | Data area offset       | Byte offset          |
+| 0x14   | 4    | uint32_t | chapterOffset  | Chapter data offset    | Byte offset          |
 
 ### Reading Direction
 

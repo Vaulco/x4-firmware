@@ -214,9 +214,9 @@ class CSSGenerator:
 class XTCWriter:
     """Writes XTC (eReader format) files with chapter metadata and page images."""
     
-    HEADER_SIZE = 56
+    HEADER_SIZE = 24  # Updated from 56 to 24
     CHAPTER_ENTRY_SIZE = 96
-    INDEX_ENTRY_SIZE = 18  # UPDATED: was 16, now 18 to include header_level
+    INDEX_ENTRY_SIZE = 18
     XTG_MAGIC = 4674648
     XTC_MAGIC = 0x00435458
     
@@ -262,7 +262,7 @@ class XTCWriter:
             w = struct.unpack('<H', page_blob[4:6])[0]
             h = struct.unpack('<H', page_blob[6:8])[0]
             
-            # NEW: Include header_level (1 byte) and reserved (1 byte) in index entry
+            # Include header_level (1 byte) and reserved (1 byte) in index entry
             idx_entry = struct.pack('<QIHHBB', current_offset, blob_size, w, h, 
                                    header_level, 0)
             idx_accumulator.append(idx_entry)
@@ -288,22 +288,18 @@ class XTCWriter:
     @staticmethod
     def _write_header(f, page_count: int, has_chapters: int, index_offset: int,
                      data_offset: int, chapter_offset: int) -> None:
-        """Write XTC file header."""
+        """Write XTC file header (24 bytes)."""
         header = struct.pack(
-            '<I BB H BBBB I QQQQQ',
+            '<I BB H BB H III',
             XTCWriter.XTC_MAGIC,     # 4 bytes: magic
             0x01, 0x00,              # 2 bytes: versionMajor, versionMinor
             page_count,              # 2 bytes: pageCount
             0,                       # 1 byte: readDirection
-            0,                       # 1 byte: reserved1 (was hasMetadata)
-            0,                       # 1 byte: reserved2 (was hasThumbnails)
             has_chapters,            # 1 byte: hasChapters
-            0,                       # 4 bytes: currentPage
-            0,                       # 8 bytes: reserved3 (was metadataOffset)
-            index_offset,            # 8 bytes: indexOffset
-            data_offset,             # 8 bytes: dataOffset
-            0,                       # 8 bytes: reserved4 (was thumbOffset)
-            chapter_offset           # 8 bytes: chapterOffset
+            0,                       # 2 bytes: reserved
+            index_offset,            # 4 bytes: indexOffset
+            data_offset,             # 4 bytes: dataOffset
+            chapter_offset           # 4 bytes: chapterOffset
         )
         f.write(header)
     
@@ -333,7 +329,7 @@ class MarkdownProcessor:
         self.raw_chapters: List[dict] = []
         self.config: RenderConfig = RenderConfig(font_path=get_cmu_font_path() or '')
         self.fitz_docs: List[fitz.Document] = []
-        self.page_map: List[PageInfo] = []  # UPDATED: Now stores PageInfo objects
+        self.page_map: List[PageInfo] = []
         self.total_pages: int = 0
         self.is_ready: bool = False
         self.chapter_info: List[ChapterInfo] = []
@@ -542,7 +538,7 @@ class MarkdownProcessor:
         for idx, chapter in enumerate(self.raw_chapters):
             soup = hyphenate_html_text(chapter['soup'], 'en')
             
-            # NEW: Detect header level for this chapter
+            # Detect header level for this chapter
             header_level = detect_header_level(soup)
             
             body_content = ''.join([str(x) for x in soup.body.contents]) if soup.body else str(soup)
@@ -559,7 +555,7 @@ class MarkdownProcessor:
                 return False
             
             chapter_page_count = len(doc)
-            # NEW: Store PageInfo objects with header level
+            # Store PageInfo objects with header level
             for i in range(chapter_page_count):
                 page_info = PageInfo(
                     doc_index=len(self.fitz_docs) - 1,
@@ -647,7 +643,7 @@ class App(Tk):
         self.is_processing: bool = False
         self.selected_chapter_indices: List[int] = []
         
-        self.title('MD2XTC - Markdown to XTC Converter (with Header Level Support)')
+        self.title('MD2XTC - Markdown to XTC Converter (Compact Header)')
         self.geometry('1200x800')
         
         self._build_ui()
@@ -794,7 +790,7 @@ class App(Tk):
         self.img_label.configure(image=tk_img)
         self.img_label.image = tk_img
         
-        # NEW: Display header level in status
+        # Display header level in status
         header_text = f' [H{header_level}]' if header_level > 0 else ''
         self.lbl_page.configure(
             text=f'Page {idx + 1} / {self.processor.total_pages}{header_text}'

@@ -19,7 +19,7 @@ constexpr uint32_t XTH_MAGIC = 0x00485458;  // "XTH\0" for 2-bit page data
 constexpr uint16_t DISPLAY_WIDTH = 480;
 constexpr uint16_t DISPLAY_HEIGHT = 800;
 
-// XTC file header (56 bytes)
+// XTC file header (24 bytes)
 #pragma pack(push, 1)
 struct XtcHeader {
   uint32_t magic;            // 0x00: Magic number "XTC\0" (0x00435458)
@@ -27,15 +27,11 @@ struct XtcHeader {
   uint8_t versionMinor;      // 0x05: Format version minor (typically 0)
   uint16_t pageCount;        // 0x06: Total page count
   uint8_t readDirection;     // 0x08: Reading direction (0=L→R, 1=R→L)
-  uint8_t reserved1;         // 0x09: Reserved (was hasMetadata)
-  uint8_t reserved2;         // 0x0A: Reserved
-  uint8_t hasChapters;       // 0x0B: Has chapters (0 or 1)
-  uint32_t currentPage;      // 0x0C: Current page (1-based)
-  uint64_t reserved3;        // 0x10: Reserved (was metadataOffset)
-  uint64_t indexOffset;      // 0x18: Index table offset
-  uint64_t dataOffset;       // 0x20: Data area offset
-  uint64_t reserved4;        // 0x28: Reserved (was thumbOffset)
-  uint64_t chapterOffset;    // 0x30: Chapter data offset
+  uint8_t hasChapters;       // 0x09: Has chapters (0 or 1)
+  uint16_t reserved;         // 0x0A: Reserved for future use
+  uint32_t indexOffset;      // 0x0C: Index table offset
+  uint32_t dataOffset;       // 0x10: Data area offset
+  uint32_t chapterOffset;    // 0x14: Chapter data offset
 };
 #pragma pack(pop)
 

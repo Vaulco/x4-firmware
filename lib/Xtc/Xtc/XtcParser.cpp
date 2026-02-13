@@ -75,7 +75,7 @@ void XtcParser::close() {
 }
 
 XtcError XtcParser::readHeader() {
-  // Read first 56 bytes of header
+  // Read 24 bytes of header
   size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&m_header), sizeof(XtcHeader));
   if (bytesRead != sizeof(XtcHeader)) {
     return XtcError::READ_ERROR;
@@ -114,9 +114,9 @@ XtcError XtcParser::readHeader() {
 }
 
 XtcError XtcParser::readTitle() {
-  // Title is usually at offset 0x38 (56) for 88-byte headers
+  // Title is usually at offset 0x18 (24) for 24-byte headers
   // Read title as null-terminated UTF-8 string
-  const uint64_t titleOffset = 0x38;  // Default offset after 56-byte header
+  const uint64_t titleOffset = 0x18;  // Default offset after 24-byte header
 
   if (!m_file.seek(titleOffset)) {
     return XtcError::READ_ERROR;
@@ -138,16 +138,16 @@ XtcError XtcParser::readPageTable() {
 
   // Seek to page table
   if (!m_file.seek(m_header.indexOffset)) {
-    Serial.printf("[%lu] [XTC] Failed to seek to page table at %llu\n", millis(), m_header.indexOffset);
+    Serial.printf("[%lu] [XTC] Failed to seek to page table at %u\n", millis(), m_header.indexOffset);
     return XtcError::READ_ERROR;
   }
 
   // Validate page table size
-  const uint64_t availableBytes = m_header.dataOffset - m_header.indexOffset;
-  const uint64_t expectedTableSize = m_header.pageCount * sizeof(PageTableEntry);  // 18 bytes per entry
+  const uint32_t availableBytes = m_header.dataOffset - m_header.indexOffset;
+  const uint32_t expectedTableSize = m_header.pageCount * sizeof(PageTableEntry);  // 18 bytes per entry
 
   if (availableBytes < expectedTableSize) {
-    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%llu, expected=%llu\n",
+    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%u, expected=%u\n",
                   millis(), availableBytes, expectedTableSize);
     return XtcError::CORRUPTED_HEADER;
   }
@@ -185,56 +185,41 @@ XtcError XtcParser::readChapters() {
   m_hasChapters = false;
   m_chapters.clear();
 
-  uint8_t hasChaptersFlag = 0;
-  if (!m_file.seek(0x0B)) {
-    return XtcError::READ_ERROR;
-  }
-  if (m_file.read(&hasChaptersFlag, sizeof(hasChaptersFlag)) != sizeof(hasChaptersFlag)) {
-    return XtcError::READ_ERROR;
-  }
-
-  if (hasChaptersFlag != 1) {
+  if (m_header.hasChapters != 1) {
     return XtcError::OK;
   }
 
-  uint64_t chapterOffset = 0;
-  if (!m_file.seek(0x30)) {
-    return XtcError::READ_ERROR;
-  }
-  if (m_file.read(reinterpret_cast<uint8_t*>(&chapterOffset), sizeof(chapterOffset)) != sizeof(chapterOffset)) {
-    return XtcError::READ_ERROR;
-  }
-
-  if (chapterOffset == 0) {
+  if (m_header.chapterOffset == 0) {
     return XtcError::OK;
   }
 
   const uint64_t fileSize = m_file.size();
-  if (chapterOffset < sizeof(XtcHeader) || chapterOffset >= fileSize || chapterOffset + 96 > fileSize) {
+  if (m_header.chapterOffset < sizeof(XtcHeader) || m_header.chapterOffset >= fileSize || 
+      m_header.chapterOffset + 96 > fileSize) {
     return XtcError::OK;
   }
 
-  uint64_t maxOffset = 0;
-  if (m_header.indexOffset > chapterOffset) {
+  uint32_t maxOffset = 0;
+  if (m_header.indexOffset > m_header.chapterOffset) {
     maxOffset = m_header.indexOffset;
-  } else if (m_header.dataOffset > chapterOffset) {
+  } else if (m_header.dataOffset > m_header.chapterOffset) {
     maxOffset = m_header.dataOffset;
   } else {
     maxOffset = fileSize;
   }
 
-  if (maxOffset <= chapterOffset) {
+  if (maxOffset <= m_header.chapterOffset) {
     return XtcError::OK;
   }
 
   constexpr size_t chapterSize = 96;
-  const uint64_t available = maxOffset - chapterOffset;
+  const uint32_t available = maxOffset - m_header.chapterOffset;
   const size_t chapterCount = static_cast<size_t>(available / chapterSize);
   if (chapterCount == 0) {
     return XtcError::OK;
   }
 
-  if (!m_file.seek(chapterOffset)) {
+  if (!m_file.seek(m_header.chapterOffset)) {
     return XtcError::READ_ERROR;
   }
 
