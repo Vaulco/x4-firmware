@@ -58,7 +58,7 @@ void CrossPointWebServer::begin() {
   // Check if we have a valid network connection (either STA connected or AP mode)
   const wifi_mode_t wifiMode = WiFi.getMode();
   const bool isStaConnected = (wifiMode & WIFI_MODE_STA) && (WiFi.status() == WL_CONNECTED);
-  const bool isInApMode = (wifiMode & WIFI_MODE_AP) && (WiFi.softAPgetStationNum() >= 0);  // AP is running
+  const bool isInApMode = (wifiMode & WIFI_MODE_AP);
 
   if (!isStaConnected && !isInApMode) {
     Serial.printf("[%lu] [WEB] Cannot start webserver - no valid network (mode=%d, status=%d)\n", millis(), wifiMode,
@@ -182,7 +182,7 @@ void CrossPointWebServer::handleNotFound() const {
 }
 
 void CrossPointWebServer::handleStatus() const {
-  JsonDocument doc;
+  StaticJsonDocument<256> doc;
   doc["ip"] = getIPAddress();
   doc["mode"] = apMode ? "AP" : "STA";
   doc["rssi"] = apMode ? 0 : WiFi.RSSI();
@@ -244,7 +244,7 @@ void CrossPointWebServer::handleFileListData() const {
   char output[512];
   constexpr size_t outputSize = sizeof(output);
   bool seenFirst = false;
-  JsonDocument doc;
+  StaticJsonDocument<256> doc;
 
   scanFiles(currentPath.c_str(), [this, &output, &doc, seenFirst](const FileInfo& info) mutable {
     doc.clear();
@@ -272,7 +272,7 @@ void CrossPointWebServer::handleFileListData() const {
   Serial.printf("[%lu] [WEB] Served file listing page for path: %s\n", millis(), currentPath.c_str());
 }
 
-void CrossPointWebServer::handleUpload() const {
+void CrossPointWebServer::handleUpload() {
   static unsigned long lastWriteTime = 0;
   static unsigned long uploadStartTime = 0;
   static size_t lastLoggedSize = 0;
@@ -287,19 +287,19 @@ void CrossPointWebServer::handleUpload() const {
 
   if (upload.status == UPLOAD_FILE_START) {
     // Access member variables instead of static variables
-    const_cast<CrossPointWebServer*>(this)->uploadFileName = upload.filename;
-    const_cast<CrossPointWebServer*>(this)->uploadSize = 0;
-    const_cast<CrossPointWebServer*>(this)->uploadSuccess = false;
-    const_cast<CrossPointWebServer*>(this)->uploadError = "";
+    uploadFileName = upload.filename;
+    uploadSize = 0;
+    uploadSuccess = false;
+    uploadError = "";
     uploadStartTime = millis();
     lastWriteTime = millis();
     lastLoggedSize = 0;
 
     // Get upload path from query parameter (defaults to root if not specified)
     if (server->hasArg("path")) {
-      const_cast<CrossPointWebServer*>(this)->uploadPath = normalizePath(server->arg("path"));
+      uploadPath = normalizePath(server->arg("path"));
     } else {
-      const_cast<CrossPointWebServer*>(this)->uploadPath = "/";
+      uploadPath = "/";
     }
 
     Serial.printf("[%lu] [WEB] [UPLOAD] START: %s to path: %s\n", millis(), uploadFileName.c_str(), uploadPath.c_str());
@@ -317,8 +317,8 @@ void CrossPointWebServer::handleUpload() const {
     }
 
     // Open file for writing
-    if (!SdMan.openFileForWrite("WEB", filePath, const_cast<CrossPointWebServer*>(this)->uploadFile)) {
-      const_cast<CrossPointWebServer*>(this)->uploadError = "Failed to create file on SD card";
+    if (!SdMan.openFileForWrite("WEB", filePath, uploadFile)) {
+      uploadError = "Failed to create file on SD card";
       Serial.printf("[%lu] [WEB] [UPLOAD] FAILED to create file: %s\n", millis(), filePath.c_str());
       return;
     }
@@ -327,17 +327,17 @@ void CrossPointWebServer::handleUpload() const {
   } else if (upload.status == UPLOAD_FILE_WRITE) {
     if (uploadFile && uploadError.isEmpty()) {
       const unsigned long writeStartTime = millis();
-      const size_t written = const_cast<CrossPointWebServer*>(this)->uploadFile.write(upload.buf, upload.currentSize);
+      const size_t written = uploadFile.write(upload.buf, upload.currentSize);
       const unsigned long writeEndTime = millis();
       const unsigned long writeDuration = writeEndTime - writeStartTime;
 
       if (written != upload.currentSize) {
-        const_cast<CrossPointWebServer*>(this)->uploadError = "Failed to write to SD card - disk may be full";
-        const_cast<CrossPointWebServer*>(this)->uploadFile.close();
+        uploadError = "Failed to write to SD card - disk may be full";
+        uploadFile.close();
         Serial.printf("[%lu] [WEB] [UPLOAD] WRITE ERROR - expected %d, wrote %d\n", millis(), upload.currentSize,
                       written);
       } else {
-        const_cast<CrossPointWebServer*>(this)->uploadSize += written;
+        uploadSize += written;
 
         // Log progress every 50KB or if write took >100ms
         if (uploadSize - lastLoggedSize >= 51200 || writeDuration > 100) {
@@ -356,28 +356,28 @@ void CrossPointWebServer::handleUpload() const {
     }
   } else if (upload.status == UPLOAD_FILE_END) {
     if (uploadFile) {
-      const_cast<CrossPointWebServer*>(this)->uploadFile.close();
+      uploadFile.close();
 
       if (uploadError.isEmpty()) {
-        const_cast<CrossPointWebServer*>(this)->uploadSuccess = true;
+        uploadSuccess = true;
         Serial.printf("[%lu] [WEB] Upload complete: %s (%d bytes)\n", millis(), uploadFileName.c_str(), uploadSize);
       }
     }
   } else if (upload.status == UPLOAD_FILE_ABORTED) {
     if (uploadFile) {
-      const_cast<CrossPointWebServer*>(this)->uploadFile.close();
+      uploadFile.close();
       // Try to delete the incomplete file
       String filePath = uploadPath;
       if (!filePath.endsWith("/")) filePath += "/";
       filePath += uploadFileName;
       SdMan.remove(filePath.c_str());
     }
-    const_cast<CrossPointWebServer*>(this)->uploadError = "Upload aborted";
+    uploadError = "Upload aborted";
     Serial.printf("[%lu] [WEB] Upload aborted\n", millis());
   }
 }
 
-void CrossPointWebServer::handleUploadPost() const {
+void CrossPointWebServer::handleUploadPost() {
   if (uploadSuccess) {
     server->send(200, "text/plain", "File uploaded successfully: " + uploadFileName);
   } else {
@@ -386,7 +386,7 @@ void CrossPointWebServer::handleUploadPost() const {
   }
 }
 
-void CrossPointWebServer::handleCreateFolder() const {
+void CrossPointWebServer::handleCreateFolder() {
   // Get folder name from form data
   if (!server->hasArg("name")) {
     server->send(400, "text/plain", "Missing folder name");
@@ -428,7 +428,7 @@ void CrossPointWebServer::handleCreateFolder() const {
   }
 }
 
-void CrossPointWebServer::handleDelete() const {
+void CrossPointWebServer::handleDelete() {
   // Get path from form data
   if (!server->hasArg("path")) {
     server->send(400, "text/plain", "Missing path");

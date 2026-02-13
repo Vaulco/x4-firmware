@@ -1,31 +1,41 @@
 #include "Utf8.h"
 
-int utf8CodepointLen(const unsigned char c) {
-  if (c < 0x80) return 1;          // 0xxxxxxx
-  if ((c >> 5) == 0x6) return 2;   // 110xxxxx
-  if ((c >> 4) == 0xE) return 3;   // 1110xxxx
-  if ((c >> 3) == 0x1E) return 4;  // 11110xxx
-  return 1;                        // fallback for invalid
+int utf8SequenceLen(unsigned char c) {
+  if (c < 0x80) return 1;
+  if ((c >> 5) == 0x6) return 2;
+  if ((c >> 4) == 0xE) return 3;
+  if ((c >> 3) == 0x1E) return 4;
+  return 0; // invalid lead byte
 }
 
-uint32_t utf8NextCodepoint(const unsigned char** string) {
-  if (**string == 0) {
-    return 0;
+uint32_t utf8NextCodepoint(const unsigned char** s) {
+  if (!s || !*s) return 0;
+
+  const unsigned char* p = *s;
+  int len = utf8SequenceLen(*p);
+
+  // Validate length
+  if (len == 0 || len > 4) return 0xFFFD;
+
+  // Validate continuation bytes
+  for (int i = 1; i < len; i++) {
+    if (p[i] == 0 || (p[i] & 0xC0) != 0x80) return 0xFFFD;
   }
 
-  const int bytes = utf8CodepointLen(**string);
-  const uint8_t* chr = *string;
-  *string += bytes;
-
-  if (bytes == 1) {
-    return chr[0];
+  // Decode codepoint - extract bits from first byte
+  uint32_t cp = p[0] & (0x7F >> len);
+  for (int i = 1; i < len; i++) {
+    cp = (cp << 6) | (p[i] & 0x3F);
   }
 
-  uint32_t cp = chr[0] & ((1 << (7 - bytes)) - 1);  // mask header bits
+  // Reject overlong encodings
+  if ((len == 2 && cp < 0x80) ||
+      (len == 3 && cp < 0x800) ||
+      (len == 4 && cp < 0x10000)) return 0xFFFD;
 
-  for (int i = 1; i < bytes; i++) {
-    cp = (cp << 6) | (chr[i] & 0x3F);
-  }
+  // Reject surrogates and out-of-range
+  if (cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return 0xFFFD;
 
+  *s += len;
   return cp;
 }
