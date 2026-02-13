@@ -10,8 +10,8 @@ static void writePod(std::ostream& os, const T& value) {
 }
 
 template <typename T>
-static void writePod(FsFile& file, const T& value) {
-  file.write(reinterpret_cast<const uint8_t*>(&value), sizeof(T));
+static bool writePod(FsFile& file, const T& value) {
+  return file.write(reinterpret_cast<const uint8_t*>(&value), sizeof(T)) == sizeof(T);
 }
 
 template <typename T>
@@ -20,8 +20,8 @@ static void readPod(std::istream& is, T& value) {
 }
 
 template <typename T>
-static void readPod(FsFile& file, T& value) {
-  file.read(reinterpret_cast<uint8_t*>(&value), sizeof(T));
+static bool readPod(FsFile& file, T& value) {
+  return file.read(reinterpret_cast<uint8_t*>(&value), sizeof(T)) == sizeof(T);
 }
 
 static void writeString(std::ostream& os, const std::string& s) {
@@ -30,10 +30,10 @@ static void writeString(std::ostream& os, const std::string& s) {
   os.write(s.data(), len);
 }
 
-static void writeString(FsFile& file, const std::string& s) {
+static bool writeString(FsFile& file, const std::string& s) {
   const uint32_t len = s.size();
-  writePod(file, len);
-  file.write(reinterpret_cast<const uint8_t*>(s.data()), len);
+  if (!writePod(file, len)) return false;
+  return file.write(reinterpret_cast<const uint8_t*>(s.data()), len) == len;
 }
 
 static void readString(std::istream& is, std::string& s) {
@@ -43,10 +43,11 @@ static void readString(std::istream& is, std::string& s) {
   is.read(&s[0], len);
 }
 
-static void readString(FsFile& file, std::string& s) {
+static bool readString(FsFile& file, std::string& s) {
   uint32_t len;
-  readPod(file, len);
+  if (!readPod(file, len)) return false;
+  if (len > 65536) return false; // Sanity check: max 64KB strings
   s.resize(len);
-  file.read(&s[0], len);
+  return file.read(&s[0], len) == len;
 }
 }  // namespace serialization

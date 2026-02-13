@@ -5,8 +5,6 @@
 
 #include <map>
 
-#include "Bitmap.h"
-
 class GfxRenderer {
  public:
   enum RenderMode { BW, GRAYSCALE_LSB, GRAYSCALE_MSB };
@@ -42,8 +40,6 @@ class GfxRenderer {
   void drawLine(int x1, int y1, int x2, int y2, bool state = true) const;
   void drawRect(int x, int y, int width, int height, bool state = true) const;
   void fillRect(int x, int y, int width, int height, bool state = true) const;
-  void drawBitmap(const Bitmap& bitmap, int x, int y, int maxWidth, int maxHeight, float cropX = 0,
-                  float cropY = 0) const;
 
   // Text
   void drawCenteredText(int fontId, int y, const char* text, bool black = true) const;

@@ -9,7 +9,7 @@ static int utf8SequenceLen(unsigned char c) {
 }
 
 uint32_t utf8NextCodepoint(const unsigned char** s) {
-  if (!s || !*s) return 0;
+  if (!s || !*s || **s == 0) return 0;
 
   const unsigned char* p = *s;
   int len = utf8SequenceLen(*p);
