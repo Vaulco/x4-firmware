@@ -1,6 +1,6 @@
 #include "Utf8.h"
 
-int utf8SequenceLen(unsigned char c) {
+static int utf8SequenceLen(unsigned char c) {
   if (c < 0x80) return 1;
   if ((c >> 5) == 0x6) return 2;
   if ((c >> 4) == 0xE) return 3;
@@ -23,7 +23,7 @@ uint32_t utf8NextCodepoint(const unsigned char** s) {
   }
 
   // Decode codepoint - extract bits from first byte
-  uint32_t cp = p[0] & (0x7F >> len);
+  uint32_t cp = (len == 1) ? p[0] : (p[0] & (0x7F >> len));
   for (int i = 1; i < len; i++) {
     cp = (cp << 6) | (p[i] & 0x3F);
   }

@@ -182,7 +182,7 @@ void CrossPointWebServer::handleNotFound() const {
 }
 
 void CrossPointWebServer::handleStatus() const {
-  StaticJsonDocument<256> doc;
+  DynamicJsonDocument doc(256);
   doc["ip"] = getIPAddress();
   doc["mode"] = apMode ? "AP" : "STA";
   doc["rssi"] = apMode ? 0 : WiFi.RSSI();
@@ -244,7 +244,7 @@ void CrossPointWebServer::handleFileListData() const {
   char output[512];
   constexpr size_t outputSize = sizeof(output);
   bool seenFirst = false;
-  StaticJsonDocument<256> doc;
+  DynamicJsonDocument doc(256);
 
   scanFiles(currentPath.c_str(), [this, &output, &doc, seenFirst](const FileInfo& info) mutable {
     doc.clear();
