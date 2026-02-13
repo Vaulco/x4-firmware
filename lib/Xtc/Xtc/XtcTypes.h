@@ -15,10 +15,6 @@ constexpr uint32_t XTG_MAGIC = 0x00475458;  // "XTG\0" for 1-bit page data
 // "XTH\0" = 0x58, 0x54, 0x48, 0x00
 constexpr uint32_t XTH_MAGIC = 0x00485458;  // "XTH\0" for 2-bit page data
 
-// XTeink X4 display resolution
-constexpr uint16_t DISPLAY_WIDTH = 480;
-constexpr uint16_t DISPLAY_HEIGHT = 800;
-
 // XTC file header (24 bytes)
 #pragma pack(push, 1)
 struct XtcHeader {
@@ -119,9 +115,7 @@ inline const char* errorToString(XtcError err) {
   }
 }
 
-/**
- * Check if filename has XTC/XTCH extension
- */
+//Check if filename has XTC/XTCH extension
 inline bool isXtcExtension(const char* filename) {
   if (!filename) return false;
   const char* ext = strrchr(filename, '.');

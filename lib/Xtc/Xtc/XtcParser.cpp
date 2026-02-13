@@ -9,8 +9,8 @@ namespace xtc {
 
 XtcParser::XtcParser()
     : m_isOpen(false),
-      m_defaultWidth(DISPLAY_WIDTH),
-      m_defaultHeight(DISPLAY_HEIGHT),
+      m_defaultWidth(0),
+      m_defaultHeight(0),
       m_bitDepth(1),
       m_hasChapters(false),
       m_lastError(XtcError::OK) {
