@@ -53,8 +53,7 @@ def get_cmu_font_path() -> Optional[str]:
     """Get the path to the CMU font file if it exists."""
     base_path = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) 
                                 else os.path.abspath(__file__))
-    # Fixed path - added 'CMU' subdirectory
-    cmu_path = os.path.join(base_path, '../lib/EpdFont/builtinFonts/source/CMU/CMUSerif-Regular.ttf')
+    cmu_path = os.path.join(base_path, '../lib/EpdFont/builtinFonts/source/CMUSerif.ttf')
     if os.path.exists(cmu_path):
         return os.path.abspath(cmu_path)
     print(f'Warning: cmu.ttf not found at {cmu_path}')
@@ -167,7 +166,6 @@ class CSSGenerator:
                         font-weight: {config.font_weight} !important;
                         line-height: {config.line_height} !important;
                         text-align: {config.text_align} !important;
-                        color: black !important;
                         margin: 0 !important;
                         padding: 0 {config.margin}px !important;
                         background-color: white !important;

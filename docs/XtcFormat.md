@@ -321,6 +321,5 @@ All other structures, fields, and data formats are identical to XTC.
 - All offsets are byte offsets from the start of the file
 - Page numbers in XTC/XTCH are 1-based for display, but 0-based in internal structures
 - Reserved fields should be zero-filled
-- MD5 checksum field is optional and may be zero
 - Compression is currently not implemented (compression field = 0)
 - **Page index entries are 18 bytes** (modern format with header level support)

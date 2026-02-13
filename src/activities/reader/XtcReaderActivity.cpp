@@ -1,10 +1,3 @@
-/**
- * XtcReaderActivity.cpp
- *
- * XTC ebook reader activity implementation
- * Displays pre-rendered XTC pages on e-ink display
- */
-
 #include "XtcReaderActivity.h"
 
 #include <GfxRenderer.h>
