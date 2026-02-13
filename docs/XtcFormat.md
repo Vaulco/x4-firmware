@@ -51,7 +51,7 @@ XTG stores 1-bit per pixel monochrome bitmaps optimized for e-paper displays.
 
 ### Image Data
 
-- **Location**: After header (offset 22 bytes)
+- **Location**: After header (offset 14 bytes)
 - **Format**: Bitmap data, 1 bit per pixel
 - **Data Size Calculation**: `dataSize = ((width + 7) / 8) * height`
 - **Pixel Storage**:
@@ -77,7 +77,7 @@ XTG stores 1-bit per pixel monochrome bitmaps optimized for e-paper displays.
 
 XTH stores 2-bit per pixel grayscale bitmaps for 4-level grayscale e-paper displays.
 
-### Header (22 bytes)
+### Header (14 bytes)
 
 Same structure as XTG, but with different file identifier:
 
@@ -92,11 +92,11 @@ Same structure as XTG, but with different file identifier:
 
 ### Image Data
 
-- **Location**: After header (offset 22 bytes)
+- **Location**: After header (offset 14 bytes)
 - **Format**: Two bit planes, 2 bits per pixel total
 - **Data Size Calculation**: `dataSize = ((width * height + 7) / 8) * 2` (rounded up to bytes)
 - **Storage**:
-    - First bit plane: offset 22, size `(width * height + 7) / 8` bytes (rounded up)
+    - First bit plane: offset 14, size `(width * height + 7) / 8` bytes (rounded up)
     - Second bit plane: immediately after first plane, same size
     - Each bit plane stores pixels in **vertical scan order** (column-major):
         - Columns scanned from right to left (x = width-1 to 0)
@@ -131,7 +131,7 @@ Same structure as XTG, but with different file identifier:
 
 XTC is a container format storing multiple XTG-format pages for comic/PDF reading.
 
-### Header (56 bytes)
+### Header (24 bytes)
 
 | Offset | Size | Type     | Field          | Description            | Value                |
 |--------|------|----------|----------------|------------------------|----------------------|
@@ -173,7 +173,7 @@ Stored at `indexOffset`, one entry per page:
 | Offset | Size | Type     | Field       | Description                                            |
 |--------|------|----------|-------------|--------------------------------------------------------|
 | 0x00   | 8    | uint64_t | offset      | XTG/XTH image offset (absolute, from file start)       |
-| 0x08   | 4    | uint32_t | size        | XTG/XTH image size in bytes (including 22-byte header) |
+| 0x08   | 4    | uint32_t | size        | XTG/XTH image size in bytes (including 14-byte header) |
 | 0x0C   | 2    | uint16_t | width       | Image width (pixels)                                   |
 | 0x0E   | 2    | uint16_t | height      | Image height (pixels)                                  |
 | 0x10   | 1    | uint8_t  | headerLevel | Header level (0 = no header, 1-6 = H1-H6)              |
@@ -188,7 +188,7 @@ All XTG/XTH page images stored starting at `dataOffset`. Each page's data is sto
 ### File Layout
 
 ```
-[Header: 56 bytes]
+[Header: 24 bytes]
 [Chapters: N × 96 bytes] (optional, at chapterOffset)
 [Page Index Table: pageCount × 18 bytes] (at indexOffset)
 [Data Area: All XTG page data] (at dataOffset)
@@ -204,7 +204,7 @@ Note: The actual order of sections in the file is determined by the offset field
 
 XTCH is identical to XTC in all aspects except the file identifier.
 
-### Header (56 bytes)
+### Header (24 bytes)
 
 Same structure as XTC, only `mark` field differs:
 
@@ -267,8 +267,8 @@ All other structures, fields, and data formats are identical to XTC.
 - Each column: 800 pixels = 100 bytes (800/8 = 100 vertical groups)
 - Total columns: 480 (scanned right to left)
 - Each bit plane: 480 × 100 = 48000 bytes
-- First plane: offset 22, size 48000 bytes (contains Bit1 for all pixels)
-- Second plane: offset 48022, size 48000 bytes (contains Bit2 for all pixels)
+- First plane: offset 14, size 48000 bytes (contains Bit1 for all pixels)
+- Second plane: offset 48014, size 48000 bytes (contains Bit2 for all pixels)
 - Total data size: 96000 bytes
 
 ---
