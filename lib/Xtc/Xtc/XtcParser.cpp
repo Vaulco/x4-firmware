@@ -1,10 +1,3 @@
-/**
- * XtcParser.cpp
- *
- * XTC file parsing implementation
- * XTC ebook support for E-Reader
- */
-
 #include "XtcParser.h"
 
 #include <HardwareSerial.h>

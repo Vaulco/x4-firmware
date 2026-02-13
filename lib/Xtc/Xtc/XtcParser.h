@@ -1,10 +1,3 @@
-/**
- * XtcParser.h
- *
- * XTC file parsing and page data extraction
- * XTC ebook support for E-Reader
- */
-
 #pragma once
 
 #include <SdFat.h>
@@ -18,14 +11,6 @@
 
 namespace xtc {
 
-/**
- * XTC File Parser
- *
- * Reads XTC files from SD card and extracts page data.
- * Designed for ESP32-C3's limited RAM (~380KB) using streaming.
- * 
- * Uses modern page table format (18 bytes per entry) with header level support.
- */
 class XtcParser {
  public:
   XtcParser();

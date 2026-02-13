@@ -1,15 +1,3 @@
-/**
- * XtcTypes.h
- *
- * XTC file format type definitions
- * XTC ebook support for E-Reader
- *
- * XTC is the native binary ebook format for XTeink X4 e-reader.
- * It stores pre-rendered bitmap images per page.
- *
- * Format based on EPUB2XTC converter by Rafal-P-Mazur
- */
-
 #pragma once
 
 #include <cstdint>

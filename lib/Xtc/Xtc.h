@@ -1,10 +1,3 @@
-/**
- * Xtc.h
- *
- * Main XTC ebook class for E-Reader
- * Provides EPUB-like interface for XTC file handling
- */
-
 #pragma once
 
 #include <memory>
@@ -14,12 +7,6 @@
 #include "Xtc/XtcParser.h"
 #include "Xtc/XtcTypes.h"
 
-/**
- * XTC Ebook Handler
- *
- * Handles XTC file loading, page access, and cover image generation.
- * Interface is designed to be similar to Epub class for easy integration.
- */
 class Xtc {
   std::string filepath;
   std::string cachePath;
@@ -28,7 +15,7 @@ class Xtc {
 
  public:
   explicit Xtc(std::string filepath, const std::string& cacheDir) : filepath(std::move(filepath)), loaded(false) {
-    // Create cache key based on filepath (same as Epub)
+    // Create cache key based on filepath
     cachePath = cacheDir + "/xtc_" + std::to_string(std::hash<std::string>{}(this->filepath));
   }
   ~Xtc() = default;

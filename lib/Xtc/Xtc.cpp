@@ -1,10 +1,3 @@
-/**
- * Xtc.cpp
- *
- * Main XTC ebook class implementation
- * XTC ebook support for E-Reader
- */
-
 #include "Xtc.h"
 
 #include <HardwareSerial.h>
