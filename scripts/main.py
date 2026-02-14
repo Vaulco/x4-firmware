@@ -214,9 +214,9 @@ class CSSGenerator:
 class XTCWriter:
     """Writes XTC (eReader format) files with chapter metadata and page images."""
     
-    HEADER_SIZE = 28  # Updated from 24 to 28 for v2.0
+    HEADER_SIZE = 28
     CHAPTER_ENTRY_SIZE = 96
-    INDEX_ENTRY_SIZE = 16  # Updated from 18 to 16 for v2.0
+    INDEX_ENTRY_SIZE = 13
     XTG_MAGIC = 4674648
     XTC_MAGIC = 0x00435458
     
@@ -248,7 +248,7 @@ class XTCWriter:
     
     @staticmethod
     def _write_pages_streaming(f, page_generator: Generator[Tuple[Image.Image, int], None, None], 
-                              total_pages: int, start_offset: int) -> None:
+                            total_pages: int, start_offset: int) -> None:
         """Write pages to XTC file using streaming to minimize memory usage."""
         index_position = f.tell()
         f.seek(start_offset)
@@ -261,15 +261,11 @@ class XTCWriter:
             page_blob = XTCWriter._encode_page(page_img)
             blob_size = len(page_blob)
             
-            # v2.0: Include only offset, size, headerLevel, reserved (16 bytes total)
-            # No width/height - those are in the header
-            idx_entry = struct.pack('<QIBBB', 
+            # v2.0: offset (8), size (4), headerLevel (1) = 13 bytes total
+            idx_entry = struct.pack('<QIB', 
                 current_offset,   # 8 bytes: offset
                 blob_size,        # 4 bytes: size
-                header_level,     # 1 byte: headerLevel
-                0,                # 1 byte: reserved
-                0,                # 1 byte: reserved
-                0                 # 1 byte: reserved (padding to 16 bytes)
+                header_level      # 1 byte: headerLevel
             )
             idx_accumulator.append(idx_entry)
             

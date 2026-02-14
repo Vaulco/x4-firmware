@@ -141,8 +141,8 @@ XtcError XtcParser::readPageTable() {
     return XtcError::READ_ERROR;
   }
 
-  // Validate page table size (16 bytes per entry in v2.0)
-  constexpr size_t entrySize = 16;
+  // Validate page table size (13 bytes per entry in v2.0)
+  constexpr size_t entrySize = 13;
   const uint32_t availableBytes = m_header.dataOffset - m_header.indexOffset;
   const uint32_t expectedTableSize = m_header.pageCount * entrySize;
 
@@ -154,7 +154,7 @@ XtcError XtcParser::readPageTable() {
 
   m_pageTable.resize(m_header.pageCount);
 
-  // Read page table entries (16 bytes each)
+  // Read page table entries (13 bytes each)
   for (uint16_t i = 0; i < m_header.pageCount; i++) {
     PageTableEntry entry;
     size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&entry), sizeof(PageTableEntry));

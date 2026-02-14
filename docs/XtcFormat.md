@@ -131,20 +131,22 @@ Same structure as XTG, but with different file identifier:
 
 XTC is a container format storing multiple XTG-format pages for comic/PDF reading.
 
-### Header (24 bytes)
+### Header (28 bytes)
 
 | Offset | Size | Type     | Field          | Description            | Value                |
 |--------|------|----------|----------------|------------------------|----------------------|
 | 0x00   | 4    | uint32_t | magic          | File identifier        | 0x00435458 ("XTC\0") |
-| 0x04   | 1    | uint8_t  | versionMajor   | Version major          | 1                    |
+| 0x04   | 1    | uint8_t  | versionMajor   | Version major          | 2                    |
 | 0x05   | 1    | uint8_t  | versionMinor   | Version minor          | 0                    |
 | 0x06   | 2    | uint16_t | pageCount      | Total pages            | 1-65535              |
 | 0x08   | 1    | uint8_t  | readDirection  | Reading direction      | 0-1                  |
 | 0x09   | 1    | uint8_t  | hasChapters    | Has chapters           | 0-1                  |
-| 0x0A   | 2    | uint16_t | reserved       | Reserved (alignment)   | 0                    |
-| 0x0C   | 4    | uint32_t | indexOffset    | Index table offset     | Byte offset          |
-| 0x10   | 4    | uint32_t | dataOffset     | Data area offset       | Byte offset          |
-| 0x14   | 4    | uint32_t | chapterOffset  | Chapter data offset    | Byte offset          |
+| 0x0A   | 2    | uint16_t | pageWidth      | Page width (pixels)    | 1-65535              |
+| 0x0C   | 2    | uint16_t | pageHeight     | Page height (pixels)   | 1-65535              |
+| 0x0E   | 2    | uint16_t | reserved       | Reserved (alignment)   | 0                    |
+| 0x10   | 4    | uint32_t | indexOffset    | Index table offset     | Byte offset          |
+| 0x14   | 4    | uint32_t | dataOffset     | Data area offset       | Byte offset          |
+| 0x18   | 4    | uint32_t | chapterOffset  | Chapter data offset    | Byte offset          |
 
 ### Reading Direction
 
@@ -166,7 +168,7 @@ If `hasChapters == 1`, stored at `chapterOffset`:
 | 0x58   | 4    | uint32_t | reserved2   | Reserved 2 (zero-filled)              |
 | 0x5C   | 4    | uint32_t | reserved3   | Reserved 3 (zero-filled)              |
 
-### Page Index Table (18 bytes per page)
+### Page Index Table (13 bytes per page)
 
 Stored at `indexOffset`, one entry per page:
 
@@ -174,23 +176,19 @@ Stored at `indexOffset`, one entry per page:
 |--------|------|----------|-------------|--------------------------------------------------------|
 | 0x00   | 8    | uint64_t | offset      | XTG/XTH image offset (absolute, from file start)       |
 | 0x08   | 4    | uint32_t | size        | XTG/XTH image size in bytes (including 14-byte header) |
-| 0x0C   | 2    | uint16_t | width       | Image width (pixels)                                   |
-| 0x0E   | 2    | uint16_t | height      | Image height (pixels)                                  |
-| 0x10   | 1    | uint8_t  | headerLevel | Header level (0 = no header, 1-6 = H1-H6)              |
-| 0x11   | 1    | uint8_t  | reserved    | Reserved for future use                                |
+| 0x0C   | 1    | uint8_t  | headerLevel | Header level (0 = no header, 1-6 = H1-H6)              |
 
-Total index table size: `pageCount * 18` bytes.
+Total index table size: `pageCount * 13` bytes.
 
 ### Data Area
 
 All XTG/XTH page images stored starting at `dataOffset`. Each page's data is stored contiguously, with position specified by the index table's `offset` field (absolute offset from file start).
 
 ### File Layout
-
 ```
-[Header: 24 bytes]
+[Header: 28 bytes]
 [Chapters: N × 96 bytes] (optional, at chapterOffset)
-[Page Index Table: pageCount × 18 bytes] (at indexOffset)
+[Page Index Table: pageCount × 13 bytes] (at indexOffset)
 [Data Area: All XTG page data] (at dataOffset)
 ```
 
@@ -204,7 +202,7 @@ Note: The actual order of sections in the file is determined by the offset field
 
 XTCH is identical to XTC in all aspects except the file identifier.
 
-### Header (24 bytes)
+### Header (28 bytes)
 
 Same structure as XTC, only `mark` field differs:
 
@@ -318,4 +316,4 @@ All other structures, fields, and data formats are identical to XTC.
 - Page numbers in XTC/XTCH are 1-based for display, but 0-based in internal structures
 - Reserved fields should be zero-filled
 - Compression is currently not implemented (compression field = 0)
-- **Page index entries are 18 bytes** (modern format with header level support)
+- **Page index entries are 13 bytes** (v2.0 format)

@@ -33,13 +33,12 @@ struct XtcHeader {
 };
 #pragma pack(pop)
 
-// Page table entry (16 bytes)
+// Page table entry (13 bytes)
 #pragma pack(push, 1)
 struct PageTableEntry {
-  uint64_t dataOffset;  // 0x00: Absolute offset to page data
-  uint32_t dataSize;    // 0x08: Page data size in bytes
-  uint8_t headerLevel;  // 0x0C: Header level (0 = no header, 1-6 = H1-H6)
-  uint8_t reserved[3];  // 0x0D: Reserved for future use (padding to 16 bytes)
+  uint64_t dataOffset;  // 0x00: Absolute offset to page data (8 bytes)
+  uint32_t dataSize;    // 0x08: Page data size in bytes (4 bytes)
+  uint8_t headerLevel;  // 0x0C: Header level (0 = no header, 1-6 = H1-H6) (1 byte)
 };
 #pragma pack(pop)
 
