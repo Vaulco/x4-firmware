@@ -105,10 +105,3 @@ size_t Xtc::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) con
   }
   return parser->loadPage(pageIndex, buffer, bufferSize);
 }
-
-xtc::XtcError Xtc::getLastError() const {
-  if (!parser) {
-    return xtc::XtcError::FILE_NOT_FOUND;
-  }
-  return parser->getLastError();
-}
