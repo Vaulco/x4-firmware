@@ -9,8 +9,6 @@ namespace xtc {
 
 XtcParser::XtcParser()
     : m_isOpen(false),
-      m_defaultWidth(0),
-      m_defaultHeight(0),
       m_bitDepth(1),
       m_hasChapters(false),
       m_lastError(XtcError::OK) {
@@ -42,7 +40,7 @@ XtcError XtcParser::open(const char* filepath) {
   // Read title if available
   readTitle();
 
-  // Read page table (with format auto-detection)
+  // Read page table
   m_lastError = readPageTable();
   if (m_lastError != XtcError::OK) {
     Serial.printf("[%lu] [XTC] Failed to read page table: %s\n", millis(), errorToString(m_lastError));
@@ -75,7 +73,7 @@ void XtcParser::close() {
 }
 
 XtcError XtcParser::readHeader() {
-  // Read 24 bytes of header
+  // Read 28-byte header
   size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&m_header), sizeof(XtcHeader));
   if (bytesRead != sizeof(XtcHeader)) {
     return XtcError::READ_ERROR;
@@ -92,12 +90,9 @@ XtcError XtcParser::readHeader() {
   m_bitDepth = (m_header.magic == XTCH_MAGIC) ? 2 : 1;
 
   // Check version
-  // Currently, version 1.0 is the only valid version, however some generators are swapping the bytes around, so we
-  // accept both 1.0 and 0.1 for compatibility
-  const bool validVersion = m_header.versionMajor == 1 && m_header.versionMinor == 0 ||
-                            m_header.versionMajor == 0 && m_header.versionMinor == 1;
-  if (!validVersion) {
-    Serial.printf("[%lu] [XTC] Unsupported version: %u.%u\n", millis(), m_header.versionMajor, m_header.versionMinor);
+  if (m_header.versionMajor != 2 || m_header.versionMinor != 0) {
+    Serial.printf("[%lu] [XTC] Unsupported version: %u.%u (expected 2.0)\n", millis(), m_header.versionMajor,
+                  m_header.versionMinor);
     return XtcError::INVALID_VERSION;
   }
 
@@ -106,17 +101,21 @@ XtcError XtcParser::readHeader() {
     return XtcError::CORRUPTED_HEADER;
   }
 
-  Serial.printf("[%lu] [XTC] Header: magic=0x%08X (%s), ver=%u.%u, pages=%u, bitDepth=%u\n", millis(), m_header.magic,
-                (m_header.magic == XTCH_MAGIC) ? "XTCH" : "XTC", m_header.versionMajor, m_header.versionMinor,
-                m_header.pageCount, m_bitDepth);
+  if (m_header.pageWidth == 0 || m_header.pageHeight == 0) {
+    Serial.printf("[%lu] [XTC] Invalid dimensions: %ux%u\n", millis(), m_header.pageWidth, m_header.pageHeight);
+    return XtcError::CORRUPTED_HEADER;
+  }
+
+  Serial.printf("[%lu] [XTC] Header: magic=0x%08X (%s), ver=%u.%u, pages=%u, size=%ux%u, bitDepth=%u\n", millis(),
+                m_header.magic, (m_header.magic == XTCH_MAGIC) ? "XTCH" : "XTC", m_header.versionMajor,
+                m_header.versionMinor, m_header.pageCount, m_header.pageWidth, m_header.pageHeight, m_bitDepth);
 
   return XtcError::OK;
 }
 
 XtcError XtcParser::readTitle() {
-  // Title is usually at offset 0x18 (24) for 24-byte headers
-  // Read title as null-terminated UTF-8 string
-  const uint64_t titleOffset = 0x18;  // Default offset after 24-byte header
+  // Title is at offset 0x1C (28 bytes) for v2.0
+  const uint64_t titleOffset = 0x1C;
 
   if (!m_file.seek(titleOffset)) {
     return XtcError::READ_ERROR;
@@ -142,19 +141,20 @@ XtcError XtcParser::readPageTable() {
     return XtcError::READ_ERROR;
   }
 
-  // Validate page table size
+  // Validate page table size (16 bytes per entry in v2.0)
+  constexpr size_t entrySize = 16;
   const uint32_t availableBytes = m_header.dataOffset - m_header.indexOffset;
-  const uint32_t expectedTableSize = m_header.pageCount * sizeof(PageTableEntry);  // 18 bytes per entry
+  const uint32_t expectedTableSize = m_header.pageCount * entrySize;
 
   if (availableBytes < expectedTableSize) {
-    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%u, expected=%u\n",
-                  millis(), availableBytes, expectedTableSize);
+    Serial.printf("[%lu] [XTC] Page table size mismatch: available=%u, expected=%u\n", millis(), availableBytes,
+                  expectedTableSize);
     return XtcError::CORRUPTED_HEADER;
   }
 
   m_pageTable.resize(m_header.pageCount);
 
-  // Read modern format (18 bytes per entry, includes header level)
+  // Read page table entries (16 bytes each)
   for (uint16_t i = 0; i < m_header.pageCount; i++) {
     PageTableEntry entry;
     size_t bytesRead = m_file.read(reinterpret_cast<uint8_t*>(&entry), sizeof(PageTableEntry));
@@ -165,16 +165,8 @@ XtcError XtcParser::readPageTable() {
 
     m_pageTable[i].offset = static_cast<uint32_t>(entry.dataOffset);
     m_pageTable[i].size = entry.dataSize;
-    m_pageTable[i].width = entry.width;
-    m_pageTable[i].height = entry.height;
     m_pageTable[i].bitDepth = m_bitDepth;
     m_pageTable[i].headerLevel = entry.headerLevel;
-
-    // Update default dimensions from first page
-    if (i == 0) {
-      m_defaultWidth = entry.width;
-      m_defaultHeight = entry.height;
-    }
   }
 
   Serial.printf("[%lu] [XTC] Read %u page table entries\n", millis(), m_header.pageCount);
@@ -194,7 +186,7 @@ XtcError XtcParser::readChapters() {
   }
 
   const uint64_t fileSize = m_file.size();
-  if (m_header.chapterOffset < sizeof(XtcHeader) || m_header.chapterOffset >= fileSize || 
+  if (m_header.chapterOffset < sizeof(XtcHeader) || m_header.chapterOffset >= fileSize ||
       m_header.chapterOffset + 96 > fileSize) {
     return XtcError::OK;
   }

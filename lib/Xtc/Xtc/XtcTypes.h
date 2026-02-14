@@ -15,32 +15,31 @@ constexpr uint32_t XTG_MAGIC = 0x00475458;  // "XTG\0" for 1-bit page data
 // "XTH\0" = 0x58, 0x54, 0x48, 0x00
 constexpr uint32_t XTH_MAGIC = 0x00485458;  // "XTH\0" for 2-bit page data
 
-// XTC file header (24 bytes)
+// XTC file header (28 bytes)
 #pragma pack(push, 1)
 struct XtcHeader {
   uint32_t magic;            // 0x00: Magic number "XTC\0" (0x00435458)
-  uint8_t versionMajor;      // 0x04: Format version major (typically 1)
-  uint8_t versionMinor;      // 0x05: Format version minor (typically 0)
+  uint8_t versionMajor;      // 0x04: Format version major (2)
+  uint8_t versionMinor;      // 0x05: Format version minor (0)
   uint16_t pageCount;        // 0x06: Total page count
   uint8_t readDirection;     // 0x08: Reading direction (0=L→R, 1=R→L)
   uint8_t hasChapters;       // 0x09: Has chapters (0 or 1)
-  uint16_t reserved;         // 0x0A: Reserved for future use
-  uint32_t indexOffset;      // 0x0C: Index table offset
-  uint32_t dataOffset;       // 0x10: Data area offset
-  uint32_t chapterOffset;    // 0x14: Chapter data offset
+  uint16_t pageWidth;        // 0x0A: Page width in pixels
+  uint16_t pageHeight;       // 0x0C: Page height in pixels
+  uint16_t reserved;         // 0x0E: Reserved for future use
+  uint32_t indexOffset;      // 0x10: Index table offset
+  uint32_t dataOffset;       // 0x14: Data area offset
+  uint32_t chapterOffset;    // 0x18: Chapter data offset
 };
 #pragma pack(pop)
 
-// Page table entry (18 bytes per page)
-// Includes header level support for chapter navigation (0 = no header, 1-6 = H1-H6)
+// Page table entry (16 bytes)
 #pragma pack(push, 1)
 struct PageTableEntry {
   uint64_t dataOffset;  // 0x00: Absolute offset to page data
   uint32_t dataSize;    // 0x08: Page data size in bytes
-  uint16_t width;       // 0x0C: Page width (480)
-  uint16_t height;      // 0x0E: Page height (800)
-  uint8_t headerLevel;  // 0x10: Header level (0 = no header, 1-6 = H1-H6)
-  uint8_t reserved;     // 0x11: Reserved for future use
+  uint8_t headerLevel;  // 0x0C: Header level (0 = no header, 1-6 = H1-H6)
+  uint8_t reserved[3];  // 0x0D: Reserved for future use (padding to 16 bytes)
 };
 #pragma pack(pop)
 
@@ -59,13 +58,11 @@ struct XtgPageHeader {
 
 // Page information (internal use, optimized for memory)
 struct PageInfo {
-  uint32_t offset;   // File offset to page data (max 4GB file size)
-  uint32_t size;     // Data size (bytes)
-  uint16_t width;    // Page width
-  uint16_t height;   // Page height
-  uint8_t bitDepth;  // 1 = XTG (1-bit), 2 = XTH (2-bit grayscale)
+  uint32_t offset;      // File offset to page data (max 4GB file size)
+  uint32_t size;        // Data size (bytes)
+  uint8_t bitDepth;     // 1 = XTG (1-bit), 2 = XTH (2-bit grayscale)
   uint8_t headerLevel;  // 0 = no header, 1-6 = H1-H6
-};  // 16 bytes total
+};  // 10 bytes total
 
 struct ChapterInfo {
   std::string name;

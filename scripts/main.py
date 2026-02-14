@@ -214,16 +214,17 @@ class CSSGenerator:
 class XTCWriter:
     """Writes XTC (eReader format) files with chapter metadata and page images."""
     
-    HEADER_SIZE = 24  # Updated from 56 to 24
+    HEADER_SIZE = 28  # Updated from 24 to 28 for v2.0
     CHAPTER_ENTRY_SIZE = 96
-    INDEX_ENTRY_SIZE = 18
+    INDEX_ENTRY_SIZE = 16  # Updated from 18 to 16 for v2.0
     XTG_MAGIC = 4674648
     XTC_MAGIC = 0x00435458
     
     @staticmethod
     def write_xtc(file_path: str, page_generator: Generator[Tuple[Image.Image, int], None, None], 
-                  total_pages: int, chapters: List[ChapterInfo]) -> None:
-        """Write an XTC file with streaming page generation for memory efficiency."""
+                  total_pages: int, chapters: List[ChapterInfo],
+                  page_width: int = 480, page_height: int = 800) -> None:
+        """Write an XTC v2.0 file with streaming page generation for memory efficiency."""
         chapter_count = len(chapters)
         has_chapters = 1 if chapter_count > 0 else 0
         
@@ -238,7 +239,7 @@ class XTCWriter:
         
         with open(file_path, 'wb') as f:
             XTCWriter._write_header(f, total_pages, has_chapters, index_offset, 
-                                   data_offset, chapter_offset)
+                                   data_offset, chapter_offset, page_width, page_height)
             
             if has_chapters:
                 XTCWriter._write_chapters(f, chapters)
@@ -259,12 +260,17 @@ class XTCWriter:
         for page_img, header_level in page_generator:
             page_blob = XTCWriter._encode_page(page_img)
             blob_size = len(page_blob)
-            w = struct.unpack('<H', page_blob[4:6])[0]
-            h = struct.unpack('<H', page_blob[6:8])[0]
             
-            # Include header_level (1 byte) and reserved (1 byte) in index entry
-            idx_entry = struct.pack('<QIHHBB', current_offset, blob_size, w, h, 
-                                   header_level, 0)
+            # v2.0: Include only offset, size, headerLevel, reserved (16 bytes total)
+            # No width/height - those are in the header
+            idx_entry = struct.pack('<QIBBB', 
+                current_offset,   # 8 bytes: offset
+                blob_size,        # 4 bytes: size
+                header_level,     # 1 byte: headerLevel
+                0,                # 1 byte: reserved
+                0,                # 1 byte: reserved
+                0                 # 1 byte: reserved (padding to 16 bytes)
+            )
             idx_accumulator.append(idx_entry)
             
             f.write(page_blob)
@@ -287,15 +293,18 @@ class XTCWriter:
     
     @staticmethod
     def _write_header(f, page_count: int, has_chapters: int, index_offset: int,
-                     data_offset: int, chapter_offset: int) -> None:
-        """Write XTC file header (24 bytes)."""
+                     data_offset: int, chapter_offset: int,
+                     page_width: int, page_height: int) -> None:
+        """Write XTC v2.0 file header (28 bytes)."""
         header = struct.pack(
-            '<I BB H BB H III',
+            '<I BB H BB HH H III',
             XTCWriter.XTC_MAGIC,     # 4 bytes: magic
-            0x01, 0x00,              # 2 bytes: versionMajor, versionMinor
+            0x02, 0x00,              # 2 bytes: versionMajor=2, versionMinor=0
             page_count,              # 2 bytes: pageCount
             0,                       # 1 byte: readDirection
             has_chapters,            # 1 byte: hasChapters
+            page_width,              # 2 bytes: pageWidth (NEW in v2.0)
+            page_height,             # 2 bytes: pageHeight (NEW in v2.0)
             0,                       # 2 bytes: reserved
             index_offset,            # 4 bytes: indexOffset
             data_offset,             # 4 bytes: dataOffset
@@ -620,11 +629,16 @@ class MarkdownProcessor:
             yield self.render_page(i)
     
     def save_xtc(self, out_name: str) -> None:
-        """Save rendered pages as an XTC file."""
+        """Save rendered pages as an XTC v2.0 file."""
         if not self.is_ready:
             return
         
-        XTCWriter.write_xtc(out_name, self._page_generator(), self.total_pages, self.chapter_info)
+        # Get page dimensions from config
+        page_width = self.config.screen_width
+        page_height = self.config.screen_height
+        
+        XTCWriter.write_xtc(out_name, self._page_generator(), self.total_pages, 
+                           self.chapter_info, page_width, page_height)
         
         # Close fitz documents after export to free memory
         for doc in self.fitz_docs:
@@ -643,7 +657,7 @@ class App(Tk):
         self.is_processing: bool = False
         self.selected_chapter_indices: List[int] = []
         
-        self.title('MD2XTC - Markdown to XTC Converter (Compact Header)')
+        self.title('MD2XTC - Markdown to XTC Converter v2.0')
         self.geometry('1200x800')
         
         self._build_ui()
@@ -814,7 +828,7 @@ class App(Tk):
         """Background task to export XTC file."""
         try:
             self.processor.save_xtc(path)
-            self.after(0, lambda: messagebox.showinfo('Success', 'XTC file saved'))
+            self.after(0, lambda: messagebox.showinfo('Success', 'XTC v2.0 file saved'))
         except Exception as e:
             self.after(0, lambda: messagebox.showerror('Error', f'Export failed: {e}'))
 

@@ -24,8 +24,8 @@ class XtcParser {
   // Header information access
   const XtcHeader& getHeader() const { return m_header; }
   uint16_t getPageCount() const { return m_header.pageCount; }
-  uint16_t getWidth() const { return m_defaultWidth; }
-  uint16_t getHeight() const { return m_defaultHeight; }
+  uint16_t getWidth() const { return m_header.pageWidth; }
+  uint16_t getHeight() const { return m_header.pageHeight; }
   uint8_t getBitDepth() const { return m_bitDepth; }  // 1 = XTC/XTG, 2 = XTCH/XTH
 
   // Page information
@@ -57,8 +57,6 @@ class XtcParser {
   std::vector<PageInfo> m_pageTable;
   std::vector<ChapterInfo> m_chapters;
   std::string m_title;
-  uint16_t m_defaultWidth;
-  uint16_t m_defaultHeight;
   uint8_t m_bitDepth;  // 1 = XTC/XTG (1-bit), 2 = XTCH/XTH (2-bit)
   bool m_hasChapters;
   mutable XtcError m_lastError;  // Mutable because error state can be updated during const operations
