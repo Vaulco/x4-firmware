@@ -48,13 +48,8 @@ void FileSelectionActivity::loadFiles() {
 
     if (file.isDirectory()) {
       files.emplace_back(std::string(name) + "/");
-    } else {
-      auto filename = std::string(name);
-      std::string ext4 = filename.length() >= 4 ? filename.substr(filename.length() - 4) : "";
-      std::string ext5 = filename.length() >= 5 ? filename.substr(filename.length() - 5) : "";
-      if (ext5 == ".xtch" || ext4 == ".xtc") {
-        files.emplace_back(filename);
-      }
+    } else if (xtc::isXtcExtension(name)) {
+      files.emplace_back(std::string(name));
     }
     file.close();
   }

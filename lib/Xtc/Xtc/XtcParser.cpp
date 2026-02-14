@@ -144,7 +144,6 @@ XtcError XtcParser::readPageTable() {
     }
 
     m_pageTable[i].offset = static_cast<uint32_t>(entry.dataOffset);
-    m_pageTable[i].size = entry.dataSize;
     m_pageTable[i].bitDepth = m_bitDepth;
     m_pageTable[i].headerLevel = entry.headerLevel;
   }

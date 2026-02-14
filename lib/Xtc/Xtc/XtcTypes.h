@@ -58,10 +58,9 @@ struct XtgPageHeader {
 // Page information (internal use, optimized for memory)
 struct PageInfo {
   uint32_t offset;      // File offset to page data (max 4GB file size)
-  uint32_t size;        // Data size (bytes)
   uint8_t bitDepth;     // 1 = XTG (1-bit), 2 = XTH (2-bit grayscale)
   uint8_t headerLevel;  // 0 = no header, 1-6 = H1-H6
-};  // 10 bytes total
+};  // 6 bytes total
 
 struct ChapterInfo {
   std::string name;
@@ -78,9 +77,7 @@ enum class XtcError {
   CORRUPTED_HEADER,
   PAGE_OUT_OF_RANGE,
   READ_ERROR,
-  WRITE_ERROR,
   MEMORY_ERROR,
-  DECOMPRESSION_ERROR,
 };
 
 // Convert error code to string
@@ -100,12 +97,8 @@ inline const char* errorToString(XtcError err) {
       return "Page out of range";
     case XtcError::READ_ERROR:
       return "Read error";
-    case XtcError::WRITE_ERROR:
-      return "Write error";
     case XtcError::MEMORY_ERROR:
       return "Memory allocation error";
-    case XtcError::DECOMPRESSION_ERROR:
-      return "Decompression error";
     default:
       return "Unknown error";
   }
