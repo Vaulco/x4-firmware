@@ -47,3 +47,5 @@ private:
     return esp_adc_cal_raw_to_voltage(adc_raw, &adcChars);
   }
 };
+
+inline Battery battery(BAT_GPIO0);
