@@ -10,8 +10,7 @@ namespace xtc {
 XtcParser::XtcParser()
     : m_isOpen(false),
       m_bitDepth(1),
-      m_hasChapters(false),
-      m_lastError(XtcError::OK) {
+      m_hasChapters(false) {
   memset(&m_header, 0, sizeof(m_header));
 }
 
@@ -25,32 +24,31 @@ XtcError XtcParser::open(const char* filepath) {
 
   // Open file
   if (!SdMan.openFileForRead("XTC", filepath, m_file)) {
-    m_lastError = XtcError::FILE_NOT_FOUND;
-    return m_lastError;
+    return XtcError::FILE_NOT_FOUND;
   }
 
   // Read header
-  m_lastError = readHeader();
-  if (m_lastError != XtcError::OK) {
-    Serial.printf("[%lu] [XTC] Failed to read header: %s\n", millis(), errorToString(m_lastError));
+  XtcError error = readHeader();
+  if (error != XtcError::OK) {
+    Serial.printf("[%lu] [XTC] Failed to read header: %s\n", millis(), errorToString(error));
     m_file.close();
-    return m_lastError;
+    return error;
   }
 
   // Read page table
-  m_lastError = readPageTable();
-  if (m_lastError != XtcError::OK) {
-    Serial.printf("[%lu] [XTC] Failed to read page table: %s\n", millis(), errorToString(m_lastError));
+  error = readPageTable();
+  if (error != XtcError::OK) {
+    Serial.printf("[%lu] [XTC] Failed to read page table: %s\n", millis(), errorToString(error));
     m_file.close();
-    return m_lastError;
+    return error;
   }
 
   // Read chapters if present
-  m_lastError = readChapters();
-  if (m_lastError != XtcError::OK) {
-    Serial.printf("[%lu] [XTC] Failed to read chapters: %s\n", millis(), errorToString(m_lastError));
+  error = readChapters();
+  if (error != XtcError::OK) {
+    Serial.printf("[%lu] [XTC] Failed to read chapters: %s\n", millis(), errorToString(error));
     m_file.close();
-    return m_lastError;
+    return error;
   }
 
   m_isOpen = true;
@@ -253,12 +251,10 @@ bool XtcParser::getPageInfo(uint32_t pageIndex, PageInfo& info) const {
 
 size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSize) const {
   if (!m_isOpen) {
-    m_lastError = XtcError::FILE_NOT_FOUND;
     return 0;
   }
 
   if (pageIndex >= m_header.pageCount) {
-    m_lastError = XtcError::PAGE_OUT_OF_RANGE;
     return 0;
   }
 
@@ -267,7 +263,6 @@ size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSiz
   // Seek to page data
   if (!m_file.seek(page.offset)) {
     Serial.printf("[%lu] [XTC] Failed to seek to page %u at offset %lu\n", millis(), pageIndex, page.offset);
-    m_lastError = XtcError::READ_ERROR;
     return 0;
   }
 
@@ -276,7 +271,6 @@ size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSiz
   size_t headerRead = m_file.read(reinterpret_cast<uint8_t*>(&pageHeader), sizeof(XtgPageHeader));
   if (headerRead != sizeof(XtgPageHeader)) {
     Serial.printf("[%lu] [XTC] Failed to read page header for page %u\n", millis(), pageIndex);
-    m_lastError = XtcError::READ_ERROR;
     return 0;
   }
 
@@ -285,7 +279,6 @@ size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSiz
   if (pageHeader.magic != expectedMagic) {
     Serial.printf("[%lu] [XTC] Invalid page magic for page %u: 0x%08X (expected 0x%08X)\n", millis(), pageIndex,
                   pageHeader.magic, expectedMagic);
-    m_lastError = XtcError::INVALID_MAGIC;
     return 0;
   }
 
@@ -303,7 +296,6 @@ size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSiz
   // Check buffer size
   if (bufferSize < bitmapSize) {
     Serial.printf("[%lu] [XTC] Buffer too small: need %u, have %u\n", millis(), bitmapSize, bufferSize);
-    m_lastError = XtcError::MEMORY_ERROR;
     return 0;
   }
 
@@ -311,11 +303,9 @@ size_t XtcParser::loadPage(uint32_t pageIndex, uint8_t* buffer, size_t bufferSiz
   size_t bytesRead = m_file.read(buffer, bitmapSize);
   if (bytesRead != bitmapSize) {
     Serial.printf("[%lu] [XTC] Page read error: expected %u, got %u\n", millis(), bitmapSize, bytesRead);
-    m_lastError = XtcError::READ_ERROR;
     return 0;
   }
 
-  m_lastError = XtcError::OK;
   return bytesRead;
 }
 

@@ -51,7 +51,6 @@ class XtcParser {
   std::vector<ChapterInfo> m_chapters;
   uint8_t m_bitDepth;  // 1 = XTC/XTG (1-bit), 2 = XTCH/XTH (2-bit)
   bool m_hasChapters;
-  mutable XtcError m_lastError;  // Mutable because error state can be updated during const operations
 
   // Internal helper functions
   XtcError readHeader();

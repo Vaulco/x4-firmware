@@ -2,6 +2,7 @@
 
 #include <GfxRenderer.h>
 #include <SDCardManager.h>
+#include <Xtc/XtcTypes.h>
 
 #include "Battery.h"
 #include "fontIds.h"
