@@ -42,7 +42,6 @@ class Xtc {
   const std::string& getPath() const { return filepath; }
 
   // Metadata
-  std::string getTitle() const;
   bool hasChapters() const;
   const std::vector<xtc::ChapterInfo>& getChapters() const;
 

@@ -37,9 +37,6 @@ XtcError XtcParser::open(const char* filepath) {
     return m_lastError;
   }
 
-  // Read title if available
-  readTitle();
-
   // Read page table
   m_lastError = readPageTable();
   if (m_lastError != XtcError::OK) {
@@ -67,7 +64,6 @@ void XtcParser::close() {
   }
   m_pageTable.clear();
   m_chapters.clear();
-  m_title.clear();
   m_hasChapters = false;
   memset(&m_header, 0, sizeof(m_header));
 }
@@ -110,22 +106,6 @@ XtcError XtcParser::readHeader() {
                 m_header.magic, (m_header.magic == XTCH_MAGIC) ? "XTCH" : "XTC", m_header.versionMajor,
                 m_header.versionMinor, m_header.pageCount, m_header.pageWidth, m_header.pageHeight, m_bitDepth);
 
-  return XtcError::OK;
-}
-
-XtcError XtcParser::readTitle() {
-  // Title is at offset 0x1C (28 bytes) for v2.0
-  const uint64_t titleOffset = 0x1C;
-
-  if (!m_file.seek(titleOffset)) {
-    return XtcError::READ_ERROR;
-  }
-
-  char titleBuf[128] = {0};
-  m_file.read(reinterpret_cast<uint8_t*>(titleBuf), sizeof(titleBuf) - 1);
-  m_title = titleBuf;
-
-  Serial.printf("[%lu] [XTC] Title: %s\n", millis(), m_title.c_str());
   return XtcError::OK;
 }
 

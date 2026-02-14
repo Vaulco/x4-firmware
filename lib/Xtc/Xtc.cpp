@@ -49,34 +49,6 @@ void Xtc::setupCacheDir() const {
     }
 }
 
-std::string Xtc::getTitle() const {
-  if (!loaded || !parser) {
-    return "";
-  }
-
-  // Try to get title from XTC metadata first
-  std::string title = parser->getTitle();
-  if (!title.empty()) {
-    return title;
-  }
-
-  // Fallback: extract filename from path as title
-  size_t lastSlash = filepath.find_last_of('/');
-  size_t lastDot = filepath.find_last_of('.');
-
-  if (lastSlash == std::string::npos) {
-    lastSlash = 0;
-  } else {
-    lastSlash++;
-  }
-
-  if (lastDot == std::string::npos || lastDot <= lastSlash) {
-    return filepath.substr(lastSlash);
-  }
-
-  return filepath.substr(lastSlash, lastDot - lastSlash);
-}
-
 bool Xtc::hasChapters() const {
   if (!loaded || !parser) {
     return false;
