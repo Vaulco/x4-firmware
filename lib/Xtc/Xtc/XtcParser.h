@@ -22,7 +22,6 @@ class XtcParser {
   bool isOpen() const { return m_isOpen; }
 
   // Header information access
-  const XtcHeader& getHeader() const { return m_header; }
   uint16_t getPageCount() const { return m_header.pageCount; }
   uint16_t getWidth() const { return m_header.pageWidth; }
   uint16_t getHeight() const { return m_header.pageHeight; }
@@ -43,9 +42,6 @@ class XtcParser {
 
   bool hasChapters() const { return m_hasChapters; }
   const std::vector<ChapterInfo>& getChapters() const { return m_chapters; }
-
-  // Error information
-  XtcError getLastError() const { return m_lastError; }
 
  private:
   mutable FsFile m_file;
