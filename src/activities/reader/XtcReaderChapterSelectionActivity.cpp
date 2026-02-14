@@ -5,8 +5,6 @@
 #include "fontIds.h"
 
 namespace {
-constexpr int SKIP_PAGE_MS = 700;
-
 // Manual truncation - avoid renderer.truncatedText() which has a bug
 std::string truncateToWidth(GfxRenderer& renderer, int fontId, const std::string& text, int maxWidth) {
   if (text.empty()) {
@@ -112,9 +110,6 @@ void XtcReaderChapterSelectionActivity::loop() {
   const bool nextReleased = inputManager.wasReleased(InputManager::Button::Down) ||
                             inputManager.wasReleased(InputManager::Button::Right);
 
-  const bool skipPage = inputManager.getHeldTime() > SKIP_PAGE_MS;
-  const int pageItems = getPageItems();
-
   if (inputManager.wasReleased(InputManager::Button::Confirm)) {
     const auto& chapters = xtc->getChapters();
     if (!chapters.empty() && selectorIndex >= 0 && selectorIndex < static_cast<int>(chapters.size())) {
@@ -134,22 +129,14 @@ void XtcReaderChapterSelectionActivity::loop() {
     if (total == 0) {
       return;
     }
-    if (skipPage) {
-      selectorIndex = ((selectorIndex / pageItems - 1) * pageItems + total) % total;
-    } else {
-      selectorIndex = (selectorIndex + total - 1) % total;
-    }
+    selectorIndex = (selectorIndex + total - 1) % total;
     render();
   } else if (nextReleased) {
     const int total = static_cast<int>(xtc->getChapters().size());
     if (total == 0) {
       return;
     }
-    if (skipPage) {
-      selectorIndex = ((selectorIndex / pageItems + 1) * pageItems) % total;
-    } else {
-      selectorIndex = (selectorIndex + 1) % total;
-    }
+    selectorIndex = (selectorIndex + 1) % total;
     render();
   }
 }
