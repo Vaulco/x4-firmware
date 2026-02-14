@@ -35,6 +35,8 @@ EpdFont cmu8Font(&cmu_8);
 EpdFont cmu10Font(&cmu_10);
 EpdFont cmu12Font(&cmu_12);
 
+Battery battery(BAT_GPIO0);
+
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
 bool backLongPressConsumed = false;  // Flag to ignore BACK release after long press
