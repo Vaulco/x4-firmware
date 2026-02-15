@@ -5,11 +5,9 @@
 class GfxRenderer {
  public:
   enum FontSize { SMALL = 0, MEDIUM = 1, LARGE = 2 };
-  enum RenderMode { BW, GRAYSCALE_LSB, GRAYSCALE_MSB };
 
  private:
   EInkDisplay& einkDisplay;
-  RenderMode renderMode;
   EpdFont fonts[3];
   void renderChar(const EpdFont* font, uint32_t cp, int* x, const int* y, bool pixelState) const;
   void rotateCoordinates(int x, int y, int* rotatedX, int* rotatedY) const;
@@ -46,7 +44,6 @@ class GfxRenderer {
   int getLineHeight(FontSize size) const;
 
   // Grayscale
-  void setRenderMode(RenderMode mode) { this->renderMode = mode; }
   void copyGrayscaleLsbBuffers() const;
   void copyGrayscaleMsbBuffers() const;
   void displayGrayBuffer() const;

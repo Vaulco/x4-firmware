@@ -10,6 +10,6 @@ for size in ${FONT_SIZES[@]}; do
   font_name="cmu_${size}"
   font_path="../builtinFonts/source/CMUSerif.ttf"
   output_path="../builtinFonts/${font_name}.h"
-  python fontconvert.py $font_name $size $font_path --2bit > $output_path
+  python fontconvert.py $font_name $size $font_path > $output_path
   echo "Generated $output_path"
 done

@@ -188,59 +188,34 @@ void GfxRenderer::renderChar(const EpdFont* font, const uint32_t cp, int* x, con
                              const bool pixelState) const {
   const EpdGlyph* glyph = font->getGlyph(cp);
   if (!glyph) {
-    // TODO: Replace with fallback glyph property?
     glyph = font->getGlyph('?');
   }
 
-  // no glyph?
+  // No glyph?
   if (!glyph) {
     Serial.printf("[%lu] [GFX] No glyph for codepoint %d\n", millis(), cp);
     return;
   }
 
-  const int is2Bit = font->data->is2Bit;
   const uint32_t offset = glyph->dataOffset;
   const uint8_t width = glyph->width;
   const uint8_t height = glyph->height;
   const int left = glyph->left;
 
-  const uint8_t* bitmap = nullptr;
-  bitmap = &font->data->bitmap[offset];
+  const uint8_t* bitmap = &font->data->bitmap[offset];
 
-  if (bitmap != nullptr) {
-    for (int glyphY = 0; glyphY < height; glyphY++) {
-      const int screenY = *y - glyph->top + glyphY;
-      for (int glyphX = 0; glyphX < width; glyphX++) {
-        const int pixelPosition = glyphY * width + glyphX;
-        const int screenX = *x + left + glyphX;
+  // Simple 1-bit rendering
+  for (int glyphY = 0; glyphY < height; glyphY++) {
+    const int screenY = *y - glyph->top + glyphY;
+    for (int glyphX = 0; glyphX < width; glyphX++) {
+      const int pixelPosition = glyphY * width + glyphX;
+      const int screenX = *x + left + glyphX;
 
-        if (is2Bit) {
-          const uint8_t byte = bitmap[pixelPosition / 4];
-          const uint8_t bit_index = (3 - pixelPosition % 4) * 2;
-          // the direct bit from the font is 0 -> white, 1 -> light gray, 2 -> dark gray, 3 -> black
-          // we swap this to better match the way images and screen think about colors:
-          // 0 -> black, 1 -> dark grey, 2 -> light grey, 3 -> white
-          const uint8_t bmpVal = 3 - (byte >> bit_index) & 0x3;
+      const uint8_t byte = bitmap[pixelPosition / 8];
+      const uint8_t bit_index = 7 - (pixelPosition % 8);
 
-          if (renderMode == BW && bmpVal < 3) {
-            // Black (also paints over the grays in BW mode)
-            drawPixel(screenX, screenY, pixelState);
-          } else if (renderMode == GRAYSCALE_MSB && (bmpVal == 1 || bmpVal == 2)) {
-            // Light gray (also mark the MSB if it's going to be a dark gray too)
-            // We have to flag pixels in reverse for the gray buffers, as 0 leave alone, 1 update
-            drawPixel(screenX, screenY, false);
-          } else if (renderMode == GRAYSCALE_LSB && bmpVal == 1) {
-            // Dark gray
-            drawPixel(screenX, screenY, false);
-          }
-        } else {
-          const uint8_t byte = bitmap[pixelPosition / 8];
-          const uint8_t bit_index = 7 - (pixelPosition % 8);
-
-          if ((byte >> bit_index) & 1) {
-            drawPixel(screenX, screenY, pixelState);
-          }
-        }
+      if ((byte >> bit_index) & 1) {
+        drawPixel(screenX, screenY, pixelState);
       }
     }
   }
