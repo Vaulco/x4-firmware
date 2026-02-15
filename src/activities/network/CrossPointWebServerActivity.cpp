@@ -10,7 +10,6 @@
 
 #include "NetworkModeSelectionActivity.h"
 #include "WifiSelectionActivity.h"
-#include "fontIds.h"
 
 namespace {
 // AP Mode configuration
@@ -333,7 +332,7 @@ void CrossPointWebServerActivity::render() const {
   } else if (state == WebServerActivityState::AP_STARTING) {
     renderer.clearScreen();
     const auto pageHeight = renderer.getScreenHeight();
-    renderer.drawCenteredText(CMU_12_FONT_ID, pageHeight / 2 - 20, "Starting Hotspot...", true);
+    renderer.drawCenteredText(GfxRenderer::LARGE, pageHeight / 2 - 20, "Starting Hotspot...", true);
     renderer.displayBuffer();
   }
 }
@@ -364,18 +363,18 @@ void CrossPointWebServerActivity::renderServerRunning() const {
   // Use consistent line spacing
   constexpr int LINE_SPACING = 28;  // Space between lines
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "File Transfer", true);
 
   if (isApMode) {
     // AP mode display - center the content blockd
     int startY = 55;
 
     std::string ssidInfo = "Network: " + connectedSSID;
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING, ssidInfo.c_str());
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, startY + LINE_SPACING, ssidInfo.c_str());
 
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 2, "Connect your device to this WiFi network");
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 2, "Connect your device to this WiFi network");
 
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 3,
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 3,
                               "or scan QR code with your phone to connect to Wifi.");
     // Show QR code for URL
     const std::string wifiConfig = std::string("WIFI:S:") + connectedSSID + ";;";
@@ -384,15 +383,15 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     startY += 6 * 29 + 3 * LINE_SPACING;
     // Show primary URL (hostname)
     std::string hostnameUrl = std::string("http://") + AP_HOSTNAME + ".local/";
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true);
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, startY + LINE_SPACING * 3, hostnameUrl.c_str(), true);
 
     // Show IP address as fallback
     std::string ipUrl = "or http://" + connectedIP + "/";
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 4, ipUrl.c_str());
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 5, "Open this URL in your browser");
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 4, ipUrl.c_str());
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 5, "Open this URL in your browser");
 
     // Show QR code for URL
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 6, "or scan QR code with your phone:");
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 6, "or scan QR code with your phone:");
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 7, hostnameUrl);
   } else {
     // STA mode display (original behavior)
@@ -402,24 +401,24 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     if (ssidInfo.length() > 28) {
       ssidInfo.replace(25, ssidInfo.length() - 25, "...");
     }
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY, ssidInfo.c_str());
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, startY, ssidInfo.c_str());
 
     std::string ipInfo = "IP Address: " + connectedIP;
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING, ipInfo.c_str());
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, startY + LINE_SPACING, ipInfo.c_str());
 
     // Show web server URL prominently
     std::string webInfo = "http://" + connectedIP + "/";
-    renderer.drawCenteredText(CMU_10_FONT_ID, startY + LINE_SPACING * 2, webInfo.c_str(), true);
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, startY + LINE_SPACING * 2, webInfo.c_str(), true);
 
     // Also show hostname URL
     std::string hostnameUrl = std::string("or http://") + AP_HOSTNAME + ".local/";
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 3, hostnameUrl.c_str());
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 3, hostnameUrl.c_str());
 
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 4, "Open this URL in your browser");
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 4, "Open this URL in your browser");
 
     // Show QR code for URL
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 6, webInfo);
-    renderer.drawCenteredText(CMU_8_FONT_ID, startY + LINE_SPACING * 5, "or scan QR code with your phone:");
+    renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 5, "or scan QR code with your phone:");
   }
 
 }

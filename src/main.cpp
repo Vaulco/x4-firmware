@@ -4,7 +4,6 @@
 #include <InputManager.h>
 #include <SDCardManager.h>
 #include <SPI.h>
-#include <builtinFonts/all.h>
 
 #include "Battery.h"
 #include "Settings.h"
@@ -13,7 +12,6 @@
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
-#include "fontIds.h"
 
 #define SPI_FQ 40000000
 // Display SPI pins (custom pins for XteinkX4, not hardware SPI defaults)
@@ -30,10 +28,6 @@ EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 GfxRenderer renderer(einkDisplay);
 Activity* currentActivity = nullptr;
-
-EpdFont cmu8Font(&cmu_8);
-EpdFont cmu10Font(&cmu_10);
-EpdFont cmu12Font(&cmu_12);
 
 // Global BACK button long press tracking
 constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
@@ -68,7 +62,7 @@ void enterDeepSleep() {
   // Display "SLEEPING" message
   const auto pageHeight = renderer.getScreenHeight();
   renderer.clearScreen();
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight / 2, "SLEEPING");
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight / 2, "SLEEPING");
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
   
   einkDisplay.deepSleep();
@@ -109,9 +103,6 @@ void onGoToFileSelection() {
 void setupDisplayAndFonts() {
   einkDisplay.begin();
   Serial.printf("[%lu] [   ] Display initialized\n", millis());
-  renderer.insertFont(CMU_8_FONT_ID, &cmu8Font);
-  renderer.insertFont(CMU_10_FONT_ID, &cmu10Font);
-  renderer.insertFont(CMU_12_FONT_ID, &cmu12Font);
   Serial.printf("[%lu] [   ] Fonts setup\n", millis());
 }
 

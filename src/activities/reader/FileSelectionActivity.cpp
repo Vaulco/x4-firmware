@@ -5,7 +5,6 @@
 #include <Xtc/XtcTypes.h>
 
 #include "Battery.h"
-#include "fontIds.h"
 
 namespace {
 constexpr int PAGE_ITEMS = 23;
@@ -163,23 +162,23 @@ void FileSelectionActivity::render() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Library", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "Library", true);
 
   if (files.empty()) {
-    renderer.drawText(CMU_10_FONT_ID, 20, 60, "No books found");
+    renderer.drawText(GfxRenderer::MEDIUM, 20, 60, "No books found");
   } else {
     const auto pageStartIndex = selectorIndex / PAGE_ITEMS * PAGE_ITEMS;
     renderer.fillRect(0, 60 + (selectorIndex % PAGE_ITEMS) * 30 - 2, pageWidth - 1, 30);
     for (int i = pageStartIndex; i < files.size() && i < pageStartIndex + PAGE_ITEMS; i++) {
-      auto item = renderer.truncatedText(CMU_10_FONT_ID, files[i].c_str(), renderer.getScreenWidth() - 40);
-      renderer.drawText(CMU_10_FONT_ID, 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
+      auto item = renderer.truncatedText(GfxRenderer::MEDIUM, files[i].c_str(), renderer.getScreenWidth() - 40);
+      renderer.drawText(GfxRenderer::MEDIUM, 20, 60 + (i % PAGE_ITEMS) * 30, item.c_str(), i != selectorIndex);
     }
   }
 
   // New code - text-only battery percentage
   const uint16_t batteryPercentage = battery.readPercentage();
   const std::string batteryText = std::to_string(batteryPercentage) + "%";
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, batteryText.c_str());
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight - 30, batteryText.c_str());
 
   renderer.displayBuffer();
 }

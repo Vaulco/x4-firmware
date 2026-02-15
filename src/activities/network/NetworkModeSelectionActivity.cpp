@@ -3,7 +3,6 @@
 #include <GfxRenderer.h>
 
 #include "Battery.h"
-#include "fontIds.h"
 
 namespace {
 constexpr int MENU_ITEM_COUNT = 2;
@@ -95,7 +94,7 @@ void NetworkModeSelectionActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header (same style as Settings)
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "File Transfer", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "File Transfer", true);
 
   // Draw selection (same style as Settings - 30px spacing between items)
   renderer.fillRect(0, 60 + selectedIndex * 30 - 2, pageWidth - 1, 30);
@@ -103,13 +102,13 @@ void NetworkModeSelectionActivity::render() const {
   // Draw all menu items (same style as Settings)
   for (int i = 0; i < MENU_ITEM_COUNT; i++) {
     const int itemY = 60 + i * 30;  // 30 pixels between items
-    renderer.drawText(CMU_10_FONT_ID, 20, itemY, MENU_ITEMS[i], i != selectedIndex);
+    renderer.drawText(GfxRenderer::MEDIUM, 20, itemY, MENU_ITEMS[i], i != selectedIndex);
   }
 
   // New code - text-only battery percentage
   const uint16_t batteryPercentage = battery.readPercentage();
   const std::string batteryText = std::to_string(batteryPercentage) + "%";
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, batteryText.c_str());
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight - 30, batteryText.c_str());
 
   renderer.displayBuffer();
 }

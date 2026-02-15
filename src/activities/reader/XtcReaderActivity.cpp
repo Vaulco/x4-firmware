@@ -6,7 +6,6 @@
 
 #include "Settings.h"
 #include "XtcReaderChapterSelectionActivity.h"
-#include "fontIds.h"
 
 void XtcReaderActivity::taskTrampoline(void* param) {
   auto* self = static_cast<XtcReaderActivity*>(param);

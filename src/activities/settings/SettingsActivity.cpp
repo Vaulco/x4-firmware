@@ -5,7 +5,6 @@
 
 #include "Settings.h"
 #include "Battery.h"
-#include "fontIds.h"
 
 // Define the static settings list - Continue Reading is now the first item
 namespace {
@@ -135,7 +134,7 @@ void SettingsActivity::render() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Options", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "Options", true);
 
   // Draw selection
   renderer.fillRect(0, 60 + selectedSettingIndex * 30 - 2, pageWidth - 1, 30);
@@ -145,7 +144,7 @@ void SettingsActivity::render() const {
     const int settingY = 60 + i * 30;  // 30 pixels between settings
 
     // Draw setting name
-    renderer.drawText(CMU_10_FONT_ID, 20, settingY, settingsList[i].name, i != selectedSettingIndex);
+    renderer.drawText(GfxRenderer::MEDIUM, 20, settingY, settingsList[i].name, i != selectedSettingIndex);
 
     // Draw value based on setting type
     std::string valueText = "";
@@ -154,14 +153,14 @@ void SettingsActivity::render() const {
       valueText = settingsList[i].enumValues[value];
     }
     
-    const auto width = renderer.getTextWidth(CMU_10_FONT_ID, valueText.c_str());
-    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
+    const auto width = renderer.getTextWidth(GfxRenderer::MEDIUM, valueText.c_str());
+    renderer.drawText(GfxRenderer::MEDIUM, pageWidth - 20 - width, settingY, valueText.c_str(), i != selectedSettingIndex);
   }
 
   // New code - text-only battery percentage
   const uint16_t batteryPercentage = battery.readPercentage();
   const std::string batteryText = std::to_string(batteryPercentage) + "%";
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, batteryText.c_str());
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight - 30, batteryText.c_str());
 
   // Always use standard refresh for settings screen
   renderer.displayBuffer();

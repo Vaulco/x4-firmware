@@ -2,25 +2,23 @@
 
 #include <GfxRenderer.h>
 
-#include "fontIds.h"
-
 namespace {
 constexpr int SKIP_PAGE_MS = 700;
 
 // Manual truncation - avoid renderer.truncatedText() which has a bug
-std::string truncateToWidth(GfxRenderer& renderer, int fontId, const std::string& text, int maxWidth) {
+std::string truncateToWidth(GfxRenderer& renderer, GfxRenderer::FontSize size, const std::string& text, int maxWidth) {
     if (text.empty()) {
         return text;
     }
     
     // Check if text fits as-is
-    int fullWidth = renderer.getTextWidth(fontId, text.c_str());
+    int fullWidth = renderer.getTextWidth(size, text.c_str());
     if (fullWidth <= maxWidth) {
         return text;
     }
     
     const char* ellipsis = "...";
-    int ellipsisWidth = renderer.getTextWidth(fontId, ellipsis);
+    int ellipsisWidth = renderer.getTextWidth(size, ellipsis);
     int availableForText = maxWidth - ellipsisWidth;
     
     if (availableForText <= 0) {
@@ -40,7 +38,7 @@ std::string truncateToWidth(GfxRenderer& renderer, int fontId, const std::string
         
         // Build candidate string up to this codepoint
         candidate = std::string(text.c_str(), nextPos - reinterpret_cast<const unsigned char*>(text.c_str()));
-        int candidateWidth = renderer.getTextWidth(fontId, candidate.c_str());
+        int candidateWidth = renderer.getTextWidth(size, candidate.c_str());
         
         if (candidateWidth > availableForText) {
             // This character doesn't fit, use last safe position
@@ -160,11 +158,11 @@ void XtcReaderChapterSelectionActivity::render() const {
   const auto pageWidth = renderer.getScreenWidth();
   const int pageItems = getPageItems();
   
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "Select Chapter", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "Select Chapter", true);
 
   const auto& chapters = xtc->getChapters();
   if (chapters.empty()) {
-    renderer.drawCenteredText(CMU_10_FONT_ID, 120, "No chapters");
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, 120, "No chapters");
     renderer.displayBuffer();
     return;
   }
@@ -189,20 +187,20 @@ void XtcReaderChapterSelectionActivity::render() const {
     // Prepare page number (to calculate available space for title)
     char pageNum[16];
     snprintf(pageNum, sizeof(pageNum), "%u", chapter.startPage + 1);
-    const int pageNumWidth = renderer.getTextWidth(CMU_10_FONT_ID, pageNum);
+    const int pageNumWidth = renderer.getTextWidth(GfxRenderer::MEDIUM, pageNum);
     
     // Calculate available width for chapter title (15px gap from page number for spacing)
     const int availableWidth = pageWidth - leftMargin - pageNumWidth - 15 - 20;
     
     // Truncate chapter title if necessary using OUR manual truncation (not renderer's buggy one)
     std::string displayTitle = chapter.name.empty() ? "Unnamed" : chapter.name;
-    displayTitle = truncateToWidth(renderer, CMU_10_FONT_ID, displayTitle, availableWidth);
+    displayTitle = truncateToWidth(renderer, GfxRenderer::MEDIUM, displayTitle, availableWidth);
     
     // Draw chapter title on the left with indentation
-    renderer.drawText(CMU_10_FONT_ID, leftMargin, itemY, displayTitle.c_str(), !isSelected);
+    renderer.drawText(GfxRenderer::MEDIUM, leftMargin, itemY, displayTitle.c_str(), !isSelected);
     
     // Draw page number on the right
-    renderer.drawText(CMU_10_FONT_ID, pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
+    renderer.drawText(GfxRenderer::MEDIUM, pageWidth - 20 - pageNumWidth, itemY, pageNum, !isSelected);
   }
 
   renderer.displayBuffer();

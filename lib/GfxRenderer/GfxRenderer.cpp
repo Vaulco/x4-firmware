@@ -1,10 +1,13 @@
 #include "GfxRenderer.h"
 
 #include <Utf8.h>
+#include <builtinFonts/all.h>
 
-void GfxRenderer::insertFont(const int fontId, const EpdFont* font) { 
-  fontMap.insert({fontId, font}); 
-}
+// Constructor initializes font array
+GfxRenderer::GfxRenderer(EInkDisplay& einkDisplay) 
+  : einkDisplay(einkDisplay),
+    renderMode(BW),
+    fonts{EpdFont(&cmu_8), EpdFont(&cmu_10), EpdFont(&cmu_12)} {}
 
 void GfxRenderer::rotateCoordinates(const int x, const int y, int* rotatedX, int* rotatedY) const {
   // Portrait mode (480x800 logical) → panel (800x480 physical)
@@ -44,24 +47,20 @@ void GfxRenderer::drawPixel(const int x, const int y, const bool state) const {
   }
 }
 
-int GfxRenderer::getTextWidth(const int fontId, const char* text) const {
-  if (fontMap.count(fontId) == 0) {
-    Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
-    return 0;
-  }
-
+int GfxRenderer::getTextWidth(const FontSize size, const char* text) const {
   int w = 0, h = 0;
-  fontMap.at(fontId)->getTextDimensions(text, &w, &h);
+  fonts[size].getTextDimensions(text, &w, &h);
   return w;
 }
 
-void GfxRenderer::drawCenteredText(const int fontId, const int y, const char* text, const bool black) const {
-  const int x = (getScreenWidth() - getTextWidth(fontId, text)) / 2;
-  drawText(fontId, x, y, text, black);
+void GfxRenderer::drawCenteredText(const FontSize size, const int y, const char* text, const bool black) const {
+  const int x = (getScreenWidth() - getTextWidth(size, text)) / 2;
+  drawText(size, x, y, text, black);
 }
 
-void GfxRenderer::drawText(const int fontId, const int x, const int y, const char* text, const bool black) const {
-  const int yPos = y + getFontAscenderSize(fontId);
+void GfxRenderer::drawText(const FontSize size, const int x, const int y, const char* text, const bool black) const {
+  const auto& font = fonts[size];
+  const int yPos = y + font.data->ascender;
   int xpos = x;
 
   // cannot draw a NULL / empty string
@@ -69,20 +68,14 @@ void GfxRenderer::drawText(const int fontId, const int x, const int y, const cha
     return;
   }
 
-  if (fontMap.count(fontId) == 0) {
-    Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
-    return;
-  }
-  const auto font = fontMap.at(fontId);
-
   // no printable characters
-  if (!font->hasPrintableChars(text)) {
+  if (!font.hasPrintableChars(text)) {
     return;
   }
 
   uint32_t cp;
   while ((cp = utf8NextCodepoint(reinterpret_cast<const uint8_t**>(&text)))) {
-    renderChar(font, cp, &xpos, &yPos, black);
+    renderChar(&font, cp, &xpos, &yPos, black);
   }
 }
 
@@ -137,12 +130,12 @@ void GfxRenderer::displayBuffer(const EInkDisplay::RefreshMode refreshMode) cons
   einkDisplay.displayBuffer(refreshMode);
 }
 
-std::string GfxRenderer::truncatedText(const int fontId, const char* text, const int maxWidth) const {
+std::string GfxRenderer::truncatedText(const FontSize size, const char* text, const int maxWidth) const {
   std::string item = text;
-  int itemWidth = getTextWidth(fontId, item.c_str());
+  int itemWidth = getTextWidth(size, item.c_str());
   while (itemWidth > maxWidth && item.length() > 8) {
     item.replace(item.length() - 5, 5, "...");
-    itemWidth = getTextWidth(fontId, item.c_str());
+    itemWidth = getTextWidth(size, item.c_str());
   }
   return item;
 }
@@ -156,31 +149,16 @@ int GfxRenderer::getScreenHeight() const {
   return EInkDisplay::DISPLAY_WIDTH;  // 800px
 }
 
-int GfxRenderer::getSpaceWidth(const int fontId) const {
-  if (fontMap.count(fontId) == 0) {
-    Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
-    return 0;
-  }
-
-  return fontMap.at(fontId)->getGlyph(' ')->advanceX;
+int GfxRenderer::getSpaceWidth(const FontSize size) const {
+  return fonts[size].getGlyph(' ')->advanceX;
 }
 
-int GfxRenderer::getFontAscenderSize(const int fontId) const {
-  if (fontMap.count(fontId) == 0) {
-    Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
-    return 0;
-  }
-
-  return fontMap.at(fontId)->data->ascender;
+int GfxRenderer::getFontAscenderSize(const FontSize size) const {
+  return fonts[size].data->ascender;
 }
 
-int GfxRenderer::getLineHeight(const int fontId) const {
-  if (fontMap.count(fontId) == 0) {
-    Serial.printf("[%lu] [GFX] Font %d not found\n", millis(), fontId);
-    return 0;
-  }
-
-  return fontMap.at(fontId)->data->advanceY;
+int GfxRenderer::getLineHeight(const FontSize size) const {
+  return fonts[size].data->advanceY;
 }
 
 uint8_t* GfxRenderer::getFrameBuffer() const { return einkDisplay.getFrameBuffer(); }

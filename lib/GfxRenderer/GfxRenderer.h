@@ -1,32 +1,27 @@
 #pragma once
-
 #include <EInkDisplay.h>
 #include <EpdFont.h>
 
-#include <map>
-
 class GfxRenderer {
  public:
+  enum FontSize { SMALL = 0, MEDIUM = 1, LARGE = 2 };
   enum RenderMode { BW, GRAYSCALE_LSB, GRAYSCALE_MSB };
 
  private:
   EInkDisplay& einkDisplay;
   RenderMode renderMode;
-  std::map<int, const EpdFont*> fontMap;
+  EpdFont fonts[3];
   void renderChar(const EpdFont* font, uint32_t cp, int* x, const int* y, bool pixelState) const;
   void rotateCoordinates(int x, int y, int* rotatedX, int* rotatedY) const;
 
  public:
-  explicit GfxRenderer(EInkDisplay& einkDisplay) : einkDisplay(einkDisplay), renderMode(BW) {}
+  explicit GfxRenderer(EInkDisplay& einkDisplay);
   ~GfxRenderer() = default;
 
   static constexpr int VIEWABLE_MARGIN_TOP = 9;
   static constexpr int VIEWABLE_MARGIN_RIGHT = 3;
   static constexpr int VIEWABLE_MARGIN_BOTTOM = 3;
   static constexpr int VIEWABLE_MARGIN_LEFT = 3;
-
-  // Setup
-  void insertFont(int fontId, const EpdFont* font);
 
   // Screen ops
   int getScreenWidth() const;
@@ -41,24 +36,23 @@ class GfxRenderer {
   void drawRect(int x, int y, int width, int height, bool state = true) const;
   void fillRect(int x, int y, int width, int height, bool state = true) const;
 
-  // Text
-  void drawCenteredText(int fontId, int y, const char* text, bool black = true) const;
-  void drawText(int fontId, int x, int y, const char* text, bool black = true) const;
-  int getTextWidth(int fontId, const char* text) const;
-  std::string truncatedText(int fontId, const char* text, int maxWidth) const;
-  int getSpaceWidth(int fontId) const;
-  int getFontAscenderSize(int fontId) const;
-  int getLineHeight(int fontId) const;
+  // Text - now using FontSize enum
+  void drawCenteredText(FontSize size, int y, const char* text, bool black = true) const;
+  void drawText(FontSize size, int x, int y, const char* text, bool black = true) const;
+  int getTextWidth(FontSize size, const char* text) const;
+  std::string truncatedText(FontSize size, const char* text, int maxWidth) const;
+  int getSpaceWidth(FontSize size) const;
+  int getFontAscenderSize(FontSize size) const;
+  int getLineHeight(FontSize size) const;
 
- public:
-  // Grayscale functions
-  void setRenderMode(const RenderMode mode) { this->renderMode = mode; }
+  // Grayscale
+  void setRenderMode(RenderMode mode) { this->renderMode = mode; }
   void copyGrayscaleLsbBuffers() const;
   void copyGrayscaleMsbBuffers() const;
   void displayGrayBuffer() const;
   void cleanupGrayscaleWithFrameBuffer() const;
 
-  // Low level functions
+  // Low level
   uint8_t* getFrameBuffer() const;
   static size_t getBufferSize();
   void grayscaleRevert() const;

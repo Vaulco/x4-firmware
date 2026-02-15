@@ -7,7 +7,6 @@
 
 #include "WifiCredentialStore.h"
 #include "activities/util/KeyboardEntryActivity.h"
-#include "fontIds.h"
 
 void WifiSelectionActivity::taskTrampoline(void* param) {
   auto* self = static_cast<WifiSelectionActivity*>(param);
@@ -494,14 +493,14 @@ void WifiSelectionActivity::renderNetworkList() const {
   const auto pageHeight = renderer.getScreenHeight();
 
   // Draw header (same style as Settings)
-  renderer.drawCenteredText(CMU_12_FONT_ID, 15, "WiFi Networks", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, 15, "WiFi Networks", true);
 
   if (networks.empty()) {
     // No networks found or scan failed
-    const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
+    const auto height = renderer.getLineHeight(GfxRenderer::MEDIUM);
     const auto top = (pageHeight - height) / 2;
-    renderer.drawCenteredText(CMU_10_FONT_ID, top, "No networks found");
-    renderer.drawCenteredText(CMU_8_FONT_ID, top + height + 10, "Press OK to scan again");
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, top, "No networks found");
+    renderer.drawCenteredText(GfxRenderer::SMALL, top + height + 10, "Press OK to scan again");
   } else {
     // Calculate how many networks we can display
     constexpr int startY = 60;
@@ -532,63 +531,63 @@ void WifiSelectionActivity::renderNetworkList() const {
       }
       // Use CMU font to match Settings page
       const bool isSelected = static_cast<int>(i) == selectedNetworkIndex;
-      renderer.drawText(CMU_10_FONT_ID, 20, networkY, displayName.c_str(), !isSelected);
+      renderer.drawText(GfxRenderer::MEDIUM, 20, networkY, displayName.c_str(), !isSelected);
 
       // Draw lock icon for encrypted networks (3 pixels after name)
-      const int nameWidth = renderer.getTextWidth(CMU_10_FONT_ID, displayName.c_str());
+      const int nameWidth = renderer.getTextWidth(GfxRenderer::MEDIUM, displayName.c_str());
       int xOffset = 20 + nameWidth;
       if (network.isEncrypted) {
-        renderer.drawText(CMU_10_FONT_ID, xOffset + 3, networkY, "*", !isSelected);
-        const int starWidth = renderer.getTextWidth(CMU_10_FONT_ID, "*");
+        renderer.drawText(GfxRenderer::MEDIUM, xOffset + 3, networkY, "*", !isSelected);
+        const int starWidth = renderer.getTextWidth(GfxRenderer::MEDIUM, "*");
         xOffset += 3 + starWidth;
       }
 
       // Draw saved indicator (+) for networks with saved passwords (10 pixels after encrypted indicator or name)
       if (network.hasSavedPassword) {
-        renderer.drawText(CMU_10_FONT_ID, xOffset + 10, networkY, "+", !isSelected);
+        renderer.drawText(GfxRenderer::MEDIUM, xOffset + 10, networkY, "+", !isSelected);
       }
 
       // Draw signal strength indicator (right-aligned, bars extend to the left)
       std::string signalStr = getSignalStrengthIndicator(network.rssi);
       if (!signalStr.empty()) {
-        const int signalWidth = renderer.getTextWidth(CMU_10_FONT_ID, signalStr.c_str());
-        renderer.drawText(CMU_10_FONT_ID, pageWidth - signalWidth - 20, networkY, signalStr.c_str(), !isSelected);
+        const int signalWidth = renderer.getTextWidth(GfxRenderer::MEDIUM, signalStr.c_str());
+        renderer.drawText(GfxRenderer::MEDIUM, pageWidth - signalWidth - 20, networkY, signalStr.c_str(), !isSelected);
       }
     }
 
     // Draw scroll indicators if needed
     if (scrollOffset > 0) {
-      renderer.drawText(CMU_8_FONT_ID, pageWidth - 15, startY - 10, "^");
+      renderer.drawText(GfxRenderer::SMALL, pageWidth - 15, startY - 10, "^");
     }
     if (scrollOffset + maxVisibleNetworks < static_cast<int>(networks.size())) {
-      renderer.drawText(CMU_8_FONT_ID, pageWidth - 15, startY + maxVisibleNetworks * lineHeight, "v");
+      renderer.drawText(GfxRenderer::SMALL, pageWidth - 15, startY + maxVisibleNetworks * lineHeight, "v");
     }
 
     // Show network count
     char countStr[32];
     snprintf(countStr, sizeof(countStr), "%zu networks found", networks.size());
-    renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 50, countStr);
+    renderer.drawText(GfxRenderer::SMALL, 20, pageHeight - 50, countStr);
   }
 
   // Draw help text
-  renderer.drawText(CMU_8_FONT_ID, 20, pageHeight - 30, "* = Encrypted | + = Saved");
+  renderer.drawText(GfxRenderer::SMALL, 20, pageHeight - 30, "* = Encrypted | + = Saved");
 }
 
 void WifiSelectionActivity::renderConnecting() const {
   const auto pageHeight = renderer.getScreenHeight();
-  const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
+  const auto height = renderer.getLineHeight(GfxRenderer::MEDIUM);
   const auto top = (pageHeight - height) / 2;
 
   if (state == WifiSelectionState::SCANNING) {
-    renderer.drawCenteredText(CMU_10_FONT_ID, top, "Scanning...");
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, top, "Scanning...");
   } else {
-    renderer.drawCenteredText(CMU_12_FONT_ID, top - 40, "Connecting...", true);
+    renderer.drawCenteredText(GfxRenderer::LARGE, top - 40, "Connecting...", true);
 
     std::string ssidInfo = "to " + selectedSSID;
     if (ssidInfo.length() > 25) {
       ssidInfo.replace(22, ssidInfo.length() - 22, "...");
     }
-    renderer.drawCenteredText(CMU_10_FONT_ID, top, ssidInfo.c_str());
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, top, ssidInfo.c_str());
   }
 }
 
@@ -598,7 +597,7 @@ void WifiSelectionActivity::renderSavePrompt() const {
   const auto centerY = pageHeight / 2;
 
   // Draw question above center
-  renderer.drawCenteredText(CMU_10_FONT_ID, centerY - 30, "Connected: Save password for next time?");
+  renderer.drawCenteredText(GfxRenderer::MEDIUM, centerY - 30, "Connected: Save password for next time?");
 
   // Draw Yes/No buttons at center
   const int buttonY = centerY + 10;
@@ -613,38 +612,38 @@ void WifiSelectionActivity::renderSavePrompt() const {
   const int yesX = savePromptSelection == 0 ? buttonStartX : buttonStartX + 4;
   const int noX = savePromptSelection == 1 ? buttonStartX + buttonWidth + buttonSpacing : buttonStartX + buttonWidth + buttonSpacing + 4;
   
-  renderer.drawText(CMU_10_FONT_ID, yesX, buttonY, yesText);
-  renderer.drawText(CMU_10_FONT_ID, noX, buttonY, noText);
+  renderer.drawText(GfxRenderer::MEDIUM, yesX, buttonY, yesText);
+  renderer.drawText(GfxRenderer::MEDIUM, noX, buttonY, noText);
 
   // Draw help text at bottom
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight - 30, "LEFT/RIGHT: Select | OK: Confirm");
 }
 
 void WifiSelectionActivity::renderConnectionFailed() const {
   const auto pageHeight = renderer.getScreenHeight();
-  const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
+  const auto height = renderer.getLineHeight(GfxRenderer::MEDIUM);
   const auto top = (pageHeight - height * 2) / 2;
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, top - 20, "Connection Failed", true);
-  renderer.drawCenteredText(CMU_10_FONT_ID, top + 20, connectionError.c_str());
-  renderer.drawCenteredText(CMU_8_FONT_ID, pageHeight - 30, "Press any button to continue");
+  renderer.drawCenteredText(GfxRenderer::LARGE, top - 20, "Connection Failed", true);
+  renderer.drawCenteredText(GfxRenderer::MEDIUM, top + 20, connectionError.c_str());
+  renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight - 30, "Press any button to continue");
 }
 
 void WifiSelectionActivity::renderForgetPrompt() const {
   const auto pageWidth = renderer.getScreenWidth();
   const auto pageHeight = renderer.getScreenHeight();
-  const auto height = renderer.getLineHeight(CMU_10_FONT_ID);
+  const auto height = renderer.getLineHeight(GfxRenderer::MEDIUM);
   const auto top = (pageHeight - height * 3) / 2;
 
-  renderer.drawCenteredText(CMU_12_FONT_ID, top - 40, "Forget Network?", true);
+  renderer.drawCenteredText(GfxRenderer::LARGE, top - 40, "Forget Network?", true);
 
   std::string ssidInfo = "Network: " + selectedSSID;
   if (ssidInfo.length() > 28) {
     ssidInfo.replace(25, ssidInfo.length() - 25, "...");
   }
-  renderer.drawCenteredText(CMU_10_FONT_ID, top, ssidInfo.c_str());
+  renderer.drawCenteredText(GfxRenderer::MEDIUM, top, ssidInfo.c_str());
 
-  renderer.drawCenteredText(CMU_10_FONT_ID, top + 40, "Remove saved password?");
+  renderer.drawCenteredText(GfxRenderer::MEDIUM, top + 40, "Remove saved password?");
 
   // Draw Yes/No buttons
   const int buttonY = top + 80;
@@ -655,15 +654,15 @@ void WifiSelectionActivity::renderForgetPrompt() const {
 
   // Draw "Yes" button
   if (forgetPromptSelection == 0) {
-    renderer.drawText(CMU_10_FONT_ID, startX, buttonY, "[Yes]");
+    renderer.drawText(GfxRenderer::MEDIUM, startX, buttonY, "[Yes]");
   } else {
-    renderer.drawText(CMU_10_FONT_ID, startX + 4, buttonY, "Yes");
+    renderer.drawText(GfxRenderer::MEDIUM, startX + 4, buttonY, "Yes");
   }
 
   // Draw "No" button
   if (forgetPromptSelection == 1) {
-    renderer.drawText(CMU_10_FONT_ID, startX + buttonWidth + buttonSpacing, buttonY, "[No]");
+    renderer.drawText(GfxRenderer::MEDIUM, startX + buttonWidth + buttonSpacing, buttonY, "[No]");
   } else {
-    renderer.drawText(CMU_10_FONT_ID, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
+    renderer.drawText(GfxRenderer::MEDIUM, startX + buttonWidth + buttonSpacing + 4, buttonY, "No");
   }
 }
