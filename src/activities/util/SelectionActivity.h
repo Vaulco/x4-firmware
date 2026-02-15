@@ -5,7 +5,6 @@
 
 #include <functional>
 #include <string>
-#include <vector>
 
 #include "../Activity.h"
 
@@ -28,26 +27,26 @@ class SelectionActivity : public Activity {
   int selectedIndex = 0;
   std::string title;
 
-  // Configuration
-  static constexpr int DEFAULT_START_Y = 60;
-  static constexpr int DEFAULT_LINE_HEIGHT = 30;
-  static constexpr unsigned long SKIP_PAGE_MS = 700;
+  // Configuration - can be overridden in constructor
+  int startY = 60;
+  int lineHeight = 30;
+  unsigned long skipPageMs = 700;
+  bool showBatteryIndicator = true;
 
-  // Override these in derived classes
+  // Pure virtual methods - MUST be implemented
   virtual int getItemCount() const = 0;
   virtual void renderItem(int index, int x, int y, bool isSelected) const = 0;
   virtual void onItemSelected(int index) = 0;
   virtual void onBack() = 0;
 
-  // Optional overrides
-  virtual int getStartY() const { return DEFAULT_START_Y; }
-  virtual int getLineHeight() const { return DEFAULT_LINE_HEIGHT; }
-  virtual bool showBattery() const { return true; }
+  // Optional overrides for custom rendering
   virtual void renderCustomHeader() const {}
   virtual void renderCustomFooter() const {}
 
-  // Helper methods
+  // Helper to calculate visible items
   int getPageItems() const;
+
+  // Main render function
   void render() const;
 
  private:
