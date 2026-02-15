@@ -6,7 +6,6 @@
 // Constructor initializes font array
 GfxRenderer::GfxRenderer(EInkDisplay& einkDisplay) 
   : einkDisplay(einkDisplay),
-    renderMode(BW),
     fonts{EpdFont(&cmu_8), EpdFont(&cmu_10), EpdFont(&cmu_12)} {}
 
 void GfxRenderer::rotateCoordinates(const int x, const int y, int* rotatedX, int* rotatedY) const {
