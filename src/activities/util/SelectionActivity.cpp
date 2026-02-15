@@ -2,7 +2,7 @@
 
 #include <GfxRenderer.h>
 
-#include "../../Battery.h"
+#include "Battery.h"
 
 void SelectionActivity::taskTrampoline(void* param) {
   auto* self = static_cast<SelectionActivity*>(param);
@@ -139,7 +139,7 @@ void SelectionActivity::render() const {
   const int itemCount = getItemCount();
 
   if (itemCount == 0) {
-    renderer.drawCenteredText(GfxRenderer::MEDIUM, pageHeight / 2, "No items");
+    renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight / 2, "No items");
     renderer.displayBuffer();
     return;
   }
