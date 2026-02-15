@@ -6,7 +6,7 @@
 
 #include "activities/util/SelectionActivity.h"
 
-class ChapterSelectionActivity final : public SelectionActivity {
+class ChapterSelection final : public SelectionActivity {
   std::shared_ptr<Xtc> xtc;
   uint32_t currentPage = 0;
   const std::function<void()> onGoBackCallback;
@@ -81,7 +81,7 @@ class ChapterSelectionActivity final : public SelectionActivity {
   }
 
  public:
-  explicit ChapterSelectionActivity(GfxRenderer& renderer, InputManager& inputManager,
+  explicit ChapterSelection(GfxRenderer& renderer, InputManager& inputManager,
                                    const std::shared_ptr<Xtc>& xtc, uint32_t currentPage,
                                    const std::function<void()>& onGoBack,
                                    const std::function<void(uint32_t newPage)>& onSelectPage)

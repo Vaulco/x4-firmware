@@ -5,7 +5,7 @@
 #include <Serialization.h>
 
 #include "Settings.h"
-#include "ChapterSelectionActivity.h"
+#include "ChapterSelection.h"
 
 void XtcReaderActivity::taskTrampoline(void* param) {
   auto* self = static_cast<XtcReaderActivity*>(param);
@@ -66,7 +66,7 @@ void XtcReaderActivity::loop() {
   if (inputManager.wasReleased(InputManager::Button::Confirm)) {
     if (xtc && xtc->hasChapters() && !xtc->getChapters().empty()) {
       exitActivity();
-      enterNewActivity(new ChapterSelectionActivity(
+      enterNewActivity(new ChapterSelection(
           this->renderer, this->inputManager, xtc, currentPage,
           [this] {
             exitActivity();
