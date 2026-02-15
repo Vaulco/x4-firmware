@@ -38,7 +38,6 @@ std::unique_ptr<Xtc> ReaderActivity::loadXtc(const std::string& path) {
 void ReaderActivity::onSelectBookFile(const std::string& path) {
   currentBookPath = path;  // Track current book path
   exitActivity();
-  enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "Loading..."));
 
   // Load XTC file
   auto xtc = loadXtc(path);

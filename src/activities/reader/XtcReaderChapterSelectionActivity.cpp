@@ -9,55 +9,55 @@ constexpr int SKIP_PAGE_MS = 700;
 
 // Manual truncation - avoid renderer.truncatedText() which has a bug
 std::string truncateToWidth(GfxRenderer& renderer, int fontId, const std::string& text, int maxWidth) {
-  if (text.empty()) {
-    return text;
-  }
-  
-  // Check if text fits as-is
-  int fullWidth = renderer.getTextWidth(fontId, text.c_str());
-  if (fullWidth <= maxWidth) {
-    return text;
-  }
-  
-  // Binary search for the right length
-  const char* ellipsis = "...";
-  int ellipsisWidth = renderer.getTextWidth(fontId, ellipsis);
-  int availableForText = maxWidth - ellipsisWidth;
-  
-  if (availableForText <= 0) {
-    return ellipsis;
-  }
-  
-  // Start with rough estimate based on character average
-  size_t estimatedChars = (text.length() * availableForText) / fullWidth;
-  if (estimatedChars > text.length()) {
-    estimatedChars = text.length();
-  }
-  
-  // Find the longest substring that fits
-  size_t low = 0;
-  size_t high = estimatedChars;
-  size_t best = 0;
-  
-  while (low <= high && high <= text.length()) {
-    size_t mid = (low + high) / 2;
-    std::string candidate = text.substr(0, mid);
-    int candidateWidth = renderer.getTextWidth(fontId, candidate.c_str());
-    
-    if (candidateWidth <= availableForText) {
-      best = mid;
-      low = mid + 1;
-    } else {
-      if (mid == 0) break;
-      high = mid - 1;
+    if (text.empty()) {
+        return text;
     }
-  }
-  
-  if (best == 0) {
-    return ellipsis;
-  }
-  
-  return text.substr(0, best) + ellipsis;
+    
+    // Check if text fits as-is
+    int fullWidth = renderer.getTextWidth(fontId, text.c_str());
+    if (fullWidth <= maxWidth) {
+        return text;
+    }
+    
+    const char* ellipsis = "...";
+    int ellipsisWidth = renderer.getTextWidth(fontId, ellipsis);
+    int availableForText = maxWidth - ellipsisWidth;
+    
+    if (availableForText <= 0) {
+        return ellipsis;
+    }
+    
+    // Iterate through UTF-8 codepoints to find safe truncation point
+    const unsigned char* str = reinterpret_cast<const unsigned char*>(text.c_str());
+    const unsigned char* lastSafePos = str;
+    std::string candidate;
+    
+    while (*str) {
+        const unsigned char* nextPos = str;
+        uint32_t cp = utf8NextCodepoint(&nextPos);
+        
+        if (cp == 0) break;  // Invalid or end of string
+        
+        // Build candidate string up to this codepoint
+        candidate = std::string(text.c_str(), nextPos - reinterpret_cast<const unsigned char*>(text.c_str()));
+        int candidateWidth = renderer.getTextWidth(fontId, candidate.c_str());
+        
+        if (candidateWidth > availableForText) {
+            // This character doesn't fit, use last safe position
+            break;
+        }
+        
+        lastSafePos = nextPos;
+        str = nextPos;
+    }
+    
+    // Build final truncated string
+    if (lastSafePos == reinterpret_cast<const unsigned char*>(text.c_str())) {
+        return ellipsis;  // Not even one character fits
+    }
+    
+    size_t safeLength = lastSafePos - reinterpret_cast<const unsigned char*>(text.c_str());
+    return text.substr(0, safeLength) + ellipsis;
 }
 
 }  // namespace
