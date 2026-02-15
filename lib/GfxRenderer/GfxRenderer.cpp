@@ -130,13 +130,56 @@ void GfxRenderer::displayBuffer(const EInkDisplay::RefreshMode refreshMode) cons
 }
 
 std::string GfxRenderer::truncatedText(const FontSize size, const char* text, const int maxWidth) const {
-  std::string item = text;
-  int itemWidth = getTextWidth(size, item.c_str());
-  while (itemWidth > maxWidth && item.length() > 8) {
-    item.replace(item.length() - 5, 5, "...");
-    itemWidth = getTextWidth(size, item.c_str());
+  if (text == nullptr || *text == '\0') {
+    return "";
   }
-  return item;
+  
+  // Check if text fits as-is
+  const std::string fullText = text;
+  int fullWidth = getTextWidth(size, fullText.c_str());
+  if (fullWidth <= maxWidth) {
+    return fullText;
+  }
+  
+  const char* ellipsis = "...";
+  int ellipsisWidth = getTextWidth(size, ellipsis);
+  int availableForText = maxWidth - ellipsisWidth;
+  
+  if (availableForText <= 0) {
+    return ellipsis;
+  }
+  
+  // Iterate through UTF-8 codepoints to find safe truncation point
+  const unsigned char* str = reinterpret_cast<const unsigned char*>(text);
+  const unsigned char* lastSafePos = str;
+  std::string candidate;
+  
+  while (*str) {
+    const unsigned char* nextPos = str;
+    uint32_t cp = utf8NextCodepoint(&nextPos);
+    
+    if (cp == 0) break;  // Invalid or end of string
+    
+    // Build candidate string up to this codepoint
+    candidate = std::string(text, nextPos - reinterpret_cast<const unsigned char*>(text));
+    int candidateWidth = getTextWidth(size, candidate.c_str());
+    
+    if (candidateWidth > availableForText) {
+      // This character doesn't fit, use last safe position
+      break;
+    }
+    
+    lastSafePos = nextPos;
+    str = nextPos;
+  }
+  
+  // Build final truncated string
+  if (lastSafePos == reinterpret_cast<const unsigned char*>(text)) {
+    return ellipsis;  // Not even one character fits
+  }
+  
+  size_t safeLength = lastSafePos - reinterpret_cast<const unsigned char*>(text);
+  return fullText.substr(0, safeLength) + ellipsis;
 }
 
 // Portrait mode: 480px wide, 800px tall in logical coordinates
