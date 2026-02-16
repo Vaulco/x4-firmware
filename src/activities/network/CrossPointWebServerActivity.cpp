@@ -365,7 +365,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 3,
                               "or scan QR code with your phone to connect to Wifi.");
     // Show QR code for URL
-    const std::string wifiConfig = std::string("WIFI:S:") + connectedSSID + ";;";
+    const std::string wifiConfig = std::string("WIFI:T:nopass;S:") + connectedSSID + ";;";
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 4, wifiConfig);
 
     startY += 6 * 29 + 3 * LINE_SPACING;
