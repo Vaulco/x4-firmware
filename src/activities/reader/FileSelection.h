@@ -11,6 +11,7 @@
 
 class FileSelection final : public SelectionActivity {
   std::string basepath = "/";
+  std::string initialSelectedFile = "";  // File to select after loading
   std::vector<std::string> files;
   const std::function<void(const std::string&)> onSelect;
   const std::function<void()> onGoToSettings;
@@ -54,6 +55,17 @@ class FileSelection final : public SelectionActivity {
     }
     root.close();
     sortFileList(files);
+    
+    // After loading and sorting, find and select the initial file if specified
+    if (!initialSelectedFile.empty()) {
+      auto it = std::find(files.begin(), files.end(), initialSelectedFile);
+      if (it != files.end()) {
+        selectedIndex = std::distance(files.begin(), it);
+        Serial.printf("[%lu] [FS] Selected file: %s at index %d\n", millis(), 
+                     initialSelectedFile.c_str(), selectedIndex);
+      }
+      initialSelectedFile = "";  // Clear so it only applies once
+    }
   }
 
  protected:
@@ -93,11 +105,13 @@ class FileSelection final : public SelectionActivity {
 
  public:
   explicit FileSelection(GfxRenderer& renderer, InputManager& inputManager,
-                                 const std::function<void(const std::string&)>& onSelect,
-                                 const std::function<void()>& onGoToSettings,
-                                 std::string initialPath = "/")
+                         const std::function<void(const std::string&)>& onSelect,
+                         const std::function<void()>& onGoToSettings,
+                         std::string initialPath = "/",
+                         std::string selectedFile = "")
       : SelectionActivity("FileSelection", "Library", renderer, inputManager),
         basepath(initialPath.empty() ? "/" : std::move(initialPath)),
+        initialSelectedFile(std::move(selectedFile)),
         onSelect(onSelect),
         onGoToSettings(onGoToSettings) {}
 
