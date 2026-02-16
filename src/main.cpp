@@ -65,7 +65,6 @@ void enterDeepSleep() {
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
   
   einkDisplay.deepSleep();
-  Serial.printf("[%lu] [   ] Entering deep sleep.\n", millis());
   esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
   // Ensure that the power button has been released to avoid immediately turning back on if you're holding it
   waitForPowerRelease();
