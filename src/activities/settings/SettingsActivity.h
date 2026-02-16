@@ -5,87 +5,64 @@
 #include "activities/util/SelectionActivity.h"
 #include "Settings.h"
 
-enum class SettingType { ENUM, ACTION };
-
-struct SettingInfo {
-  const char* name;
-  SettingType type;
-  uint8_t Settings::* valuePtr;
-  const char* const* enumValues;
-  uint8_t enumCount;
-
-  static SettingInfo Enum(const char* name, uint8_t Settings::* ptr, 
-                         const char* const* values, uint8_t count) {
-    return {name, SettingType::ENUM, ptr, values, count};
-  }
-
-  static SettingInfo Action(const char* name) { 
-    return {name, SettingType::ACTION, nullptr, nullptr, 0}; 
-  }
+// Action IDs for non-setting menu items
+enum SettingActionId {
+  ACTION_CONTINUE_READING = SETTING_COUNT,  // Start after settings
+  ACTION_FILE_TRANSFER,
+  ACTION_TOTAL_COUNT
 };
-
-namespace {
-constexpr int settingsCount = 4;
-
-const char* const sleepTimeoutValues[] = {"1 min", "5 min", "10 min", "15 min", "30 min"};
-const char* const refreshFrequencyValues[] = {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"};
-
-const SettingInfo settingsList[settingsCount] = {
-    SettingInfo::Action("Continue Reading"),
-    SettingInfo::Action("File Transfer"),
-    SettingInfo::Enum("Time to Sleep", &Settings::sleepTimeout, 
-                      sleepTimeoutValues, 5),
-    SettingInfo::Enum("Refresh Frequency", &Settings::refreshFrequency,
-                      refreshFrequencyValues, 5)
-};
-}
 
 class SettingsActivity final : public SelectionActivity {
   const std::function<void()> onGoBackCallback;
   const std::function<void()> onContinueReading;
   const std::function<void()> onFileTransferOpen;
 
- protected:
-  int getItemCount() const override { return settingsCount; }
-
-  void renderItem(int index, int x, int y, bool isSelected) const override {
-    if (index < 0 || index >= settingsCount) return;
-
-    const auto& setting = settingsList[index];
-    const auto pageWidth = renderer.getScreenWidth();
-
-    renderer.drawText(GfxRenderer::MEDIUM, x, y, setting.name, !isSelected);
-
-    std::string valueText = "";
-    if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
-      const uint8_t value = SETTINGS.*(setting.valuePtr);
-      valueText = setting.enumValues[value];
-    }
-    
-    const auto width = renderer.getTextWidth(GfxRenderer::MEDIUM, valueText.c_str());
-    renderer.drawText(GfxRenderer::MEDIUM, pageWidth - 20 - width, y, valueText.c_str(), !isSelected);
+protected:
+  int getItemCount() const override { 
+    return ACTION_TOTAL_COUNT;  // Settings + actions
   }
 
-  void onItemSelected(int index) override {
-    if (index < 0 || index >= settingsCount) return;
+  void renderItem(int index, int x, int y, bool isSelected) const override {
+    if (index < 0 || index >= ACTION_TOTAL_COUNT) return;
 
-    const auto& setting = settingsList[index];
+    const auto pageWidth = renderer.getScreenWidth();
 
-    if (setting.type == SettingType::ACTION) {
-      // Index-based comparison instead of strcmp
-      if (index == 0) {  // Continue Reading
-        onContinueReading();
-      } else if (index == 1) {  // File Transfer
-        onFileTransferOpen();
-      }
+    // Handle actions (non-settings)
+    if (index >= SETTING_COUNT) {
+      const char* actionNames[] = {
+        "Continue Reading",
+        "File Transfer"
+      };
+      renderer.drawText(GfxRenderer::MEDIUM, x, y, 
+                       actionNames[index - SETTING_COUNT], !isSelected);
       return;
     }
 
-    if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
-      const uint8_t currentValue = SETTINGS.*(setting.valuePtr);
-      SETTINGS.*(setting.valuePtr) = (currentValue + 1) % setting.enumCount;
+    // Handle settings - auto-generate from metadata
+    const auto& meta = SETTING_DEFINITIONS[index];
+    renderer.drawText(GfxRenderer::MEDIUM, x, y, meta.name, !isSelected);
+
+    // Show current value on right side
+    const char* valueLabel = SETTINGS.getValueLabel(static_cast<SettingId>(index));
+    const auto width = renderer.getTextWidth(GfxRenderer::MEDIUM, valueLabel);
+    renderer.drawText(GfxRenderer::MEDIUM, pageWidth - 20 - width, y, 
+                     valueLabel, !isSelected);
+  }
+
+  void onItemSelected(int index) override {
+    if (index < 0 || index >= ACTION_TOTAL_COUNT) return;
+
+    // Handle actions
+    if (index == ACTION_CONTINUE_READING) {
+      onContinueReading();
+      return;
+    } else if (index == ACTION_FILE_TRANSFER) {
+      onFileTransferOpen();
+      return;
     }
 
+    // Handle settings - cycle to next value
+    SETTINGS.cycleValue(static_cast<SettingId>(index));
     SETTINGS.saveToFile();
     updateRequired = true;
   }
@@ -95,11 +72,11 @@ class SettingsActivity final : public SelectionActivity {
     onGoBackCallback();
   }
 
- public:
+public:
   explicit SettingsActivity(GfxRenderer& renderer, InputManager& inputManager,
-                            const std::function<void()>& onGoBack, 
-                            const std::function<void()>& onContinueReading,
-                            const std::function<void()>& onFileTransferOpen)
+                           const std::function<void()>& onGoBack, 
+                           const std::function<void()>& onContinueReading,
+                           const std::function<void()>& onFileTransferOpen)
       : SelectionActivity("Settings", "Options", renderer, inputManager),
         onGoBackCallback(onGoBack),
         onContinueReading(onContinueReading),

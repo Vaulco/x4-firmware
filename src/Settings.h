@@ -4,30 +4,123 @@
 #include <SDCardManager.h>
 #include <Serialization.h>
 
-class Settings {
- private:
-  Settings() = default;
-  static Settings instance;
+//Setting Definitions - Single Source of Truth
+enum SettingId {
+  SETTING_SLEEP_TIMEOUT = 0,
+  SETTING_REFRESH_FREQUENCY,
+  SETTING_COUNT  // Keep this last
+};
 
- public:
+struct EnumOption {
+  const char* label;
+  uint8_t value;
+};
+
+struct SettingMetadata {
+  SettingId id;
+  const char* name;
+  const EnumOption* options;
+  uint8_t optionCount;
+  uint8_t defaultValue;
+};
+
+// Sleep timeout options
+constexpr EnumOption SLEEP_OPTIONS[] = {
+  {"1 min", 0},
+  {"5 min", 1},
+  {"10 min", 2},
+  {"15 min", 3},
+  {"30 min", 4}
+};
+
+// Refresh frequency options
+constexpr EnumOption REFRESH_OPTIONS[] = {
+  {"1 page", 0},
+  {"5 pages", 1},
+  {"10 pages", 2},
+  {"15 pages", 3},
+  {"30 pages", 4}
+};
+
+// Master settings list - add new settings here
+constexpr SettingMetadata SETTING_DEFINITIONS[] = {
+  {SETTING_SLEEP_TIMEOUT, "Time to Sleep", SLEEP_OPTIONS, 5, 2},       // default: 10 min
+  {SETTING_REFRESH_FREQUENCY, "Refresh Frequency", REFRESH_OPTIONS, 5, 3}  // default: 15 pages
+};
+
+// Settings Class
+class Settings {
+private:
+  Settings() {
+    // Initialize with defaults
+    for (const auto& def : SETTING_DEFINITIONS) {
+      values[def.id] = def.defaultValue;
+    }
+  }
+  
+  static Settings instance;
+  
+  // Storage for all setting values
+  uint8_t values[SETTING_COUNT];
+
+public:
   Settings(const Settings&) = delete;
   Settings& operator=(const Settings&) = delete;
-
-  enum SLEEP_TIMEOUT { SLEEP_1_MIN = 0, SLEEP_5_MIN = 1, SLEEP_10_MIN = 2, SLEEP_15_MIN = 3, SLEEP_30_MIN = 4 };
-  enum REFRESH_FREQUENCY { REFRESH_1 = 0, REFRESH_5 = 1, REFRESH_10 = 2, REFRESH_15 = 3, REFRESH_30 = 4 };
-
-  uint8_t sleepTimeout = SLEEP_10_MIN;
-  uint8_t refreshFrequency = REFRESH_15;
   
   std::string openBookPath;
 
-  ~Settings() = default;
-
   static Settings& getInstance() { return instance; }
+  
+  // Get/set setting values
+  uint8_t getValue(SettingId id) const {
+    return values[id];
+  }
+  
+  void setValue(SettingId id, uint8_t value) {
+    values[id] = value;
+  }
+  
+  // Cycle to next option for a setting
+  void cycleValue(SettingId id) {
+    const auto& meta = SETTING_DEFINITIONS[id];
+    values[id] = (values[id] + 1) % meta.optionCount;
+  }
+  
+  // Get human-readable label for current value
+  const char* getValueLabel(SettingId id) const {
+    const auto& meta = SETTING_DEFINITIONS[id];
+    const uint8_t value = values[id];
+    
+    for (uint8_t i = 0; i < meta.optionCount; i++) {
+      if (meta.options[i].value == value) {
+        return meta.options[i].label;
+      }
+    }
+    return "Unknown";
+  }
+  
+  // Convenience methods for computed values
+  unsigned long getSleepTimeoutMs() const {
+    const uint8_t value = values[SETTING_SLEEP_TIMEOUT];
+    constexpr unsigned long TIMEOUTS[] = {
+      1UL * 60 * 1000,   // 1 min
+      5UL * 60 * 1000,   // 5 min
+      10UL * 60 * 1000,  // 10 min
+      15UL * 60 * 1000,  // 15 min
+      30UL * 60 * 1000   // 30 min
+    };
+    return TIMEOUTS[value];
+  }
 
+  int getRefreshFrequency() const {
+    const uint8_t value = values[SETTING_REFRESH_FREQUENCY];
+    constexpr int FREQUENCIES[] = {1, 5, 10, 15, 30};
+    return FREQUENCIES[value];
+  }
+  
+  // File I/O
   bool saveToFile() const {
     constexpr char SETTINGS_FILE[] = "/.ereader/settings.bin";
-    
     SdMan.mkdir("/.ereader");
 
     FsFile outputFile;
@@ -35,8 +128,11 @@ class Settings {
       return false;
     }
 
-    serialization::writePod(outputFile, sleepTimeout);
-    serialization::writePod(outputFile, refreshFrequency);
+    // Write all setting values
+    for (uint8_t i = 0; i < SETTING_COUNT; i++) {
+      serialization::writePod(outputFile, values[i]);
+    }
+    
     serialization::writeString(outputFile, openBookPath);
     outputFile.close();
 
@@ -52,45 +148,16 @@ class Settings {
       return false;
     }
 
-    serialization::readPod(inputFile, sleepTimeout);
-    serialization::readPod(inputFile, refreshFrequency);
-    serialization::readString(inputFile, openBookPath);
+    // Read all setting values
+    for (uint8_t i = 0; i < SETTING_COUNT; i++) {
+      serialization::readPod(inputFile, values[i]);
+    }
 
+    serialization::readString(inputFile, openBookPath);
     inputFile.close();
+    
     Serial.printf("[%lu] [CPS] Settings loaded from file\n", millis());
     return true;
-  }
-
-  unsigned long getSleepTimeoutMs() const {
-    switch (sleepTimeout) {
-      case SLEEP_1_MIN:
-        return 1UL * 60 * 1000;
-      case SLEEP_5_MIN:
-        return 5UL * 60 * 1000;
-      case SLEEP_10_MIN:
-      default:
-        return 10UL * 60 * 1000;
-      case SLEEP_15_MIN:
-        return 15UL * 60 * 1000;
-      case SLEEP_30_MIN:
-        return 30UL * 60 * 1000;
-    }
-  }
-
-  int getRefreshFrequency() const {
-    switch (refreshFrequency) {
-      case REFRESH_1:
-        return 1;
-      case REFRESH_5:
-        return 5;
-      case REFRESH_10:
-        return 10;
-      case REFRESH_15:
-      default:
-        return 15;
-      case REFRESH_30:
-        return 30;
-    }
   }
 };
 
