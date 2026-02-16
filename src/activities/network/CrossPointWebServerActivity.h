@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "NetworkModeSelectionActivity.h"
+#include "NetworkModeSelection.h"
 #include "activities/ActivityWithSubactivity.h"
 #include "network/CrossPointWebServer.h"
 

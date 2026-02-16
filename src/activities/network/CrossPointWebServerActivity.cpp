@@ -8,7 +8,7 @@
 
 #include <cstddef>
 
-#include "NetworkModeSelectionActivity.h"
+#include "NetworkModeSelection.h"
 #include "WifiSelectionActivity.h"
 
 namespace {
@@ -53,8 +53,8 @@ void CrossPointWebServerActivity::onEnter() {
   );
 
   // Launch network mode selection subactivity
-  Serial.printf("[%lu] [WEBACT] Launching NetworkModeSelectionActivity...\n", millis());
-  enterNewActivity(new NetworkModeSelectionActivity(
+  Serial.printf("[%lu] [WEBACT] Launching NetworkModeSelection...\n", millis());
+  enterNewActivity(new NetworkModeSelection(
       renderer, inputManager, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
       [this]() { onGoBack(); }  // Cancel goes back to home
       ));
@@ -171,7 +171,7 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
     // User cancelled - go back to mode selection
     exitActivity();
     state = WebServerActivityState::MODE_SELECTION;
-    enterNewActivity(new NetworkModeSelectionActivity(
+    enterNewActivity(new NetworkModeSelection(
         renderer, inputManager, [this](const NetworkMode mode) { onNetworkModeSelected(mode); },
         [this]() { onGoBack(); }));
   }

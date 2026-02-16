@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <string>
+#include <GfxRenderer.h>
 
 #include "activities/util/SelectionActivity.h"
 
@@ -15,7 +16,7 @@ const char* networkModeNames[networkModeCount] = {
 };
 }  // namespace
 
-class NetworkModeSelectionActivity final : public SelectionActivity {
+class NetworkModeSelection final : public SelectionActivity {
   const std::function<void(NetworkMode)> onModeSelected;
   const std::function<void()> onCancel;
 
@@ -44,7 +45,7 @@ class NetworkModeSelectionActivity final : public SelectionActivity {
   }
 
  public:
-  explicit NetworkModeSelectionActivity(GfxRenderer& renderer, InputManager& inputManager,
+  explicit NetworkModeSelection(GfxRenderer& renderer, InputManager& inputManager,
                                         const std::function<void(NetworkMode)>& onModeSelected,
                                         const std::function<void()>& onCancel)
       : SelectionActivity("NetworkModeSelection", "File Transfer", renderer, inputManager),
