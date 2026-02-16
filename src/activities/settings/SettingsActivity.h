@@ -1,8 +1,5 @@
 #pragma once
 #include <functional>
-#include <string>
-#include <vector>
-#include <cstring>
 #include <GfxRenderer.h>
 
 #include "activities/util/SelectionActivity.h"
@@ -10,32 +7,38 @@
 
 enum class SettingType { ENUM, ACTION };
 
-// Structure to hold setting information
 struct SettingInfo {
-  const char* name;                        // Display name of the setting
-  SettingType type;                        // Type of setting
-  uint8_t Settings::* valuePtr;  // Pointer to member in Settings (for ENUM)
-  std::vector<std::string> enumValues;
+  const char* name;
+  SettingType type;
+  uint8_t Settings::* valuePtr;
+  const char* const* enumValues;
+  uint8_t enumCount;
 
-  // Static constructors
-  static SettingInfo Enum(const char* name, uint8_t Settings::* ptr, std::vector<std::string> values) {
-    return {name, SettingType::ENUM, ptr, std::move(values)};
+  static SettingInfo Enum(const char* name, uint8_t Settings::* ptr, 
+                         const char* const* values, uint8_t count) {
+    return {name, SettingType::ENUM, ptr, values, count};
   }
 
-  static SettingInfo Action(const char* name) { return {name, SettingType::ACTION, nullptr}; }
+  static SettingInfo Action(const char* name) { 
+    return {name, SettingType::ACTION, nullptr, nullptr, 0}; 
+  }
 };
 
-// Define the static settings list
 namespace {
 constexpr int settingsCount = 4;
+
+const char* const sleepTimeoutValues[] = {"1 min", "5 min", "10 min", "15 min", "30 min"};
+const char* const refreshFrequencyValues[] = {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"};
+
 const SettingInfo settingsList[settingsCount] = {
     SettingInfo::Action("Continue Reading"),
     SettingInfo::Action("File Transfer"),
-    SettingInfo::Enum("Time to Sleep", &Settings::sleepTimeout,
-                      {"1 min", "5 min", "10 min", "15 min", "30 min"}),
+    SettingInfo::Enum("Time to Sleep", &Settings::sleepTimeout, 
+                      sleepTimeoutValues, 5),
     SettingInfo::Enum("Refresh Frequency", &Settings::refreshFrequency,
-                      {"1 page", "5 pages", "10 pages", "15 pages", "30 pages"})};
-}  // namespace
+                      refreshFrequencyValues, 5)
+};
+}
 
 class SettingsActivity final : public SelectionActivity {
   const std::function<void()> onGoBackCallback;
@@ -43,22 +46,16 @@ class SettingsActivity final : public SelectionActivity {
   const std::function<void()> onFileTransferOpen;
 
  protected:
-  int getItemCount() const override {
-    return settingsCount;
-  }
+  int getItemCount() const override { return settingsCount; }
 
   void renderItem(int index, int x, int y, bool isSelected) const override {
-    if (index < 0 || index >= settingsCount) {
-      return;
-    }
+    if (index < 0 || index >= settingsCount) return;
 
     const auto& setting = settingsList[index];
     const auto pageWidth = renderer.getScreenWidth();
 
-    // Draw setting name
     renderer.drawText(GfxRenderer::MEDIUM, x, y, setting.name, !isSelected);
 
-    // Draw value based on setting type
     std::string valueText = "";
     if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
       const uint8_t value = SETTINGS.*(setting.valuePtr);
@@ -70,18 +67,15 @@ class SettingsActivity final : public SelectionActivity {
   }
 
   void onItemSelected(int index) override {
-    // Validate index
-    if (index < 0 || index >= settingsCount) {
-      return;
-    }
+    if (index < 0 || index >= settingsCount) return;
 
     const auto& setting = settingsList[index];
 
     if (setting.type == SettingType::ACTION) {
-      // Handle action settings
-      if (strcmp(setting.name, "Continue Reading") == 0) {
+      // Index-based comparison instead of strcmp
+      if (index == 0) {  // Continue Reading
         onContinueReading();
-      } else if (strcmp(setting.name, "File Transfer") == 0) {
+      } else if (index == 1) {  // File Transfer
         onFileTransferOpen();
       }
       return;
@@ -89,13 +83,10 @@ class SettingsActivity final : public SelectionActivity {
 
     if (setting.type == SettingType::ENUM && setting.valuePtr != nullptr) {
       const uint8_t currentValue = SETTINGS.*(setting.valuePtr);
-      SETTINGS.*(setting.valuePtr) = (currentValue + 1) % static_cast<uint8_t>(setting.enumValues.size());
+      SETTINGS.*(setting.valuePtr) = (currentValue + 1) % setting.enumCount;
     }
 
-    // Save settings when they change
     SETTINGS.saveToFile();
-    
-    // Trigger re-render to show updated value
     updateRequired = true;
   }
 
