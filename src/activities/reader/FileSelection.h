@@ -2,20 +2,61 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <SDCardManager.h>
+#include <Xtc/XtcTypes.h>
 #include <GfxRenderer.h>
 
 #include "activities/util/SelectionActivity.h"
 
-class FileSelectionActivity final : public SelectionActivity {
+class FileSelection final : public SelectionActivity {
   std::string basepath = "/";
   std::vector<std::string> files;
   const std::function<void(const std::string&)> onSelect;
   const std::function<void()> onGoToSettings;
 
-  void loadFiles();
+  static void sortFileList(std::vector<std::string>& strs) {
+    std::sort(begin(strs), end(strs), [](const std::string& str1, const std::string& str2) {
+      if (str1.back() == '/' && str2.back() != '/') return true;
+      if (str1.back() != '/' && str2.back() == '/') return false;
+      return lexicographical_compare(
+          begin(str1), end(str1), begin(str2), end(str2),
+          [](const char& char1, const char& char2) { return tolower(char1) < tolower(char2); });
+    });
+  }
+
+  void loadFiles() {
+    files.clear();
+    selectedIndex = 0;
+
+    auto root = SdMan.open(basepath.c_str());
+    if (!root || !root.isDirectory()) {
+      if (root) root.close();
+      return;
+    }
+
+    root.rewindDirectory();
+
+    char name[128];
+    for (auto file = root.openNextFile(); file; file = root.openNextFile()) {
+      file.getName(name, sizeof(name));
+      if (name[0] == '.' || strcmp(name, "System Volume Information") == 0) {
+        file.close();
+        continue;
+      }
+
+      if (file.isDirectory()) {
+        files.emplace_back(std::string(name) + "/");
+      } else if (xtc::isXtcExtension(name)) {
+        files.emplace_back(std::string(name));
+      }
+      file.close();
+    }
+    root.close();
+    sortFileList(files);
+  }
 
  protected:
-  // SelectionActivity overrides
   int getItemCount() const override { return static_cast<int>(files.size()); }
   
   void renderItem(int index, int x, int y, bool isSelected) const override {
@@ -25,39 +66,33 @@ class FileSelectionActivity final : public SelectionActivity {
   }
 
   void onItemSelected(int index) override {
-    if (files.empty()) {
-      return;
-    }
+    if (files.empty()) return;
 
     if (basepath.back() != '/') basepath += "/";
     if (files[index].back() == '/') {
-      // Navigate into directory
       basepath += files[index].substr(0, files[index].length() - 1);
       loadFiles();
       selectedIndex = 0;
       updateRequired = true;
     } else {
-      // Select file
       onSelect(basepath + files[index]);
     }
   }
 
   void onBack() override {
     if (basepath != "/") {
-      // Go up one directory
       basepath.replace(basepath.find_last_of('/'), std::string::npos, "");
       if (basepath.empty()) basepath = "/";
       loadFiles();
       selectedIndex = 0;
       updateRequired = true;
     } else {
-      // At root - go to Settings
       onGoToSettings();
     }
   }
 
  public:
-  explicit FileSelectionActivity(GfxRenderer& renderer, InputManager& inputManager,
+  explicit FileSelection(GfxRenderer& renderer, InputManager& inputManager,
                                  const std::function<void(const std::string&)>& onSelect,
                                  const std::function<void()>& onGoToSettings,
                                  std::string initialPath = "/")

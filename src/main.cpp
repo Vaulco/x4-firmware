@@ -8,7 +8,7 @@
 #include "Battery.h"
 #include "Settings.h"
 #include "activities/network/CrossPointWebServerActivity.h"
-#include "activities/reader/FileSelectionActivity.h"
+#include "activities/reader/FileSelection.h"
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
@@ -94,7 +94,7 @@ void onGoToSettings() {
 }
 
 void onGoToFileSelection() {
-  enterNewActivity(new FileSelectionActivity(
+  enterNewActivity(new FileSelection(
       renderer, inputManager,
       [](const std::string& path) { onGoToReader(path); },
       onGoToSettings));

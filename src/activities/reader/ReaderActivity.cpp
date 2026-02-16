@@ -1,6 +1,6 @@
 #include "ReaderActivity.h"
 
-#include "FileSelectionActivity.h"
+#include "FileSelection.h"
 #include "Xtc.h"
 #include "XtcReaderActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
@@ -56,7 +56,7 @@ void ReaderActivity::onGoToFileSelection(const std::string& fromBookPath) {
   exitActivity();
   // If coming from a book, start in that book's folder; otherwise start from root
   const auto initialPath = fromBookPath.empty() ? "/" : extractFolderPath(fromBookPath);
-  enterNewActivity(new FileSelectionActivity(
+  enterNewActivity(new FileSelection(
       renderer, inputManager, [this](const std::string& path) { onSelectBookFile(path); }, onGoBack, initialPath));
 }
 
