@@ -13,7 +13,6 @@
 #include "activities/settings/SettingsActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
 
-#define SPI_FQ 40000000
 // Display SPI pins (custom pins for XteinkX4, not hardware SPI defaults)
 #define EPD_SCLK 8   // SPI Clock
 #define EPD_MOSI 10  // SPI MOSI (Master Out Slave In)
@@ -100,12 +99,6 @@ void onGoToFileSelection() {
       onGoToSettings));
 }
 
-void setupDisplayAndFonts() {
-  einkDisplay.begin();
-  Serial.printf("[%lu] [   ] Display initialized\n", millis());
-  Serial.printf("[%lu] [   ] Fonts setup\n", millis());
-}
-
 void setup() {
   Serial.begin(115200);
 
@@ -119,17 +112,16 @@ void setup() {
   // SD Card Initialization
   if (!SdMan.begin()) {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
-    setupDisplayAndFonts();
+    einkDisplay.begin();
+    Serial.printf("[%lu] [   ] Display initialized\n", millis());
     enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error"));
     return;
   }
 
   SETTINGS.loadFromFile();
 
-  // First serial output only here to avoid timing inconsistencies for power button press duration verification
-  Serial.printf("[%lu] [   ] Starting CrossPoint\n", millis());
-
-  setupDisplayAndFonts();
+  einkDisplay.begin();
+  Serial.printf("[%lu] [   ] Display initialized\n", millis());
 
   // Simplified boot logic - no defensive clearing
   if (SETTINGS.openBookPath.empty()) {

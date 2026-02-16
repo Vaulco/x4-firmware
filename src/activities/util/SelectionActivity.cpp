@@ -83,17 +83,13 @@ void SelectionActivity::loop() {
 
   if (!prevReleased && !nextReleased) return;
 
-  // Determine if we should skip a page
-  const bool skipPage = inputManager.getHeldTime() > skipPageMs;
-  const int step = skipPage ? getPageItems() : 1;
-
   if (prevReleased) {
     // Move up with wrapping
-    selectedIndex = (selectedIndex - step + itemCount) % itemCount;
+    selectedIndex = (selectedIndex - 1 + itemCount) % itemCount;
     updateRequired = true;
   } else if (nextReleased) {
     // Move down with wrapping
-    selectedIndex = (selectedIndex + step) % itemCount;
+    selectedIndex = (selectedIndex + 1) % itemCount;
     updateRequired = true;
   }
 }
@@ -108,9 +104,6 @@ void SelectionActivity::render() const {
 
   // Draw header
   renderer.drawCenteredText(GfxRenderer::LARGE, 15, title.c_str(), true);
-
-  // Allow custom header rendering
-  renderCustomHeader();
 
   // Handle empty list
   if (itemCount == 0) {
@@ -141,9 +134,6 @@ void SelectionActivity::render() const {
   if (pageEndIndex < itemCount) {
     renderer.drawText(GfxRenderer::SMALL, pageWidth - 15, startY + pageItems * lineHeight, "v");
   }
-
-  // Allow custom footer rendering
-  renderCustomFooter();
 
   // Draw battery indicator
   if (showBatteryIndicator) {

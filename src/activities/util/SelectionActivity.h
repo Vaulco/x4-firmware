@@ -12,7 +12,6 @@
  * Base class for list selection activities with:
  * - Background rendering task for responsive input
  * - Keyboard navigation (up/down/left/right)
- * - Page skipping when holding buttons
  * - Automatic scrolling for long lists
  * - Customizable item rendering
  */
@@ -30,7 +29,6 @@ class SelectionActivity : public Activity {
   // Configuration - can be overridden in constructor
   int startY = 60;
   int lineHeight = 30;
-  unsigned long skipPageMs = 700;
   bool showBatteryIndicator = true;
 
   // Pure virtual methods - MUST be implemented
@@ -38,10 +36,6 @@ class SelectionActivity : public Activity {
   virtual void renderItem(int index, int x, int y, bool isSelected) const = 0;
   virtual void onItemSelected(int index) = 0;
   virtual void onBack() = 0;
-
-  // Optional overrides for custom rendering
-  virtual void renderCustomHeader() const {}
-  virtual void renderCustomFooter() const {}
 
   // Helper to calculate visible items
   int getPageItems() const;
