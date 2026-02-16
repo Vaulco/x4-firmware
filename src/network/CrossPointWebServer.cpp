@@ -166,12 +166,6 @@ void CrossPointWebServer::handleClient() const {
     return;
   }
 
-  // Print debug every 10 seconds to confirm handleClient is being called
-  if (millis() - lastDebugPrint > 10000) {
-    Serial.printf("[%lu] [WEB] handleClient active, server running on port %d\n", millis(), port);
-    lastDebugPrint = millis();
-  }
-
   server->handleClient();
 }
 

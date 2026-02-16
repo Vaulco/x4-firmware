@@ -100,29 +100,24 @@ void onGoToFileSelection() {
 
 void setup() {
   Serial.begin(115200);
-
   inputManager.begin();
-  // Initialize pins
   pinMode(BAT_GPIO0, INPUT);
-
-  // Initialize SPI with custom pins
   SPI.begin(EPD_SCLK, SD_SPI_MISO, EPD_MOSI, EPD_CS);
+
+  // Initialize display
+  einkDisplay.begin();
+  Serial.printf("[%lu] [   ] Display initialized\n", millis());
 
   // SD Card Initialization
   if (!SdMan.begin()) {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
-    einkDisplay.begin();
-    Serial.printf("[%lu] [   ] Display initialized\n", millis());
     enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error"));
     return;
   }
 
   SETTINGS.loadFromFile();
 
-  einkDisplay.begin();
-  Serial.printf("[%lu] [   ] Display initialized\n", millis());
-
-  // Simplified boot logic - no defensive clearing
+  // Simplified boot logic
   if (SETTINGS.openBookPath.empty()) {
     onGoToFileSelection();
   } else {

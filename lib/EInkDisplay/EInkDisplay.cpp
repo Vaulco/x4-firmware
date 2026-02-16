@@ -119,8 +119,6 @@ EInkDisplay::EInkDisplay(int8_t sclk, int8_t mosi, int8_t cs, int8_t dc, int8_t 
       frameBufferActive(nullptr),
 #endif
       customLutActive(false) {
-  Serial.printf("[%lu] EInkDisplay: Constructor called\n", millis());
-  Serial.printf("[%lu]   SCLK=%d, MOSI=%d, CS=%d, DC=%d, RST=%d, BUSY=%d\n", millis(), sclk, mosi, cs, dc, rst, busy);
 }
 
 void EInkDisplay::begin() {
@@ -224,7 +222,6 @@ void EInkDisplay::waitWhileBusy(const char* comment) {
 }
 
 void EInkDisplay::initDisplayController() {
-  Serial.printf("[%lu]   Initializing SSD1677 controller...\n", millis());
 
   const uint8_t TEMP_SENSOR_INTERNAL = 0x80;
 
@@ -258,7 +255,6 @@ void EInkDisplay::initDisplayController() {
   // Set up full screen RAM area
   setRamArea(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
-  Serial.printf("[%lu]   Clearing RAM buffers...\n", millis());
   sendCommand(CMD_AUTO_WRITE_BW_RAM);  // Auto write BW RAM
   sendData(0xF7);
   waitWhileBusy(" CMD_AUTO_WRITE_BW_RAM");
@@ -266,8 +262,6 @@ void EInkDisplay::initDisplayController() {
   sendCommand(CMD_AUTO_WRITE_RED_RAM);  // Auto write RED RAM
   sendData(0xF7);                       // Fill with white pattern
   waitWhileBusy(" CMD_AUTO_WRITE_RED_RAM");
-
-  Serial.printf("[%lu]   SSD1677 controller initialized\n", millis());
 }
 
 void EInkDisplay::setRamArea(const uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
