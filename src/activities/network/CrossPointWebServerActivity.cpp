@@ -1,6 +1,5 @@
 #include "CrossPointWebServerActivity.h"
 
-#include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <GfxRenderer.h>
 #include <WiFi.h>
@@ -19,8 +18,7 @@ constexpr const char* AP_HOSTNAME = "ereader";
 constexpr uint8_t AP_CHANNEL = 1;
 constexpr uint8_t AP_MAX_CONNECTIONS = 4;
 
-// DNS server for captive portal (redirects all DNS queries to our IP)
-DNSServer* dnsServer = nullptr;
+// DNS server configuration
 constexpr uint16_t DNS_PORT = 53;
 }  // namespace
 
@@ -42,7 +40,6 @@ void CrossPointWebServerActivity::onEnter() {
   isApMode = false;
   connectedIP.clear();
   connectedSSID.clear();
-  lastHandleClientTime = 0;
   updateRequired = true;
 
   xTaskCreate(&CrossPointWebServerActivity::taskTrampoline, "WebServerActivityTask",
@@ -77,8 +74,8 @@ void CrossPointWebServerActivity::onExit() {
   if (dnsServer) {
     Serial.printf("[%lu] [WEBACT] Stopping DNS server...\n", millis());
     dnsServer->stop();
-    delete dnsServer;
-    dnsServer = nullptr;
+    dnsServer.reset();  // Explicitly release (optional, happens automatically)
+    Serial.printf("[%lu] [WEBACT] DNS server stopped\n", millis());
   }
 
   // CRITICAL: Wait for LWIP stack to flush any pending packets
@@ -222,7 +219,7 @@ void CrossPointWebServerActivity::startAccessPoint() {
 
   // Start DNS server for captive portal behavior
   // This redirects all DNS queries to our IP, making any domain typed resolve to us
-  dnsServer = new DNSServer();
+  dnsServer = std::make_unique<DNSServer>();
   dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer->start(DNS_PORT, "*", apIP);
   Serial.printf("[%lu] [WEBACT] DNS server started for captive portal\n", millis());
@@ -284,14 +281,6 @@ void CrossPointWebServerActivity::loop() {
     // Handle web server requests - call handleClient multiple times per loop
     // to improve responsiveness and upload throughput
     if (webServer && webServer->isRunning()) {
-      const unsigned long timeSinceLastHandleClient = millis() - lastHandleClientTime;
-
-      // Log if there's a significant gap between handleClient calls (>100ms)
-      if (lastHandleClientTime > 0 && timeSinceLastHandleClient > 100) {
-        Serial.printf("[%lu] [WEBACT] WARNING: %lu ms gap since last handleClient\n", millis(),
-                      timeSinceLastHandleClient);
-      }
-
       // Call handleClient multiple times to process pending requests faster
       // This is critical for upload performance - HTTP file uploads send data
       // in chunks and each handleClient() call processes incoming data
@@ -299,7 +288,6 @@ void CrossPointWebServerActivity::loop() {
       for (int i = 0; i < HANDLE_CLIENT_ITERATIONS && webServer->isRunning(); i++) {
         webServer->handleClient();
       }
-      lastHandleClientTime = millis();
     }
 
     // Handle exit on Back button
@@ -366,7 +354,7 @@ void CrossPointWebServerActivity::renderServerRunning() const {
   renderer.drawCenteredText(GfxRenderer::LARGE, 15, "File Transfer", true);
 
   if (isApMode) {
-    // AP mode display - center the content blockd
+    // AP mode display - center the content block
     int startY = 55;
 
     std::string ssidInfo = "Network: " + connectedSSID;
@@ -420,5 +408,4 @@ void CrossPointWebServerActivity::renderServerRunning() const {
     drawQRCode(renderer, (480 - 6 * 33) / 2, startY + LINE_SPACING * 6, webInfo);
     renderer.drawCenteredText(GfxRenderer::SMALL, startY + LINE_SPACING * 5, "or scan QR code with your phone:");
   }
-
 }

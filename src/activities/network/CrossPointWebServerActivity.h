@@ -1,4 +1,5 @@
 #pragma once
+#include <DNSServer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
@@ -44,12 +45,12 @@ class CrossPointWebServerActivity final : public ActivityWithSubactivity {
   // Web server - owned by this activity
   std::unique_ptr<CrossPointWebServer> webServer;
 
+  // DNS server for captive portal (AP mode only)
+  std::unique_ptr<DNSServer> dnsServer;
+
   // Server status
   std::string connectedIP;
   std::string connectedSSID;  // For STA mode: network name, For AP mode: AP name
-
-  // Performance monitoring
-  unsigned long lastHandleClientTime = 0;
 
   static void taskTrampoline(void* param);
   [[noreturn]] void displayTaskLoop();
