@@ -30,6 +30,7 @@ class EInkDisplay {
 
   void copyGrayscaleLsbBuffers(const uint8_t* lsbBuffer);
   void copyGrayscaleMsbBuffers(const uint8_t* msbBuffer);
+  void grayscaleRevert();
 
   /**
    * Should be called after grayscale rendering with the BW buffer that was
@@ -79,7 +80,6 @@ class EInkDisplay {
   void setRamArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void writeRamBuffer(uint8_t ramBuffer, const uint8_t* data, uint32_t size);
 
-  void grayscaleRevert();
   void setCustomLUT(bool enabled, const unsigned char* lutData = nullptr);
   void refreshDisplay(RefreshMode mode = FAST_REFRESH, bool turnOffScreen = false);
 };

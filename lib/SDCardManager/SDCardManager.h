@@ -19,7 +19,7 @@ class SDCardManager {
   // Simple wrappers for common SdFat operations
   FsFile open(const char* path, oflag_t oflag = O_RDONLY) { return sd.open(path, oflag); }
   bool mkdir(const char* path, bool pFlag = true) { return sd.mkdir(path, pFlag); }
-  bool exists(const char* path) const { return sd.exists(path); }
+  bool exists(const char* path) { return sd.exists(path); }
   bool remove(const char* path) { return sd.remove(path); }
   bool rmdir(const char* path) { return sd.rmdir(path); }
   bool ready() const { return initialized; }

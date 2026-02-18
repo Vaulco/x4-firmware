@@ -14,8 +14,8 @@
 // These ranges are based on real world values above, and are much more tolerant of different
 // devices than a fixed threshold check
 // These values are calculated by taking the midpoint of the pairs of averaged values above
-const int ADC_RANGES_1[] = {ADC_NO_BUTTON, 3100, 2090, 750, 0};
-const int ADC_RANGES_2[] = {ADC_NO_BUTTON, 1120, 0};
+const int InputManager::ADC_RANGES_1[] = {3800, 3100, 2090, 750, 0};
+const int InputManager::ADC_RANGES_2[] = {3800, 1120, 0};
 
 InputManager::InputManager()
     : currentState(0),
