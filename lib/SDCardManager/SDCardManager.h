@@ -3,12 +3,11 @@
 #include <WString.h>
 #include <vector>
 #include <SdFat.h>
+#include <string>
 
 class SDCardManager {
  public:
-  SDCardManager();
   bool begin();
-  bool ready() const;
   
   // File/directory listing
   std::vector<String> listFiles(const char* path = "/", int maxFiles = 200);
@@ -20,9 +19,10 @@ class SDCardManager {
   // Simple wrappers for common SdFat operations
   FsFile open(const char* path, oflag_t oflag = O_RDONLY) { return sd.open(path, oflag); }
   bool mkdir(const char* path, bool pFlag = true) { return sd.mkdir(path, pFlag); }
-  bool exists(const char* path) { return sd.exists(path); }
+  bool exists(const char* path) const { return sd.exists(path); }
   bool remove(const char* path) { return sd.remove(path); }
   bool rmdir(const char* path) { return sd.rmdir(path); }
+  bool ready() const { return initialized; }
 
   // Helper for opening files with error logging
   bool openFileForRead(const char* moduleName, const char* path, FsFile& file);
@@ -35,9 +35,12 @@ class SDCardManager {
   static SDCardManager& getInstance() { return instance; }
 
  private:
+  SDCardManager();
+  SDCardManager(const SDCardManager&) = delete;
+  SDCardManager& operator=(const SDCardManager&) = delete;
   static SDCardManager instance;
   bool initialized = false;
   SdFat sd;
 };
 
-#define SdMan SDCardManager::getInstance()
+inline SDCardManager& SdMan = SDCardManager::getInstance();
