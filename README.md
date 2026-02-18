@@ -11,11 +11,13 @@ cd x4-firmware
 
 ### I have the hardware
 
-Connect your Xteink X4 to your computer via USB-C and run the following command.
+Install Platformio either as a VScode extension or a Python library (requires Python 3.6+) `pip install platformio`. Connect your Xteink X4 to your computer via USB-C and run the following command.
 
 ```sh
 pio run --target upload
 ```
+
+If your device is on a different port, specify it with `--upload-port`. You can also change `upload_port` in `platformio.ini`.
 
 ## Internals
 
