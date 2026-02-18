@@ -142,7 +142,7 @@ void EInkDisplay::begin() {
 
   // Initialize SPI with custom pins
   SPI.begin(_sclk, -1, _mosi, _cs);
-  spiSettings = SPISettings(40000000, MSBFIRST, SPI_MODE0);  // MODE0 is standard for SSD1677
+  spiSettings = SPISettings(20000000, MSBFIRST, SPI_MODE0);  // MODE0 is standard for SSD1677
   Serial.printf("[%lu]   SPI initialized at 40 MHz, Mode 0\n", millis());
 
   // Setup GPIO pins

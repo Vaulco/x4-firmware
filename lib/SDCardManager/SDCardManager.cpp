@@ -2,7 +2,7 @@
 
 namespace {
 constexpr uint8_t SD_CS = 12;
-constexpr uint32_t SPI_FQ = 40000000;
+constexpr uint32_t SPI_FQ = 20000000;
 }
 
 SDCardManager SDCardManager::instance;
