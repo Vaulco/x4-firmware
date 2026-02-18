@@ -7,7 +7,6 @@
 //Setting Definitions - Single Source of Truth
 enum SettingId {
   SETTING_SLEEP_TIMEOUT = 0,
-  SETTING_REFRESH_FREQUENCY,
   SETTING_COUNT  // Keep this last
 };
 
@@ -33,19 +32,9 @@ constexpr EnumOption SLEEP_OPTIONS[] = {
   {"30 min", 4}
 };
 
-// Refresh frequency options
-constexpr EnumOption REFRESH_OPTIONS[] = {
-  {"1 page", 0},
-  {"5 pages", 1},
-  {"10 pages", 2},
-  {"15 pages", 3},
-  {"30 pages", 4}
-};
-
 // Master settings list - add new settings here
 constexpr SettingMetadata SETTING_DEFINITIONS[] = {
   {SETTING_SLEEP_TIMEOUT, "Time to Sleep", SLEEP_OPTIONS, 5, 2},       // default: 10 min
-  {SETTING_REFRESH_FREQUENCY, "Refresh Frequency", REFRESH_OPTIONS, 5, 3}  // default: 15 pages
 };
 
 // Settings Class
@@ -110,12 +99,6 @@ public:
       30UL * 60 * 1000   // 30 min
     };
     return TIMEOUTS[value];
-  }
-
-  int getRefreshFrequency() const {
-    const uint8_t value = values[SETTING_REFRESH_FREQUENCY];
-    constexpr int FREQUENCIES[] = {1, 5, 10, 15, 30};
-    return FREQUENCIES[value];
   }
   
   // File I/O

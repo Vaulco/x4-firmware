@@ -7,6 +7,8 @@
 #include "Settings.h"
 #include "ChapterSelection.h"
 
+static constexpr int REFRESH_FREQUENCY = 15;
+
 void XtcReaderActivity::taskTrampoline(void* param) {
   auto* self = static_cast<XtcReaderActivity*>(param);
   self->displayTaskLoop();
@@ -197,10 +199,10 @@ void XtcReaderActivity::renderPage() {
       }
     }
 
-    // Display BW with conditional refresh based on pagesUntilFullRefresh
+    // Display BW with conditional refresh based on REFRESH_FREQUENCY
     if (pagesUntilFullRefresh <= 1) {
       renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
-      pagesUntilFullRefresh = SETTINGS.getRefreshFrequency();
+      pagesUntilFullRefresh = REFRESH_FREQUENCY;
     } else {
       renderer.displayBuffer();
       pagesUntilFullRefresh--;
@@ -280,7 +282,7 @@ void XtcReaderActivity::renderPage() {
   // Display with appropriate refresh
   if (pagesUntilFullRefresh <= 1) {
     renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
-    pagesUntilFullRefresh = SETTINGS.getRefreshFrequency();
+    pagesUntilFullRefresh = REFRESH_FREQUENCY;
   } else {
     renderer.displayBuffer();
     pagesUntilFullRefresh--;
