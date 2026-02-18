@@ -13,17 +13,18 @@
 #include "activities/settings/SettingsActivity.h"
 #include "activities/util/FullScreenMessageActivity.h"
 
-// Display SPI pins (custom pins for XteinkX4, not hardware SPI defaults)
-#define EPD_SCLK 8   // SPI Clock
-#define EPD_MOSI 10  // SPI MOSI (Master Out Slave In)
-#define EPD_CS 21    // Chip Select
-#define EPD_DC 4     // Data/Command
-#define EPD_RST 5    // Reset
+// Shared SPI bus pins
+#define SPI_SCLK 8   // Shared clock
+#define SPI_MISO 7   // Shared MISO (SD card only, EPD is write-only)
+#define SPI_MOSI 10  // Shared MOSI
+
+// EPD-specific control pins
+#define EPD_CS   21  // Chip Select
+#define EPD_DC   4   // Data/Command
+#define EPD_RST  5   // Reset
 #define EPD_BUSY 6   // Busy
 
-#define SD_SPI_MISO 7
-
-EInkDisplay einkDisplay(EPD_SCLK, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
+EInkDisplay einkDisplay(SPI_SCLK, SPI_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY);
 InputManager inputManager;
 GfxRenderer renderer(einkDisplay);
 Activity* currentActivity = nullptr;
@@ -102,7 +103,7 @@ void setup() {
   Serial.begin(115200);
   inputManager.begin();
   pinMode(BAT_GPIO0, INPUT);
-  SPI.begin(EPD_SCLK, SD_SPI_MISO, EPD_MOSI, EPD_CS);
+  SPI.begin(SPI_SCLK, SPI_MISO, SPI_MOSI, -1);
 
   // Initialize display
   einkDisplay.begin();
