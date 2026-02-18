@@ -141,7 +141,7 @@ void loop() {
 
   // Check for any user activity
   static unsigned long lastActivityTime = millis();
-  if (inputManager.wasAnyPressed() || inputManager.wasAnyReleased() ||
+  if (inputManager.wasAnyPressed() ||
       (currentActivity && currentActivity->preventAutoSleep())) {
     lastActivityTime = millis();
   }

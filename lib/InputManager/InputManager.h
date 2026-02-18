@@ -38,7 +38,6 @@ class InputManager {
   bool wasPressed(Button button) const { return pressedEvents & (1 << button); }
   bool wasReleased(Button button) const { return releasedEvents & (1 << button); }
   bool wasAnyPressed() const { return pressedEvents > 0; }
-  bool wasAnyReleased() const { return releasedEvents > 0; }
 
   unsigned long getHeldTime() const {
     return (currentState > 0) ? (millis() - buttonPressStart) : 0;
