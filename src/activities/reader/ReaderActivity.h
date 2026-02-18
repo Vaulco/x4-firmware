@@ -3,7 +3,6 @@
 #include <Xtc.h>
 
 #include "activities/ActivityWithSubactivity.h"
-#include "activities/util/FullScreenMessageActivity.h"
 #include "FileSelection.h"
 #include "XtcReaderActivity.h"
 
@@ -18,8 +17,11 @@ class ReaderActivity final : public ActivityWithSubactivity {
   }
 
   void showErrorAndReturnToFileSelection() {
-    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "Failed to load XTC",
-                                                   EInkDisplay::HALF_REFRESH));
+    const auto pageHeight = renderer.getScreenHeight();
+    renderer.clearScreen();
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, (pageHeight - renderer.getLineHeight(GfxRenderer::MEDIUM)) / 2,
+                              "Failed to load XTC", true);
+    renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
     delay(2000);
     goToFileSelection();
   }

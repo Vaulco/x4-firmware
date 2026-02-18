@@ -11,7 +11,6 @@
 #include "activities/reader/FileSelection.h"
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
-#include "activities/util/FullScreenMessageActivity.h"
 
 // Shared SPI bus pins
 #define SPI_SCLK 8   // Shared clock
@@ -58,13 +57,13 @@ void waitForPowerRelease() {
 // Display sleep screen and enter deep sleep mode
 void enterDeepSleep() {
   exitActivity();
-  
+
   // Display "SLEEPING" message
   const auto pageHeight = renderer.getScreenHeight();
   renderer.clearScreen();
   renderer.drawCenteredText(GfxRenderer::SMALL, pageHeight / 2, "SLEEPING");
   renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
-  
+
   einkDisplay.deepSleep();
   esp_deep_sleep_enable_gpio_wakeup(1ULL << InputManager::POWER_BUTTON_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
   // Ensure that the power button has been released to avoid immediately turning back on if you're holding it
@@ -112,7 +111,11 @@ void setup() {
   // SD Card Initialization
   if (!SdMan.begin()) {
     Serial.printf("[%lu] [   ] SD card initialization failed\n", millis());
-    enterNewActivity(new FullScreenMessageActivity(renderer, inputManager, "SD card error"));
+    const auto pageHeight = renderer.getScreenHeight();
+    renderer.clearScreen();
+    renderer.drawCenteredText(GfxRenderer::MEDIUM, (pageHeight - renderer.getLineHeight(GfxRenderer::MEDIUM)) / 2,
+                              "SD card error", true);
+    renderer.displayBuffer(EInkDisplay::HALF_REFRESH);
     return;
   }
 
@@ -134,7 +137,7 @@ void loop() {
   inputManager.update();
 
   if (Serial && millis() - lastMemPrint >= 10000) {
-    Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", 
+    Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n",
                   millis(), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getMinFreeHeap());
     lastMemPrint = millis();
   }
@@ -149,7 +152,7 @@ void loop() {
   // Auto-sleep check
   const unsigned long sleepTimeoutMs = SETTINGS.getSleepTimeoutMs();
   if (millis() - lastActivityTime >= sleepTimeoutMs) {
-    Serial.printf("[%lu] [SLP] Auto-sleep triggered after %lu ms of inactivity\n", 
+    Serial.printf("[%lu] [SLP] Auto-sleep triggered after %lu ms of inactivity\n",
                   millis(), sleepTimeoutMs);
     enterDeepSleep();
     return;
@@ -165,7 +168,7 @@ void loop() {
   if (inputManager.isPressed(InputManager::Button::Back) && 
       inputManager.getHeldTime() >= BACK_LONG_PRESS_MS && 
       !backLongPressConsumed) {
-    
+
     Serial.printf("[%lu] [MAIN] BACK button held for %lu ms - navigating to Settings\n", 
                   millis(), inputManager.getHeldTime());
     backLongPressConsumed = true;
