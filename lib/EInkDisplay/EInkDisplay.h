@@ -10,7 +10,6 @@ class EInkDisplay {
   // Destructor
   ~EInkDisplay() = default;
 
-  // Refresh modes (guarded to avoid redefinition in test builds)
   enum RefreshMode {
     FULL_REFRESH,  // Full refresh with complete waveform
     HALF_REFRESH,  // Half refresh (1720ms) - balanced quality and speed
@@ -29,27 +28,18 @@ class EInkDisplay {
   // Frame buffer operations
   void clearScreen(uint8_t color = 0xFF) const;
 
-#ifndef EINK_DISPLAY_SINGLE_BUFFER_MODE
-  void swapBuffers();
-#endif
-  void setFramebuffer(const uint8_t* bwBuffer) const;
-
   void copyGrayscaleLsbBuffers(const uint8_t* lsbBuffer);
   void copyGrayscaleMsbBuffers(const uint8_t* msbBuffer);
-#ifdef EINK_DISPLAY_SINGLE_BUFFER_MODE
+
+  /**
+   * Should be called after grayscale rendering with the BW buffer that was
+   * displayed before grayscale, to restore the RED RAM for proper differential
+   * fast refreshes on subsequent frames.
+   */
   void cleanupGrayscaleBuffers(const uint8_t* bwBuffer);
-#endif
 
   void displayBuffer(RefreshMode mode = FAST_REFRESH);
   void displayGrayBuffer(bool turnOffScreen = false);
-
-  void refreshDisplay(RefreshMode mode = FAST_REFRESH, bool turnOffScreen = false);
-
-  // debug function
-  void grayscaleRevert();
-
-  // LUT control
-  void setCustomLUT(bool enabled, const unsigned char* lutData = nullptr);
 
   // Power management
   void deepSleep();
@@ -59,28 +49,23 @@ class EInkDisplay {
     return frameBuffer;
   }
 
-  // Save the current framebuffer to a PBM file (desktop/test builds only)
-  void saveFrameBufferAsPBM(const char* filename);
-
  private:
   // Pin configuration
   int8_t _sclk, _mosi, _cs, _dc, _rst, _busy;
 
-  // Frame buffer (statically allocated)
+  // Single frame buffer (48KB).
+  // The display's internal RED RAM holds the previous frame for differential
+  // fast refresh, avoiding the need for a second 48KB buffer in ESP32 RAM.
   uint8_t frameBuffer0[BUFFER_SIZE];
   uint8_t* frameBuffer;
-#ifndef EINK_DISPLAY_SINGLE_BUFFER_MODE
-  uint8_t frameBuffer1[BUFFER_SIZE];
-  uint8_t* frameBufferActive;
-#endif
 
   // SPI settings
   SPISettings spiSettings;
 
   // State
-  bool isScreenOn;
-  bool customLutActive;
-  bool inGrayscaleMode;
+  bool isScreenOn = false;
+  bool customLutActive = false;
+  bool inGrayscaleMode = false;
 
   // Low-level display control
   void resetDisplay();
@@ -93,4 +78,8 @@ class EInkDisplay {
   // Low-level display operations
   void setRamArea(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
   void writeRamBuffer(uint8_t ramBuffer, const uint8_t* data, uint32_t size);
+
+  void grayscaleRevert();
+  void setCustomLUT(bool enabled, const unsigned char* lutData = nullptr);
+  void refreshDisplay(RefreshMode mode = FAST_REFRESH, bool turnOffScreen = false);
 };
