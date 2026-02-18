@@ -3,6 +3,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -44,7 +45,7 @@ enum class WifiSelectionState {
 class WifiSelectionActivity final : public ActivityWithSubactivity {
   TaskHandle_t displayTaskHandle = nullptr;
   SemaphoreHandle_t renderingMutex = nullptr;
-  bool updateRequired = false;
+  std::atomic<bool> updateRequired{false};
   WifiSelectionState state = WifiSelectionState::SCANNING;
   int selectedNetworkIndex = 0;
   std::vector<WifiNetworkInfo> networks;

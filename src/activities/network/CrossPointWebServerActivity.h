@@ -4,6 +4,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -34,7 +35,7 @@ enum class WebServerActivityState {
 class CrossPointWebServerActivity final : public ActivityWithSubactivity {
   TaskHandle_t displayTaskHandle = nullptr;
   SemaphoreHandle_t renderingMutex = nullptr;
-  bool updateRequired = false;
+  std::atomic<bool> updateRequired{false};
   WebServerActivityState state = WebServerActivityState::MODE_SELECTION;
   const std::function<void()> onGoBack;
 

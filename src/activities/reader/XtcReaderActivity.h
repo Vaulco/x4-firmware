@@ -5,6 +5,8 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <atomic>
+
 #include "activities/ActivityWithSubactivity.h"
 
 class XtcReaderActivity final : public ActivityWithSubactivity {
@@ -13,7 +15,7 @@ class XtcReaderActivity final : public ActivityWithSubactivity {
   SemaphoreHandle_t renderingMutex = nullptr;
   uint32_t currentPage = 0;
   int pagesUntilFullRefresh = 0;
-  bool updateRequired = false;
+  std::atomic<bool> updateRequired{false};
   const std::function<void()> onGoBackToFileSelection;
 
   static void taskTrampoline(void* param);

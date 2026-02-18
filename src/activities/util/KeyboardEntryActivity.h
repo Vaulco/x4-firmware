@@ -4,6 +4,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <atomic>
 #include <functional>
 #include <string>
 #include <utility>
@@ -65,7 +66,7 @@ class KeyboardEntryActivity : public Activity {
   bool isPassword;
   TaskHandle_t displayTaskHandle = nullptr;
   SemaphoreHandle_t renderingMutex = nullptr;
-  bool updateRequired = false;
+  std::atomic<bool> updateRequired{false};
 
   // Keyboard state
   int selectedRow = 0;

@@ -3,6 +3,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+#include <atomic>
 #include <functional>
 #include <string>
 
@@ -20,7 +21,7 @@ class SelectionActivity : public Activity {
   // Task and synchronization
   TaskHandle_t displayTaskHandle = nullptr;
   SemaphoreHandle_t renderingMutex = nullptr;
-  bool updateRequired = false;
+  std::atomic<bool> updateRequired{false};
 
   // Selection state
   int selectedIndex = 0;
@@ -48,7 +49,7 @@ class SelectionActivity : public Activity {
   void displayTaskLoop();
 
  public:
-  explicit SelectionActivity(const std::string& name, const std::string& title, 
+  explicit SelectionActivity(const std::string& name, const std::string& title,
                             GfxRenderer& renderer, InputManager& inputManager)
       : Activity(name, renderer, inputManager), title(title) {}
 
