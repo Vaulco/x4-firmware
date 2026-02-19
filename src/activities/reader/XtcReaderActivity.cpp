@@ -82,8 +82,7 @@ void XtcReaderActivity::loop() {
     }
   }
 
-  // Short press BACK goes to file selection
-  // NOTE: Long press BACK (1s) to go to Settings is handled globally in main.cpp
+  // BACK goes to file selection
   if (inputManager.wasReleased(InputManager::Button::Back)) {
     onGoBackToFileSelection();
     return;

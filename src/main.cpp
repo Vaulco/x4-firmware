@@ -28,10 +28,6 @@ InputManager inputManager;
 GfxRenderer renderer(einkDisplay);
 Activity* currentActivity = nullptr;
 
-// Global BACK button long press tracking
-constexpr unsigned long BACK_LONG_PRESS_MS = 1000;  // 1 second to go to settings
-bool backLongPressConsumed = false;  // Flag to ignore BACK release after long press
-
 void exitActivity() {
   if (currentActivity) {
     currentActivity->onExit();
@@ -161,26 +157,6 @@ void loop() {
   // Power button instant sleep
   if (inputManager.wasPressed(InputManager::Button::Power)) {
     enterDeepSleep();
-    return;
-  }
-
-  // GLOBAL: Back button long press to Settings
-  if (inputManager.isPressed(InputManager::Button::Back) && 
-      inputManager.getHeldTime() >= BACK_LONG_PRESS_MS && 
-      !backLongPressConsumed) {
-
-    Serial.printf("[%lu] [MAIN] BACK button held for %lu ms - navigating to Settings\n", 
-                  millis(), inputManager.getHeldTime());
-    backLongPressConsumed = true;
-    onGoToSettings();
-    return;
-  }
-
-  // Clear consumed flag when released
-  if (backLongPressConsumed && inputManager.wasReleased(InputManager::Button::Back)) {
-    Serial.printf("[%lu] [MAIN] BACK button released after long press - ignoring release event\n", 
-                  millis());
-    backLongPressConsumed = false;
     return;
   }
 
