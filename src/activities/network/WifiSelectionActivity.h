@@ -26,9 +26,7 @@ enum class WifiSelectionState {
   NETWORK_LIST,       // Displaying available networks
   PASSWORD_ENTRY,     // Entering password for selected network
   CONNECTING,         // Attempting to connect
-  SAVE_PROMPT,        // Asking user if they want to save the password
   CONNECTION_FAILED,  // Connection failed
-  FORGET_PROMPT       // Asking user if they want to forget the network
 };
 
 /**
@@ -37,7 +35,7 @@ enum class WifiSelectionState {
  * - Enter scanning mode on entry
  * - List available WiFi networks
  * - Allow selection and launch KeyboardEntryActivity for password if needed
- * - Save the password if requested
+ * - Save the password if requested (via ConfirmActivity)
  * - Call onComplete callback when connected or cancelled
  *
  * The onComplete callback receives true if connected successfully, false if cancelled.
@@ -65,10 +63,6 @@ class WifiSelectionActivity final : public ActivityWithSubactivity {
   // Whether network was connected using a saved password (skip save prompt)
   bool usedSavedPassword = false;
 
-  // Save/forget prompt selection (0 = Yes, 1 = No)
-  int savePromptSelection = 0;
-  int forgetPromptSelection = 0;
-
   // Connection timeout
   static constexpr unsigned long CONNECTION_TIMEOUT_MS = 15000;
   unsigned long connectionStartTime = 0;
@@ -77,11 +71,8 @@ class WifiSelectionActivity final : public ActivityWithSubactivity {
   [[noreturn]] void displayTaskLoop();
   void render() const;
   void renderNetworkList() const;
-  void renderPasswordEntry() const;
   void renderConnecting() const;
-  void renderSavePrompt() const;
   void renderConnectionFailed() const;
-  void renderForgetPrompt() const;
 
   void startWifiScan();
   void processWifiScanResults();
