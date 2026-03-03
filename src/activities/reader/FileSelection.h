@@ -11,7 +11,6 @@
 
 class FileSelection final : public SelectionActivity {
     std::string basepath;
-    std::string initialSelectedFile;
     std::vector<std::string> files;
     const std::function<void(const std::string&)> onSelect;
     const std::function<void()> onGoToSettings;
@@ -20,7 +19,7 @@ class FileSelection final : public SelectionActivity {
         std::sort(strs.begin(), strs.end(), [](const std::string& a, const std::string& b) {
             bool aDir = a.back() == '/';
             bool bDir = b.back() == '/';
-            if (aDir != bDir) return aDir; // directories first
+            if (aDir != bDir) return aDir;
             std::string lowerA = a, lowerB = b;
             std::transform(lowerA.begin(), lowerA.end(), lowerA.begin(), ::tolower);
             std::transform(lowerB.begin(), lowerB.end(), lowerB.begin(), ::tolower);
@@ -28,9 +27,11 @@ class FileSelection final : public SelectionActivity {
         });
     }
 
-    void reloadFiles() {
+    void reloadFiles(const std::string& preselect = "") {
         files.clear();
         selectedIndex = 0;
+
+        if (basepath.empty()) basepath = "/";
 
         auto root = SdMan.open(basepath.c_str());
         if (!root || !root.isDirectory()) {
@@ -56,10 +57,9 @@ class FileSelection final : public SelectionActivity {
 
         sortFileList(files);
 
-        if (!initialSelectedFile.empty()) {
-            auto it = std::find(files.begin(), files.end(), initialSelectedFile);
+        if (!preselect.empty()) {
+            auto it = std::find(files.begin(), files.end(), preselect);
             if (it != files.end()) selectedIndex = it - files.begin();
-            initialSelectedFile.clear();
         }
     }
 
@@ -73,25 +73,28 @@ protected:
     }
 
     void onItemSelected(int index) override {
-      if (files.empty()) return;
+        if (files.empty()) return;
 
-      std::string fullPath = basepath;
-      if (fullPath.back() != '/') fullPath += '/';
+        std::string fullPath = basepath;
+        if (fullPath.back() != '/') fullPath += '/';
 
-      if (files[index].back() == '/') {
-          basepath = fullPath + files[index].substr(0, files[index].size() - 1);
-          reloadFiles();
-          updateRequired = true;
-      } else {
-          onSelect(fullPath + files[index]);
-      }
+        if (files[index].back() == '/') {
+            basepath = fullPath + files[index].substr(0, files[index].size() - 1);
+            reloadFiles();
+            updateRequired = true;
+        } else {
+            onSelect(fullPath + files[index]);
+        }
     }
 
     void onBack() override {
         if (basepath != "/") {
             auto pos = basepath.find_last_of('/');
-            basepath.erase(pos);
-            if (basepath.empty()) basepath = "/";
+            if (pos == std::string::npos) {
+                basepath = "/";
+            } else {
+                basepath = (pos == 0) ? "/" : basepath.substr(0, pos);
+            }
             reloadFiles();
             updateRequired = true;
         } else {
@@ -106,12 +109,13 @@ public:
                            std::string initialPath = "/", std::string selectedFile = "")
         : SelectionActivity("FileSelection", "Library", renderer, inputManager),
           basepath(initialPath.empty() ? "/" : std::move(initialPath)),
-          initialSelectedFile(std::move(selectedFile)),
           onSelect(onSelect),
-          onGoToSettings(onGoToSettings) {}
+          onGoToSettings(onGoToSettings)
+    {
+        reloadFiles(std::move(selectedFile));
+    }
 
     void onEnter() override {
-        reloadFiles();
         SelectionActivity::onEnter();
     }
 };
