@@ -8,14 +8,12 @@
 // Action IDs for non-setting menu items
 enum SettingActionId {
   ACTION_CONTINUE_READING = SETTING_COUNT,  // Start after settings
-  ACTION_FILE_TRANSFER,
   ACTION_TOTAL_COUNT
 };
 
 class SettingsActivity final : public SelectionActivity {
   const std::function<void()> onGoBackCallback;
   const std::function<void()> onContinueReading;
-  const std::function<void()> onFileTransferOpen;
 
 protected:
   int getItemCount() const override { 
@@ -31,7 +29,6 @@ protected:
     if (index >= SETTING_COUNT) {
       const char* actionNames[] = {
         "Continue Reading",
-        "File Transfer"
       };
       renderer.drawText(GfxRenderer::MEDIUM, x, y, 
                        actionNames[index - SETTING_COUNT], !isSelected);
@@ -56,9 +53,6 @@ protected:
     if (index == ACTION_CONTINUE_READING) {
       onContinueReading();
       return;
-    } else if (index == ACTION_FILE_TRANSFER) {
-      onFileTransferOpen();
-      return;
     }
 
     // Handle settings - cycle to next value
@@ -75,10 +69,8 @@ protected:
 public:
   explicit SettingsActivity(GfxRenderer& renderer, InputManager& inputManager,
                            const std::function<void()>& onGoBack, 
-                           const std::function<void()>& onContinueReading,
-                           const std::function<void()>& onFileTransferOpen)
+                           const std::function<void()>& onContinueReading)
       : SelectionActivity("Settings", "Options", renderer, inputManager),
         onGoBackCallback(onGoBack),
-        onContinueReading(onContinueReading),
-        onFileTransferOpen(onFileTransferOpen) {}
+        onContinueReading(onContinueReading) {}
 };

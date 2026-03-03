@@ -7,7 +7,6 @@
 
 #include "Battery.h"
 #include "Settings.h"
-#include "activities/network/CrossPointWebServerActivity.h"
 #include "activities/reader/FileSelection.h"
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
@@ -78,13 +77,9 @@ void onGoToReader(const std::string& initialBookPath) {
 
 void onContinueReading() { onGoToReader(SETTINGS.openBookPath); }
 
-void onGoToFileTransfer() {
-  enterNewActivity(new CrossPointWebServerActivity(renderer, inputManager, onGoToFileSelection));
-}
-
 void onGoToSettings() {
   enterNewActivity(
-      new SettingsActivity(renderer, inputManager, onGoToFileSelection, onContinueReading, onGoToFileTransfer));
+      new SettingsActivity(renderer, inputManager, onGoToFileSelection, onContinueReading));
 }
 
 void onGoToFileSelection() {
