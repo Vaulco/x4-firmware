@@ -6,7 +6,6 @@
 
 class ChapterSelection final : public SelectionActivity {
     std::shared_ptr<Xtc> xtc;
-    uint32_t currentPage = 0;
     std::function<void()> onGoBackCallback;
     std::function<void(uint32_t newPage)> onSelectPage;
 
@@ -40,24 +39,20 @@ protected:
         const auto& chapter = chapters[index];
         const int pageWidth = renderer.getScreenWidth();
 
-        // Get header level for indentation
         xtc::PageInfo pageInfo;
         const uint8_t headerLevel = xtc->getPageInfo(chapter.startPage, pageInfo) ? pageInfo.headerLevel : 0;
         const int indent = headerLevel > 1 ? (headerLevel - 1) * INDENT_STEP : 0;
         const int leftMargin = x + indent;
 
-        // Format page number
         char pageNum[16];
         snprintf(pageNum, sizeof(pageNum), "%u", chapter.startPage + 1);
         const int pageNumWidth = renderer.getTextWidth(GfxRenderer::MEDIUM, pageNum);
 
-        // Available width for chapter title
         const int availableWidth = pageWidth - leftMargin - pageNumWidth - TITLE_PAGE_GAP - PAGE_NUM_RIGHT_MARGIN;
 
         std::string displayTitle = chapter.name.empty() ? "Unnamed" : chapter.name;
         displayTitle = renderer.truncatedText(GfxRenderer::MEDIUM, displayTitle.c_str(), availableWidth);
 
-        // Draw title and page number
         renderer.drawText(GfxRenderer::MEDIUM, leftMargin, y, displayTitle.c_str(), !isSelected);
         renderer.drawText(GfxRenderer::MEDIUM, pageWidth - PAGE_NUM_RIGHT_MARGIN - pageNumWidth, y, pageNum, !isSelected);
     }
@@ -81,12 +76,9 @@ public:
                               std::function<void(uint32_t newPage)> onSelectPage)
         : SelectionActivity("ChapterSelection", "Select Chapter", renderer, inputManager),
           xtc(xtc),
-          currentPage(currentPage),
           onGoBackCallback(std::move(onGoBack)),
-          onSelectPage(std::move(onSelectPage)) {}
-
-    void onEnter() override {
+          onSelectPage(std::move(onSelectPage))
+    {
         selectedIndex = findChapterIndexForPage(currentPage);
-        SelectionActivity::onEnter();
     }
 };
