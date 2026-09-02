@@ -15,6 +15,18 @@ class FileSelection final : public SelectionActivity {
     const std::function<void(const std::string&)> onSelect;
     const std::function<void()> onGoToSettings;
 
+    // Root-level folder that's shown as a persistent header shortcut instead
+    // of being listed as a regular entry, at every folder depth.
+    static constexpr const char* BIBLE_ENTRY_NAME = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F/"; // "Библия/"
+    static constexpr const char* BIBLE_LABEL = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F";       // "Библия"
+    static constexpr const char* BIBLE_ROOT_PATH = "/\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F";  // "/Библия"
+
+    void goToBibleRoot() {
+        basepath = BIBLE_ROOT_PATH;
+        reloadFiles();
+        updateRequired = true;
+    }
+
     static void sortFileList(std::vector<std::string>& strs) {
         std::sort(strs.begin(), strs.end(), [](const std::string& a, const std::string& b) {
             bool aDir = a.back() == '/';
@@ -48,8 +60,19 @@ class FileSelection final : public SelectionActivity {
                 continue;
             }
 
-            if (file.isDirectory()) files.push_back(fname + "/");
-            else if (xtc::isXtcExtension(fname.c_str())) files.push_back(fname);
+            if (file.isDirectory()) {
+                std::string dirName = fname + "/";
+                // "Библия" is only ever excluded at the root listing, since
+                // it lives at the true root — it's shown via the header
+                // shortcut instead of as a regular list entry there.
+                if (basepath == "/" && dirName == BIBLE_ENTRY_NAME) {
+                    file.close();
+                    continue;
+                }
+                files.push_back(dirName);
+            } else if (xtc::isXtcExtension(fname.c_str())) {
+                files.push_back(fname);
+            }
 
             file.close();
         }
@@ -101,6 +124,14 @@ protected:
             onGoToSettings();
         }
     }
+
+    // Persistent centered header shortcut to /Библия, visible at every
+    // folder depth, replacing the plain "Library" title.
+    bool hasHeaderItem() const override { return true; }
+
+    std::string getHeaderItemLabel() const override { return BIBLE_LABEL; }
+
+    void onHeaderItemSelected() override { goToBibleRoot(); }
 
 public:
     explicit FileSelection(GfxRenderer& renderer, InputManager& inputManager,

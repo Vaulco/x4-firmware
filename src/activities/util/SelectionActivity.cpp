@@ -33,9 +33,11 @@ void SelectionActivity::onEnter() {
 
   renderingMutex = xSemaphoreCreateMutex();
 
-  // Clamp selected index to valid range
+  // Clamp selected index to valid range. -1 is reserved for the header item
+  // (when present) and is otherwise treated as index 0.
   const int itemCount = getItemCount();
-  selectedIndex = std::max(0, std::min(selectedIndex, itemCount - 1));
+  const int minIndex = hasHeaderItem() ? -1 : 0;
+  selectedIndex = std::max(minIndex, std::min(selectedIndex, itemCount - 1));
 
   // Trigger first update
   updateRequired = true;
@@ -59,6 +61,7 @@ void SelectionActivity::onExit() {
 
 void SelectionActivity::loop() {
   const int itemCount = getItemCount();
+  const bool hasHeader = hasHeaderItem();
 
   // Always allow back navigation, even with no items
   if (inputManager.wasReleased(InputManager::Button::Back)) {
@@ -66,12 +69,16 @@ void SelectionActivity::loop() {
     return;
   }
 
-  // Early return if no items
-  if (itemCount == 0) return;
+  // Early return if no items (header item, if any, is still handled below)
+  if (itemCount == 0 && !hasHeader) return;
 
   // Handle confirm
   if (inputManager.wasReleased(InputManager::Button::Confirm)) {
-    onItemSelected(selectedIndex);
+    if (selectedIndex == -1) {
+      onHeaderItemSelected();
+    } else if (itemCount > 0) {
+      onItemSelected(selectedIndex);
+    }
     return;
   }
 
@@ -83,13 +90,28 @@ void SelectionActivity::loop() {
 
   if (!prevReleased && !nextReleased) return;
 
+  if (itemCount == 0) {
+    // Only the header exists; nothing to navigate to.
+    return;
+  }
+
   if (prevReleased) {
-    // Move up with wrapping
-    selectedIndex = (selectedIndex - 1 + itemCount) % itemCount;
+    // Move up with wrapping. With a header, the loop is:
+    // header -> itemN-1 -> ... -> item0 -> header
+    if (hasHeader) {
+      selectedIndex = (selectedIndex == -1) ? itemCount - 1 : selectedIndex - 1;
+    } else {
+      selectedIndex = (selectedIndex - 1 + itemCount) % itemCount;
+    }
     updateRequired = true;
   } else if (nextReleased) {
-    // Move down with wrapping
-    selectedIndex = (selectedIndex + 1) % itemCount;
+    // Move down with wrapping. With a header, the loop is:
+    // header -> item0 -> ... -> itemN-1 -> header
+    if (hasHeader) {
+      selectedIndex = (selectedIndex == itemCount - 1) ? -1 : selectedIndex + 1;
+    } else {
+      selectedIndex = (selectedIndex + 1) % itemCount;
+    }
     updateRequired = true;
   }
 }
@@ -102,8 +124,24 @@ void SelectionActivity::render() const {
   const int pageItems = getPageItems();
   const int itemCount = getItemCount();
 
-  // Draw header
-  renderer.drawCenteredText(GfxRenderer::LARGE, 15, title.c_str(), true);
+  // Draw header. When a header item is present, its label takes the
+  // title's centered spot; otherwise the static title is shown as before.
+  const bool hasHeader = hasHeaderItem();
+  const bool headerSelected = hasHeader && (selectedIndex == -1);
+  const std::string headerText = hasHeader ? getHeaderItemLabel() : title;
+
+  if (headerSelected) {
+    // Underline style, distinct from the list's filled-bar selection.
+    // Anchored just below the text baseline for a tight, close underline.
+    const int textWidth = renderer.getTextWidth(GfxRenderer::LARGE, headerText.c_str());
+    const int headerX = (pageWidth - textWidth) / 2;
+    renderer.drawText(GfxRenderer::LARGE, headerX, 15, headerText.c_str(), true);
+
+    const int underlineY = 15 + renderer.getFontAscenderSize(GfxRenderer::LARGE) + 2;
+    renderer.drawLine(headerX, underlineY, headerX + textWidth, underlineY);
+  } else {
+    renderer.drawCenteredText(GfxRenderer::LARGE, 15, headerText.c_str(), true);
+  }
 
   // Handle empty list
   if (itemCount == 0) {
@@ -112,13 +150,17 @@ void SelectionActivity::render() const {
     return;
   }
 
-  // Calculate which page we're on and what items to show
-  const int pageStartIndex = (selectedIndex / pageItems) * pageItems;
+  // Calculate which page we're on and what items to show.
+  // When the header is selected (-1), keep the list's first page visible.
+  const int pageAnchorIndex = std::max(selectedIndex, 0);
+  const int pageStartIndex = (pageAnchorIndex / pageItems) * pageItems;
   const int pageEndIndex = std::min(pageStartIndex + pageItems, itemCount);
 
-  // Draw selection highlight
-  const int selectionY = startY + (selectedIndex - pageStartIndex) * lineHeight - 2;
-  renderer.fillRect(0, selectionY, pageWidth - 1, lineHeight);
+  // Draw selection highlight (only when a list item, not the header, is selected)
+  if (selectedIndex >= 0) {
+    const int selectionY = startY + (selectedIndex - pageStartIndex) * lineHeight - 2;
+    renderer.fillRect(0, selectionY, pageWidth - 1, lineHeight);
+  }
 
   // Draw visible items
   for (int i = pageStartIndex; i < pageEndIndex; i++) {
