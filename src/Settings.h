@@ -7,6 +7,7 @@
 //Setting Definitions - Single Source of Truth
 enum SettingId {
   SETTING_SLEEP_TIMEOUT = 0,
+  SETTING_BIBLE_VERSION,
   SETTING_COUNT  // Keep this last
 };
 
@@ -32,9 +33,16 @@ constexpr EnumOption SLEEP_OPTIONS[] = {
   {"30 min", 4}
 };
 
+// Bible translation options: 0 = NKJV, 1 = RSV (Russian Synodal)
+constexpr EnumOption BIBLE_VERSION_OPTIONS[] = {
+  {"NKJV", 0},
+  {"RSV", 1}
+};
+
 // Master settings list - add new settings here
 constexpr SettingMetadata SETTING_DEFINITIONS[] = {
   {SETTING_SLEEP_TIMEOUT, "Time to Sleep", SLEEP_OPTIONS, 5, 2},       // default: 10 min
+  {SETTING_BIBLE_VERSION, "Bible Version", BIBLE_VERSION_OPTIONS, 2, 0}, // default: NKJV
 };
 
 // Settings Class

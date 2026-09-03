@@ -14,6 +14,10 @@ class FileSelection final : public SelectionActivity {
     std::vector<std::string> files;
     const std::function<void(const std::string&)> onSelect;
     const std::function<void()> onGoToSettings;
+    const std::function<void()> onGoToBible;
+
+    static constexpr const char* BIBLE_ENTRY_NAME = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F/"; // "Библия/"
+    static constexpr const char* BIBLE_LABEL = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F";       // "Библия"
 
     static void sortFileList(std::vector<std::string>& strs) {
         std::sort(strs.begin(), strs.end(), [](const std::string& a, const std::string& b) {
@@ -48,8 +52,19 @@ class FileSelection final : public SelectionActivity {
                 continue;
             }
 
-            if (file.isDirectory()) files.push_back(fname + "/");
-            else if (xtc::isXtcExtension(fname.c_str())) files.push_back(fname);
+            if (file.isDirectory()) {
+                std::string dirName = fname + "/";
+                // "Библия" is only ever excluded at the root listing, since
+                // it lives at the true root — it's shown via the header
+                // shortcut instead of as a regular list entry there.
+                if (basepath == "/" && dirName == BIBLE_ENTRY_NAME) {
+                    file.close();
+                    continue;
+                }
+                files.push_back(dirName);
+            } else if (xtc::isXtcExtension(fname.c_str())) {
+                files.push_back(fname);
+            }
 
             file.close();
         }
@@ -102,15 +117,26 @@ protected:
         }
     }
 
+    // Persistent centered header shortcut. Jumps straight into the Bible
+    // grid for the last-used translation (replacing the plain "Library"
+    // title while this activity is active).
+    bool hasHeaderItem() const override { return true; }
+
+    std::string getHeaderItemLabel() const override { return BIBLE_LABEL; }
+
+    void onHeaderItemSelected() override { onGoToBible(); }
+
 public:
     explicit FileSelection(GfxRenderer& renderer, InputManager& inputManager,
                            const std::function<void(const std::string&)>& onSelect,
                            const std::function<void()>& onGoToSettings,
+                           const std::function<void()>& onGoToBible,
                            std::string initialPath = "/", std::string selectedFile = "")
         : SelectionActivity("FileSelection", "Library", renderer, inputManager),
           basepath(initialPath.empty() ? "/" : std::move(initialPath)),
           onSelect(onSelect),
-          onGoToSettings(onGoToSettings)
+          onGoToSettings(onGoToSettings),
+          onGoToBible(onGoToBible)
     {
         reloadFiles(std::move(selectedFile));
     }

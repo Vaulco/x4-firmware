@@ -38,6 +38,13 @@ class SelectionActivity : public Activity {
   virtual void onItemSelected(int index) = 0;
   virtual void onBack() = 0;
 
+  // Optional header item. When present, it's drawn centered in the title's
+  // spot (replacing the static title while shown) and is reachable via
+  // Up/Down as an extra loop position with index -1.
+  virtual bool hasHeaderItem() const { return false; }
+  virtual std::string getHeaderItemLabel() const { return ""; }
+  virtual void onHeaderItemSelected() {}
+
   // Helper to calculate visible items
   int getPageItems() const;
 

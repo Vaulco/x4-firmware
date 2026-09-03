@@ -13,6 +13,12 @@ import re
 import markdown
 from bs4 import BeautifulSoup, NavigableString
 
+# Marker prepended to a paragraph's text when it follows a genuine blank
+# line in the source markdown (as opposed to a line break we force into
+# its own paragraph purely to get the first-line indent). Only paragraphs
+# carrying this marker receive extra vertical spacing before them.
+PARA_GAP_MARKER = '\u2063PARAGAP\u2063'
+
 @dataclass
 class RenderConfig:
     font_path: str = ''
@@ -155,6 +161,14 @@ class CSSGenerator:
         h4_size = config.h4_size if config.h4_size else config.font_size * config.heading_scale
         h5_size = config.h5_size if config.h5_size else config.font_size * config.heading_scale
         h6_size = config.h6_size if config.h6_size else config.font_size * config.heading_scale
+
+        # Vertical space placed before a paragraph that follows a genuine
+        # blank line in the source markdown (tagged with class="para-gap").
+        # Paragraphs created only by the forced line-split above (no real
+        # blank line in the source) are unaffected. Defaults to one line's
+        # worth of height.
+        para_gap = config.font_size * config.line_height
+
         
         return f'''
                 <style>
@@ -182,8 +196,8 @@ class CSSGenerator:
                         text-align: {config.text_align} !important;
                         color: inherit !important;
                     }}
-                    p {{ margin-bottom: 0.8em !important; }}
-                    p + p {{ margin-top: 0.8em !important; }}
+                    p {{ margin-bottom: 0 !important; margin-top: 0 !important; text-indent: 1.5em !important; }}
+                    p.para-gap {{ margin-top: {para_gap}pt !important; }}
                     h1, h2, h3, h4, h5, h6 {{ margin-bottom: 0.5em !important; margin-top: 1em; text-align: center !important; font-weight: {heading_weight} !important; }}
                     h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + * {{ margin-top: 0.5em !important; }}
                     * + h1, * + h2, * + h3, * + h4, * + h5, * + h6 {{ margin-top: 0.5yem !important; }}
@@ -361,25 +375,76 @@ class MarkdownProcessor:
         # Convert footnotes to inline format before processing
         md_content = self._convert_footnotes_inline(md_content)
         
-        # Preprocess: Add two spaces before single newlines to force line breaks
-        # This makes single newlines render as <br> tags
+        # Preprocess: Insert a blank line between consecutive plain prose lines
+        # so every line break becomes its own paragraph (and gets the indent),
+        # instead of being forced into a <br> within the same paragraph.
+        # Lines that are part of headings, lists, tables, blockquotes, or code
+        # fences are left untouched so their formatting isn't broken.
+        #
+        # Separately, a *genuine* blank line already present in the source
+        # (an intentional paragraph gap) is tracked and the paragraph that
+        # follows it is tagged with PARA_GAP_MARKER, so only that paragraph
+        # gets extra vertical space later — not every forced line-split.
+        special_line = re.compile(
+            r'^\s*(#{1,6}\s|[-*+]\s|\d+\.\s|>|\|.*\||```|~~~)'
+        )
+
+        def is_plain_prose(line: str) -> bool:
+            return bool(line.strip()) and not special_line.match(line)
+
         lines = md_content.split('\n')
-        processed_lines = []
-        for i, line in enumerate(lines):
-            # Don't add spaces after empty lines (paragraph breaks should stay as is)
-            if line.strip() and i < len(lines) - 1:
-                # Check if next line is not empty (to preserve paragraph breaks)
-                if lines[i + 1].strip():
-                    processed_lines.append(line + '  ')  # Add two spaces
-                else:
-                    processed_lines.append(line)
-            else:
+        processed_lines: List[str] = []
+        in_code_fence = False
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            if re.match(r'^\s*(```|~~~)', line):
+                in_code_fence = not in_code_fence
                 processed_lines.append(line)
+                i += 1
+                continue
+
+            if not in_code_fence and line.strip() == '':
+                # One or more genuine blank lines in the source. If they sit
+                # between two plain prose lines, mark the line that follows
+                # so its paragraph gets a visible gap before it.
+                prev_line = processed_lines[-1] if processed_lines else ''
+                j = i + 1
+                while j < len(lines) and lines[j].strip() == '':
+                    j += 1
+                next_line = lines[j] if j < len(lines) else ''
+
+                if j < len(lines) and is_plain_prose(prev_line) and is_plain_prose(next_line):
+                    lines[j] = PARA_GAP_MARKER + lines[j]
+
+                processed_lines.append('')
+                i = j
+                continue
+
+            processed_lines.append(line)
+            if (not in_code_fence and is_plain_prose(line) and i < len(lines) - 1
+                    and is_plain_prose(lines[i + 1])):
+                processed_lines.append('')  # Insert blank line to force new paragraph
+            i += 1
         md_content = '\n'.join(processed_lines)
         
         chapters = []
         html = markdown.markdown(md_content, extensions=['extra', 'codehilite', 'tables', 'nl2br'])
         soup = BeautifulSoup(html, 'html.parser')
+
+        # Find paragraphs whose text starts with the marker, strip the
+        # marker text back out, and flag them with a CSS class so only
+        # these get extra spacing before them.
+        for p in soup.find_all('p'):
+            for desc in p.descendants:
+                if isinstance(desc, NavigableString) and str(desc).startswith(PARA_GAP_MARKER):
+                    stripped = str(desc)[len(PARA_GAP_MARKER):]
+                    desc.replace_with(NavigableString(stripped))
+                    existing = p.get('class', [])
+                    p['class'] = existing + ['para-gap']
+                    break
+
         headings = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
         
         if not headings:
@@ -754,10 +819,10 @@ class App(Tk):
             top_padding=20,
             text_align="left",
             # Custom header sizes - adjust these as needed
-            h1_size=44,  # Largest
-            h2_size=38,
-            h3_size=35,
-            h4_size=32,
+            h1_size=38,  # Largest
+            h2_size=35,
+            h3_size=32,
+            h4_size=30,
             h5_size=30,
             h6_size=28   # Smallest (same as body text)
         )

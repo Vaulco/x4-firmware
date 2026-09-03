@@ -7,6 +7,7 @@
 
 #include "Battery.h"
 #include "Settings.h"
+#include "activities/reader/BibleGridActivity.h"
 #include "activities/reader/FileSelection.h"
 #include "activities/reader/ReaderActivity.h"
 #include "activities/settings/SettingsActivity.h"
@@ -70,9 +71,10 @@ void enterDeepSleep() {
 // Forward declarations
 void onGoToFileSelection();
 void onGoToSettings();
+void onGoToBibleGrid();
 
 void onGoToReader(const std::string& initialBookPath) {
-  enterNewActivity(new ReaderActivity(renderer, inputManager, initialBookPath, onGoToSettings));
+  enterNewActivity(new ReaderActivity(renderer, inputManager, initialBookPath, onGoToSettings, onGoToBibleGrid));
 }
 
 void onContinueReading() { onGoToReader(SETTINGS.openBookPath); }
@@ -86,7 +88,15 @@ void onGoToFileSelection() {
   enterNewActivity(new FileSelection(
       renderer, inputManager,
       [](const std::string& path) { onGoToReader(path); },
-      onGoToSettings));
+      onGoToSettings,
+      onGoToBibleGrid));
+}
+
+void onGoToBibleGrid() {
+  enterNewActivity(new BibleGridActivity(
+      renderer, inputManager,
+      [](const std::string& path) { onGoToReader(path); },
+      onGoToFileSelection));
 }
 
 void setup() {
