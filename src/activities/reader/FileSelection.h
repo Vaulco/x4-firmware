@@ -14,18 +14,10 @@ class FileSelection final : public SelectionActivity {
     std::vector<std::string> files;
     const std::function<void(const std::string&)> onSelect;
     const std::function<void()> onGoToSettings;
+    const std::function<void()> onGoToBible;
 
-    // Root-level folder that's shown as a persistent header shortcut instead
-    // of being listed as a regular entry, at every folder depth.
     static constexpr const char* BIBLE_ENTRY_NAME = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F/"; // "Библия/"
     static constexpr const char* BIBLE_LABEL = "\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F";       // "Библия"
-    static constexpr const char* BIBLE_ROOT_PATH = "/\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F";  // "/Библия"
-
-    void goToBibleRoot() {
-        basepath = BIBLE_ROOT_PATH;
-        reloadFiles();
-        updateRequired = true;
-    }
 
     static void sortFileList(std::vector<std::string>& strs) {
         std::sort(strs.begin(), strs.end(), [](const std::string& a, const std::string& b) {
@@ -125,23 +117,26 @@ protected:
         }
     }
 
-    // Persistent centered header shortcut to /Библия, visible at every
-    // folder depth, replacing the plain "Library" title.
+    // Persistent centered header shortcut. Jumps straight into the Bible
+    // grid for the last-used translation (replacing the plain "Library"
+    // title while this activity is active).
     bool hasHeaderItem() const override { return true; }
 
     std::string getHeaderItemLabel() const override { return BIBLE_LABEL; }
 
-    void onHeaderItemSelected() override { goToBibleRoot(); }
+    void onHeaderItemSelected() override { onGoToBible(); }
 
 public:
     explicit FileSelection(GfxRenderer& renderer, InputManager& inputManager,
                            const std::function<void(const std::string&)>& onSelect,
                            const std::function<void()>& onGoToSettings,
+                           const std::function<void()>& onGoToBible,
                            std::string initialPath = "/", std::string selectedFile = "")
         : SelectionActivity("FileSelection", "Library", renderer, inputManager),
           basepath(initialPath.empty() ? "/" : std::move(initialPath)),
           onSelect(onSelect),
-          onGoToSettings(onGoToSettings)
+          onGoToSettings(onGoToSettings),
+          onGoToBible(onGoToBible)
     {
         reloadFiles(std::move(selectedFile));
     }

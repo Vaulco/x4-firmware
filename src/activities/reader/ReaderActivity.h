@@ -9,6 +9,7 @@
 class ReaderActivity final : public ActivityWithSubactivity {
   std::string currentBookPath;  // Track current book path for navigation
   const std::function<void()> onGoBack;
+  const std::function<void()> onGoToBible;
 
   static std::unique_ptr<Xtc> loadXtc(const std::string& path) {
       auto xtc = std::make_unique<Xtc>(path, "/.ereader");
@@ -26,6 +27,9 @@ class ReaderActivity final : public ActivityWithSubactivity {
     goToFileSelection();
   }
 
+  static constexpr const char* BIBLE_NKJV_FOLDER = "/\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F/NKJV"; // "/Библия/NKJV"
+  static constexpr const char* BIBLE_RSV_FOLDER = "/\xD0\x91\xD0\xB8\xD0\xB1\xD0\xBB\xD0\xB8\xD1\x8F/RSV";   // "/Библия/RSV"
+
   void goToFileSelection(const std::string& fromBookPath = "") {
     exitActivity();
     
@@ -40,11 +44,19 @@ class ReaderActivity final : public ActivityWithSubactivity {
         filename = fromBookPath.substr(lastSlash + 1);
       }
     }
+
+    // Books opened from the Bible grid (NKJV/RSV) should return to the
+    // grid on exit, not the plain file list.
+    if (folder == BIBLE_NKJV_FOLDER || folder == BIBLE_RSV_FOLDER) {
+      onGoToBible();
+      return;
+    }
     
     enterNewActivity(new FileSelection(
         renderer, inputManager, 
         [this](const std::string& path) { openBook(path); }, 
         onGoBack, 
+        onGoToBible,
         folder,
         filename));
   }
@@ -66,10 +78,12 @@ class ReaderActivity final : public ActivityWithSubactivity {
 
  public:
   explicit ReaderActivity(GfxRenderer& renderer, InputManager& inputManager, std::string initialBookPath,
-                          const std::function<void()>& onGoBack)
+                          const std::function<void()>& onGoBack,
+                          const std::function<void()>& onGoToBible)
       : ActivityWithSubactivity("Reader", renderer, inputManager),
         currentBookPath(std::move(initialBookPath)),
-        onGoBack(onGoBack) {}
+        onGoBack(onGoBack),
+        onGoToBible(onGoToBible) {}
 
   void onEnter() override {
     ActivityWithSubactivity::onEnter();
